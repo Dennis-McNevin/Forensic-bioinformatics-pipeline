@@ -13,15 +13,13 @@
     
     To do:
         - maybe add a menu bar
-        - display progress ... in a progress bar? 
-        - command logging ... to enhance result reproducibility
-        - maybe make a button to make advanced options visible?
+        - maybe, display progress ... in a progress bar? 
     
 """
 
 from __future__ import print_function
 
-__version__ = "0.1-a1"
+__version__ = "0.1-a2"
 __progname__ = "NGS Forensics Pipeline"
 
 status = print
@@ -85,7 +83,8 @@ class bvar(ifrow):
         ifrow.__init__(self, master,cfgline)   # init superclass
         self.flg = cfgline.flag
         self.var = tk.BooleanVar()
-        self.default = False
+        self.default = cfgline.default=="ticked"
+        self.var.set(self.default)
         w1 = ttk.Checkbutton(master, variable=self.var)
         w1.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
@@ -132,11 +131,11 @@ class fvar(ifrow):
         self.required = cfgline.constraint=="required"
         w1 = ttk.Entry(master, textvariable=self.var, width=80)
         w1.grid(row=master.rows, column=1, sticky='w')
-        # I can't get .gq.gz to work ... just put .gz in the allowed extentions?
+        # I can't get .fq.gz to work ... just put .gz in the allowed extentions?
         # self.ft = [('FASTQ file', x+z) for x in cfgline.default.split(';') for z in ['', '.gz']]
         self.ft = [('FASTQ file', x) for x in cfgline.default.split(';')]
         def varset():
-            fn = tkFileDialog.askopenfilename(filetypes=self.ft)
+            fn = tkFileDialog.askopenfilename(title=self.label, filetypes=self.ft)
             self.var.set(fn)
             return
         w2 = ttk.Button(master, text="Browse", command=varset )
@@ -152,15 +151,17 @@ class fvar(ifrow):
         return self.flg, s
         
 
-class pipesect(ttk.LabelFrame):
+class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
     def __init__(self, master, label):
         assert label     # our LabelFrames must have a name ...
-        ttk.LabelFrame.__init__(self, master, text=label)
-        self.pack(fill='x', pady=15) # should increment row ...
+        ttk.Frame.__init__(self, master, borderwidth=2, relief="raised", style="M.TFrame")
+        self.pack(fill='x', padx=5, pady=5, ipadx=5) # should increment row ...
         self.label = label
         self.master = master
         self.vars = [] # a list of ifrows
+        l = ttk.Label(self, text=label, width=18, style="M.TLabel")
+        l.grid(row=0, column=0)
         self.rows = 1
         return
     
@@ -168,7 +169,8 @@ class pipesect(ttk.LabelFrame):
         return self.label, dict(a.myflags() for a in self.vars)
     
 class App(ttk.Frame):
-    """GUI for Forensics pipeline
+    """
+    GUI for Forensics pipeline
     
     Uses Tkinter so it runs on a standard Python installation ... 
     no extra modules needed.
@@ -191,81 +193,73 @@ class App(ttk.Frame):
         global __progname__, __version__, __imagedata__, status
         
         sx=ttk.Style()
-        # sx.theme_use('default')
-        sx.configure("X.TLabelframe", foreground='blue', background='gray')
-        sx.configure("X.TLabelframe", font="Georgia 18")
-#        print("sx.theme_names() =", sx.theme_names())
-#        print("sx.theme_use() =", sx.theme_use())
-#        print("element_options =", sx.element_options('Tlabelframe'))
-#        print("element_options (.label) =", sx.element_options('Tlabelframe.label'))
-#        print("lookup fg =", sx.lookup('X.TLabelframe', 'foreground'))
-#        print("lookup font =", sx.lookup('X.TLabelframe', 'font'))
-#        print("layout X.TLabelframe=", sx.layout('X.TLabelframe'))
-        # print("layout TButton=", sx.layout('TButton'))
+        sx.configure("M.TLabel", foreground='darkblue', font="Georgia 14 italic" )
+        sx.configure("M.TFrame", foreground='green', font="Georgia 14 italic", background="palegoldenrod" )
+        sx.configure("R.TButton", background="gray")
+        sx.map("R.TButton", background=[("disabled", "yellow"), ("active", "red")])
         
-        ttk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master, border=5)
         mx = ttk.Frame()
-        #mx.grid(row=0, column=0)
-        #master.grid()
-        mx.pack()
+        mx.pack(ipadx=10, ipady=10)
                 
-        # wfunc = { 'button': ttk.Button, 'label': ttk.Label, 'entry': ttk.Entry, 'cb': ttk.Checkbutton }
         wfunc = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
+
+        cfglabs = ['group', 'flag', 'label', 'type', 'constraint', \
+                        'default', 'mouse_over' ]
+        cfglen  =len(cfglabs)
+        Cfgline = collections.namedtuple('Cfgline', cfglabs)
         
-        Cfgline = collections.namedtuple('Cfgline', ['group', 'flag', 'label', 'type', 'constraint', \
-                        'default', 'mouse_over' ])
+        self.fv = []    # Frames vector/list - needed to get pipe-section arguments
         
-        # self.tvars, self.bvars, self.ivars, self.tflags, self.bflags, self.iflags = [], [], [], '', '', ''
-        self.fv = []    # list of LabelFrames - needed to get pipesection arguments
+        # read the configuration file
+        # there's a header line, then a series of lines describing the App parameters.
+        # It's a TAB separated file. Fields vary a bit depending on the value type.
+        # The differences are handled by the various subclasses of class ifrow above ...
+        # the wfunc dict maps row types to subclass constructors
+        
         with open(cfgfn) as inp:
             lxfirst, m = True, None
             for lx in inp:
-                if lx.lstrip().startswith('#'): # drop comment rows
+                lxs = lx.rstrip()
+                if lxs=='' or lxs.startswith('#'): # drop comment or blank rows
                     continue
+                fld = lxs.split("\t")
                 if lxfirst: # skip the header line
+                    assert len(fld)==cfglen     # check that the CFG file has the right number of fields
                     lxfirst = False
                     continue
-                fld = lx.rstrip().split("\t")
-                if not (m and m.label==fld[0]):  # column 0? Start a new labelFrame ... 
-                    # m = tk.LabelFrame(mx, text=fld[0], borderwidth=5, fg='blue', bg='#eeeeee')
-                    # sx.theme_use("aqua")
-                    m = pipesect(mx, fld[0])
-                    self.fv.append(m)
-                    m['borderwidth'] = 2
+                if not (m and m.label==fld[0]): # column 0? Start a new pipe-section ... 
+                    m = pipesect(mx, fld[0])    # start a new pipe section
+                    self.fv.append(m)           # add this pipe-section to the frames-vector
                     
-                    # m = ttk.LabelFrame(mx, text=fld[0], borderwidth=2, relief='raised', 
-                    # style="X.TLabelframe")
-#                    print("style=", m.winfo_class())
-#                    print("sx.theme_use() =", sx.theme_use())
-                    # m.configure(style="Blue.TLabelframe")
-                    # m.grid(row=mr, column=0, sticky='we', ipadx=10, ipady=10)
-                    # sx.theme_use('default')
-
-                # print("fld[2]=", fld[2])
-                if len(fld)<7:
-                    fld += [None]*(7-len(fld))
-                assert len(fld)==7
-                cfg = Cfgline(*tuple(fld))
-                wfunc[cfg.type](m, cfg)
+                if len(fld)<cfglen:
+                    fld += [None]*(cfglen-len(fld))
+                assert len(fld)==cfglen
+                cfg = Cfgline(*tuple(fld))  # make named tuple from config line
+                wfunc[cfg.type](m, cfg)     # generate the parameter line in the GUI
         
-        status("read config file.")
-        w = ttk.Button(mx, text="Run", command=self.run)
-        # w.grid(row=mr, column=0, padx='20', pady='15', sticky='w')
-        # w.grid(row=mr, column=0, pady=15)
-        w.pack(pady=15)
-        status("done 'Run' button.")
+        status("done reading config file.")
+        w = ttk.Button(mx, text="Run", style="R.TButton", command=self.run)
+        w.pack(pady=10)
+        status("made 'Run' button.")
         
-        
-        
-        
-        # the GUI ... so in self.run() above we can easily get a namedtuple of value
+        # the GUI ... 
         # self.img = tk.PhotoImage(data=__imagedata__)    # this must be kept in memory!
         # del __imagedata__   # dispose of the big string!
         
+        # make a status bar at the bottom
+        # using tk (instead of ttk) so we can set the colour ... can't get ttk styles to work
+        
+        sc = "peachpuff" # status background colour
+        sf = tk.Frame(master, background=sc, border=2, relief="sunken")
+        sf.pack(fill=tk.X, padx=5, pady=5)
+        sblab = tk.Label(sf, text="status:", border=2, background=sc)
+        sblab.pack(side=tk.LEFT)
+        
+        
         self.sbvar = tk.StringVar()
         self.sbprev ="\n"
-        self.sb = ttk.Label(master, textvariable=self.sbvar)
-        #self.sb.grid(row=mr, sticky='w', columnspan=5)
+        self.sb = tk.Label(sf, textvariable=self.sbvar, background=sc)
         self.sb.pack(fill=tk.X, side=tk.LEFT)
         def setsb(*txt, **kw):
             res = ''
