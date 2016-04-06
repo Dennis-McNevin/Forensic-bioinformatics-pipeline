@@ -24,15 +24,8 @@ __progname__ = "NGS Forensics Pipeline"
 
 status = print
 
-# import os
-# import re
-# import array
 import sys
-# import string
 
-
-# import argparse
-    
 import Tkinter as tk
 import tkFileDialog
 import tkMessageBox
@@ -48,11 +41,13 @@ class ifrow:
     
     Every row has a label ... so handle it here.
     """
-    def __init__(self, master, cfgline):
+    def __init__(self, master, cfgline, style=None):
         self.flg = cfgline.flag
         self.var = None
         self.default = cfgline.default
         w0 = ttk.Label(master, text=cfgline.label)
+        if style:
+            w0["style"] = style
         w0.grid(row=master.rows, column=0, sticky='e')
         master.vars.append(self)
         return
@@ -94,41 +89,28 @@ class bvar(ifrow):
 #        return self.flg, self.var.get()
         
 class cvar(ifrow):
-    """choice input (???) in interface"""
+    """Combobox - choice input in interface"""
     def __init__(self, master, cfgline):
         ifrow.__init__(self, master, cfgline)   # init superclass
         self.flg = cfgline.flag
         self.opt = cfgline.constraint.split(';')
-        w1 = tk.Listbox(master, height=2)
-        self.var = w1
-        for x in self.opt:
-            w1.insert(tk.END, x)
-        # find the default position
-        sel = 0
-        for n, x in enumerate(self.opt):
-            if cfgline.default==x:
-                sel = n
-        self.default = sel
-        w1.selection_set(sel)
-        w1.see(sel)
-        w1.grid(row=master.rows, column=1, sticky='w')
+        self.default = cfgline.default
+        self.var = ttk.Combobox(master, values=self.opt, state="readonly")
+        self.var.set(cfgline.default)
+        self.var.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
         return
     
-    def myflags(self):
-        csel = self.var.curselection()[0]
-        # print(self.flg, "flag is", csel)
-        return self.flg, self.opt[csel]
-
 class fvar(ifrow):
     """File input in interface - with browse buttin, calls file dialog"""
     def __init__(self, master, cfgline):
-        ifrow.__init__(self, master, cfgline)   # init superclass
+        self.required = cfgline.constraint=="required"
+        sz = "R.TLabel" if self.required else None
+        ifrow.__init__(self, master, cfgline, style=sz)   # init superclass
         self.label = cfgline.label
         self.flg = cfgline.flag
         self.var = tk.StringVar()
         self.default = None
-        self.required = cfgline.constraint=="required"
         w1 = ttk.Entry(master, textvariable=self.var, width=80)
         w1.grid(row=master.rows, column=1, sticky='w')
         # I can't get .fq.gz to work ... just put .gz in the allowed extentions?
@@ -155,7 +137,7 @@ class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
     def __init__(self, master, label):
         assert label     # our LabelFrames must have a name ...
-        ttk.Frame.__init__(self, master, borderwidth=2, relief="raised", style="M.TFrame")
+        ttk.Frame.__init__(self, master, borderwidth=2, relief="raised") # , style="M.TFrame")
         self.pack(fill='x', padx=5, pady=5, ipadx=5) # should increment row ...
         self.label = label
         self.master = master
@@ -177,15 +159,19 @@ class App(ttk.Frame):
     """
     
     def run(self):
+        global status
         "collect the arguments from the GUI widgets and call the processing function"
         # OK ... it's time to do the work!
+        # should disable the 'run' button
         status('Doing Run button.')
         try:
             argdict = dict(f.getflags() for f in self.fv)
+            status('Running ...')
             code.run_pipeline(argdict)
             status('Done Run.')
         except:
-            status('Run failed.')        
+            status('Run failed.')  
+        # should re-enable the 'run' button ... 
         return
         
     def __init__(self, master, cfgfn):
@@ -193,14 +179,16 @@ class App(ttk.Frame):
         global __progname__, __version__, __imagedata__, status
         
         sx=ttk.Style()
+        sx.configure(".", font="Ariel 12")
         sx.configure("M.TLabel", foreground='darkblue', font="Georgia 14 italic" )
-        sx.configure("M.TFrame", foreground='green', font="Georgia 14 italic", background="palegoldenrod" )
-        sx.configure("R.TButton", background="gray")
-        sx.map("R.TButton", background=[("disabled", "yellow"), ("active", "red")])
+        sx.configure("R.TLabel", font="Ariel 12 bold")  # for reuired fields
+        # sx.configure("M.TFrame", foreground='green', font="Georgia 14 italic")
+        # sx.configure("R.TButton", background="gray")
+        sx.map("R.TButton", background=[("disabled", "salmon"), ("active", "yellowgreen")])
         
-        ttk.Frame.__init__(self, master, border=5)
+        ttk.Frame.__init__(self, master, border=2)
         mx = ttk.Frame()
-        mx.pack(ipadx=10, ipady=10)
+        mx.pack(ipadx=10, padx=5, pady=5, ipady=5)
                 
         wfunc = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
 
@@ -239,6 +227,8 @@ class App(ttk.Frame):
                 wfunc[cfg.type](m, cfg)     # generate the parameter line in the GUI
         
         status("done reading config file.")
+        ttk.Separator(mx, orient="horizontal").pack(pady=2)
+        
         w = ttk.Button(mx, text="Run", style="R.TButton", command=self.run)
         w.pack(pady=10)
         status("made 'Run' button.")
@@ -262,12 +252,11 @@ class App(ttk.Frame):
         self.sb = tk.Label(sf, textvariable=self.sbvar, background=sc)
         self.sb.pack(fill=tk.X, side=tk.LEFT)
         def setsb(*txt, **kw):
-            res = ''
-            if self.sbprev=="":
-                res = self.sbvar.get()
+            res = self.sbvar.get() if self.sbprev=="" else ''
             self.sbprev = kw["end"] if "end" in kw else "\n"
-            for s in txt:
-                res += ' '+str(s)
+            if res:
+                res += ' '
+            res += ' '.join(str(s) for s in txt)    # make into strings and append
             self.sbvar.set(res)
             self.update()
             return
@@ -295,4 +284,3 @@ if __name__ == "__main__":
 #    with open('getcore.gif','rb') as src:    
 #        __imagedata__ = base64.b64encode(src.read())
     win()
-       
