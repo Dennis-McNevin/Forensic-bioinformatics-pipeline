@@ -1,0 +1,5 @@
+.spyderworkspace
+test/*
+*.pyc
+*-old
+gc*
