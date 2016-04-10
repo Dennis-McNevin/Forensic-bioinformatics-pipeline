@@ -19,7 +19,7 @@
 
 from __future__ import print_function
 
-__version__ = "0.1-a2"
+__version__ = "0.1-a3"
 __progname__ = "NGS Forensics Pipeline"
 
 status = print
@@ -34,6 +34,27 @@ import collections
 
 import dummy as code # This is where the work is specified ... just import the right module
                      # with a run_pipe procedure that has the argument dictionary as its parameter
+
+def Display(event):
+    "<Enter> callback to display popup/tooltip"
+    global pup
+    w = event.widget
+    if 'text' not in w.keys():
+        return
+    pup.pupmsg.set(w.popup)
+    pup.state("normal")
+    return "break"
+    
+def Remove(event):
+    "<Leave> callback for labels"
+    global pup
+    w =event.widget
+    if 'text' not in w.keys():
+        return
+    pup.pupmsg.set('')
+    pup.state("withdrawn")
+    return "break"
+
 
 class ifrow:
     """
@@ -50,6 +71,13 @@ class ifrow:
             w0["style"] = style
         w0.grid(row=master.rows, column=0, sticky='e')
         master.vars.append(self)
+        # if there is a mouse_over string, then remember it and
+        # bind <Enter> and <Leave> callbacks.
+        if cfgline.mouse_over:
+            w0.popup = cfgline.mouse_over
+            w0.bind("<Enter>", Display)
+            w0.bind("<Leave>", Remove)
+
         return
     
     def myflags(self):
@@ -191,6 +219,19 @@ class App(ttk.Frame):
         Cfgline = collections.namedtuple('Cfgline', cfglabs)
         
         self.fv = []    # Frames vector/list - needed to get pipe-section arguments
+        
+        # create a withdrawn toplevel widget to display the tooltips
+        global pup
+        pup = tk.Toplevel(bg="lightyellow")
+        pup.pupmsg = tk.StringVar()
+        pup.puplab = tk.Label(pup, textvariable=pup.pupmsg, bg="lightyellow", width=40)
+        pup.puplab.pack(padx=10, pady=10)
+        
+        pup.transient(self)
+        pup.lower(self)
+        pup.state("withdrawn")
+        pup.overrideredirect(True)
+
         
         # read the configuration file
         # there's a header line, then a series of lines describing the App parameters.
