@@ -69,9 +69,6 @@ class ivar(ifrow):
         master.rows += 1
         return
     
-#    def myflags(self):
-#        return ['-'+self.flg, str(self.var.get())]
-        
 class bvar(ifrow):
     """Boolean input (Checkbox) in interface"""
     def __init__(self, master, cfgline):
@@ -85,9 +82,6 @@ class bvar(ifrow):
         master.rows += 1
         return
     
-#    def myflags(self):
-#        return self.flg, self.var.get()
-        
 class cvar(ifrow):
     """Combobox - choice input in interface"""
     def __init__(self, master, cfgline):
@@ -130,8 +124,7 @@ class fvar(ifrow):
         if self.required and not s:
             tkMessageBox.showerror("Missing filename", "Please select a filename for\n%s." % self.label)
             raise Exception, "Missing filename."
-        return self.flg, s
-        
+        return self.flg, s        
 
 class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
@@ -238,14 +231,14 @@ class App(ttk.Frame):
         # del __imagedata__   # dispose of the big string!
         
         # make a status bar at the bottom
-        # using tk (instead of ttk) so we can set the colour ... can't get ttk styles to work
+        # using tk (instead of ttk) so we can set the colour ... 
+        # can't get ttk styles to work sufficiently on a Mac
         
         sc = "peachpuff" # status background colour
         sf = tk.Frame(master, background=sc, border=2, relief="sunken")
         sf.pack(fill=tk.X, padx=5, pady=5)
         sblab = tk.Label(sf, text="status:", border=2, background=sc)
-        sblab.pack(side=tk.LEFT)
-        
+        sblab.pack(side=tk.LEFT)        
         
         self.sbvar = tk.StringVar()
         self.sbprev ="\n"
