@@ -222,15 +222,16 @@ class App(ttk.Frame):
         
         # create a withdrawn toplevel widget to display the tooltips
         global pup
-        pup = tk.Toplevel(bg="lightyellow")
+        pup = tk.Toplevel(bg="lightyellow") # maybe set the geometry as well ... 
+        pup.overrideredirect(1) # this is meant to remove the window decoration
         pup.pupmsg = tk.StringVar()
-        pup.puplab = tk.Label(pup, textvariable=pup.pupmsg, bg="lightyellow", width=40)
+        pup.puplab = tk.Label(pup, textvariable=pup.pupmsg, bg="lightyellow", 
+                              width=60, wraplength=600 ) # these may not be right
         pup.puplab.pack(padx=10, pady=10)
         
         pup.transient(self)
         pup.lower(self)
         pup.state("withdrawn")
-        pup.overrideredirect(True)
 
         
         # read the configuration file
