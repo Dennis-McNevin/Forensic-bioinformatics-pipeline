@@ -1,0 +1,4 @@
+tool_group	argument	label	type	editing_constraints	default	mouse_over
+input	1	Forward FASTQ	file	required	.fq;.fastq;.gz	File containing forward NGS reads in FASTQ format
+input	c	Clip  adapters	tickbox		unticked	Cut specific adapter sequences from reads
+input	s	Sliding Window	tickbox		ticked	Perform sliding window trimming
