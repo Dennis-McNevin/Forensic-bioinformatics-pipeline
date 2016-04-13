@@ -241,15 +241,15 @@ class Page(ttk.Frame):
             status('Run failed.')  
         # should re-enable the 'run' button ... 
         return
-        
+
 def help():
     "fire up a browser with the help screen"
     global myos
     
     # need to get the following right for your system configuration.
     cmds = {
-    'Darwin': "open -a 'Google Chrome.app' help.html &",
-    'Linux' : 'firefox help.html &',
+    'Darwin': "open -a 'Google Chrome.app' about.html &",
+    'Linux' : 'firefox about.html &',
     'Windows': 'echo no help here.'
     }
 
