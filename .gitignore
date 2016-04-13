@@ -3,3 +3,4 @@ test/*
 *.pyc
 *-old
 gc*
+xpix/*

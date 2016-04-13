@@ -19,7 +19,7 @@
 
 from __future__ import print_function
 
-__version__ = "0.1-a1"
+__version__ = "0.1-a2"
 __progname__ = "NGS Forensics Pipeline"
 
 status = print
@@ -38,6 +38,7 @@ def Display(event):
     w = event.widget
     if 'text' not in w.keys():
         return
+    pup.geometry("+%d+%d" % (event.x_root, event.y_root-50))
     pup.pupmsg.set(w.popup)
     pup.state("normal")
     return "break"
@@ -67,6 +68,7 @@ class ifrow:
             w0["style"] = style
         w0.grid(row=master.rows, column=0, sticky='e')
         master.vars.append(self)
+
         # if there is a mouse_over string, then remember it and
         # bind <Enter> and <Leave> callbacks.
         if cfgline.mouse_over:
@@ -169,29 +171,22 @@ class pipesect(ttk.Frame):
     
 class Page(ttk.Frame):
     """
-    GUI for Forensics pipeline
-    
-    Uses Tkinter so it runs on a standard Python installation ... 
-    no extra modules needed.
+    A Notebook page for a Forensics pipeline
     """
     
     def __init__(self, master, cfg):
-        global __progname__, __version__, __imagedata__, status
-        
-        ttk.Frame.__init__(self, master, border=2)
-        mx = self
-        # mx = ttk.Frame()    # don't pack this frame ... its surrounding Notebook does that
-        # mx.pack(ipadx=10, padx=5, pady=5, ipady=5)
+        ttk.Frame.__init__(self, master)    # border=?
+        # don't pack this frame ... its surrounding Notebook does that
                 
-        wfunc = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
+        wfunc   = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
 
         cfglabs = ['group', 'flag', 'label', 'type', 'constraint', \
                         'default', 'mouse_over' ]
-        cfglen  =len(cfglabs)
+        cfglen  = len(cfglabs)
         Cfgline = collections.namedtuple('Cfgline', cfglabs)
         
         self.fv = []    # Frames vector/list - needed to get pipe-section arguments
-        self.run_pipeline = cfg.run_pipeline
+        self.pipeline = cfg.run_pipeline
         
         # read the configuration file
         # there's a header line, then a series of lines describing the App parameters.
@@ -211,7 +206,7 @@ class Page(ttk.Frame):
                     lxfirst = False
                     continue
                 if not (m and m.label==fld[0]): # column 0? Start a new pipe-section ... 
-                    m = pipesect(mx, fld[0])    # start a new pipe section
+                    m = pipesect(self, fld[0])  # start a new pipe section
                     self.fv.append(m)           # add this pipe-section to the frames-vector
                     
                 if len(fld)<cfglen:
@@ -221,9 +216,9 @@ class Page(ttk.Frame):
                 wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
         
         status("done reading config file:", cfg.filename)
-        ttk.Separator(mx, orient="horizontal").pack(pady=2)
+        # ttk.Separator(self, orient="horizontal").pack(pady=2)
         
-        w = ttk.Button(mx, text="Run", style="R.TButton", command=self.run)
+        w = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
         w.pack(pady=10)
         return
 
@@ -236,11 +231,35 @@ class Page(ttk.Frame):
         try:
             argdict = dict(f.getflags() for f in self.fv)
             status('Running ...')
-            self.run_pipeline(argdict)
+            self.pipeline(argdict)
             status('Done Run.')
         except:
             status('Run failed.')  
         # should re-enable the 'run' button ... 
+        return
+        
+class HomePage(ttk.Frame):
+    """The Home tab ... pretty graphics and text."""
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master, border=2)
+        
+        tm = """This forensics bioinfomatics pipeline was jointly funded by the US Defence Forensics Science Centre and the Department of Army Research,
+Development and Engineering Command (ITC-PAC). It was developed by the National Centre for Forensic Studies at the University of Canberra in
+collaboration with: Australian National University, Bioinformatics Consultancy; Victoria Police Forensic Services Department (Office of the
+Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australian Federal Police (Forensics)"""
+        
+        self.img1 = tk.PhotoImage( master=self, file="pix/welcome_image_sm.gif" )
+        self.img2 = tk.PhotoImage( master=self, file="pix/welcome_ncfs_sm.gif" )
+        self.img3 = tk.PhotoImage( master=self, file="pix/welcome_uc_sm.gif" )
+        
+        ttk.Label(self, image=self.img1).pack()
+        ttk.Label(self, text=tm).pack(pady=10)       
+        ttk.Button(self, text="About").pack(pady=10)
+        f2 = ttk.Frame(self)
+        f2.pack()
+        ttk.Label(f2, image=self.img2).pack(side=tk.LEFT, padx=10)
+        ttk.Label(f2, image=self.img3).pack(side=tk.LEFT, padx=10)       
+        
         return
                 
 Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline"])
@@ -255,6 +274,8 @@ class App(ttk.Frame):
     
     def __init__(self, master):
         "set up the UI for the whole Notebook"
+        global __progname__, __version__, __imagedata__, status
+        
         ttk.Frame.__init__(self, master, border=2)
         
         sx=ttk.Style()
@@ -278,11 +299,11 @@ class App(ttk.Frame):
         pup.state("withdrawn")
 
         # create a Notebook for the Application ... 
-        mz = ttk.Frame(master)
-        mz.pack()
+        #mz = ttk.Frame(master)
+        #mz.pack()
         # ttk.Label(mz, text="Label 0").pack()
-        nb = ttk.Notebook(mz)
-        nb.pack()
+        nb = ttk.Notebook(master)
+        nb.pack(padx=5, pady=5)
         # the GUI ... 
         # self.img = tk.PhotoImage(data=__imagedata__)    # this must be kept in memory!
         # del __imagedata__   # dispose of the big string!
@@ -301,6 +322,7 @@ class App(ttk.Frame):
         self.sbprev ="\n"
         self.sb = tk.Label(sf, textvariable=self.sbvar, background=sc)
         self.sb.pack(fill=tk.X, side=tk.LEFT)
+        
         def setsb(*txt, **kw):
             res = self.sbvar.get() if self.sbprev=="" else ''
             self.sbprev = kw["end"] if "end" in kw else "\n"
@@ -313,6 +335,8 @@ class App(ttk.Frame):
         status = setsb
         
         # setup Notebook pages
+        fp = HomePage(nb)
+        nb.add(fp, text="Home")
         for xargs in appPages.pages:
             cfg = Cfgs(*xargs)
             np = Page(nb, cfg)
