@@ -24,11 +24,15 @@ __progname__ = "NGS Forensics Pipeline"
 
 status = print
 
+import platform
+myos = platform.system()
+
 import Tkinter as tk
 import tkFileDialog
 import tkMessageBox
 import ttk
 import collections
+import subprocess
 
 import appPages 
 
@@ -238,6 +242,20 @@ class Page(ttk.Frame):
         # should re-enable the 'run' button ... 
         return
         
+def help():
+    "fire up a browser with the help screen"
+    global myos
+    
+    # need to get the following right for your system configuration.
+    cmds = {
+    'Darwin': "open -a 'Google Chrome.app' help.html &",
+    'Linux' : 'firefox help.html &',
+    'Windows': 'echo no help here.'
+    }
+
+    subprocess.call(cmds[myos], shell=True)
+    return
+    
 class HomePage(ttk.Frame):
     """The Home tab ... pretty graphics and text."""
     def __init__(self, master):
@@ -254,13 +272,14 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         
         ttk.Label(self, image=self.img1).pack()
         ttk.Label(self, text=tm).pack(pady=10)       
-        ttk.Button(self, text="About").pack(pady=10)
+        ttk.Button(self, text="About", command=help).pack(pady=10)
         f2 = ttk.Frame(self)
         f2.pack()
         ttk.Label(f2, image=self.img2).pack(side=tk.LEFT, padx=10)
         ttk.Label(f2, image=self.img3).pack(side=tk.LEFT, padx=10)       
         
         return
+    
                 
 Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline"])
 
