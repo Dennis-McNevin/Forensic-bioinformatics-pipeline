@@ -5,24 +5,29 @@
         John Curtin School of Medical Research, Australian National University
     4-APR-2016
     
-    This program reads a configuration file cfg.tab (tab separated descriptors)
-    and builds a dictionary that conatins run arguments.
+    This program imports the appPages module and uses its contents to build a
+    user interface. There are multiple configuration files that describe pipeline
+    pages in a "notebook" style interface.
     
-    When the 'run' button is pressed, it calls an external procedure run_pipeline(argdict)
-    that hopefully does the work.
+    There's an initial home page.
+    
+    When the 'run' button is pressed, it calls an external procedure 
+    run_pipeline(argdict, progress=None) that hopefully does the work.
     
     To do:
         - maybe add a menu bar
-        - maybe, display progress ... in a progress bar? 
+        - maybe, add status to the progress bar interface so pipelines can display
+          status updates.
     
 """
 
 from __future__ import print_function
 
-__version__ = "0.1-a2"
+__version__ = "0.1-a3"
 __progname__ = "NGS Forensics Pipeline"
 
 status = print
+progbar = None
 
 import platform
 myos = platform.system()
@@ -34,7 +39,8 @@ import ttk
 import collections
 import subprocess
 
-import appPages 
+import appPages
+import SplashScreen as ss 
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -172,15 +178,31 @@ class pipesect(ttk.Frame):
     
     def getflags(self):
         return self.label, dict(a.myflags() for a in self.vars)
+        
+class MyProgBar(ttk.Progressbar):
+    "progress bar ... ends at maximum (no reset - call stop() to reset)"    
+    def end(self):
+        self["value"]=self["maximum"]
+        self.update()
+        return
+        
+    def step(self, x):
+        mx = self["maximum"]
+        self["value"] += x
+        if self["value"]>=mx:
+            self["value"] = mx
+        # ttk.Progressbar.step(self, x)
+        self.update()
+        return
     
 class Page(ttk.Frame):
     """
     A Notebook page for a Forensics pipeline
     """
     
-    def __init__(self, master, cfg):
-        ttk.Frame.__init__(self, master)    # border=?
-        # don't pack this frame ... its surrounding Notebook does that
+    def __init__(self, nb, cfg):
+        ttk.Frame.__init__(self, nb)    # border=?
+        nb.add(self, text=cfg.tabname)  # instead of pack or grid
                 
         wfunc   = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
 
@@ -227,39 +249,43 @@ class Page(ttk.Frame):
         return
 
     def run(self):
-        global status
+        global status, progbar, progvar
         "collect the arguments from the GUI widgets and call the processing function"
         # OK ... it's time to do the work!
         # should disable the 'run' button
         status('Doing Run button.')
         try:
+            progbar.stop()  # resets to empty
+            progbar.update()
             argdict = dict(f.getflags() for f in self.fv)
             status('Running ...')
-            self.pipeline(argdict)
+            self.pipeline(argdict, progress=progbar)
+            progbar.end()
             status('Done Run.')
         except:
             status('Run failed.')  
         # should re-enable the 'run' button ... 
         return
 
-def help():
+def browseOpen(url):
     "fire up a browser with the help screen"
     global myos
     
     # need to get the following right for your system configuration.
     cmds = {
-    'Darwin': "open -a 'Google Chrome.app' about.html &",
-    'Linux' : 'firefox about.html &',
-    'Windows': 'echo no help here.'
+    'Darwin': "open -a 'Google Chrome.app' %s &",
+    'Linux' : 'firefox %s &',
+    'Windows': 'echo no help with %s here.'
     }
 
-    subprocess.call(cmds[myos], shell=True)
+    subprocess.call(cmds[myos]%url, shell=True)
     return
     
 class HomePage(ttk.Frame):
     """The Home tab ... pretty graphics and text."""
-    def __init__(self, master):
-        ttk.Frame.__init__(self, master, border=2)
+    def __init__(self, nb):
+        ttk.Frame.__init__(self, nb, border=2)
+        nb.add(self, text="Home")
         
         tm = """This forensics bioinfomatics pipeline was jointly funded by the US Defence Forensics Science Centre and the Department of Army Research,
 Development and Engineering Command (ITC-PAC). It was developed by the National Centre for Forensic Studies at the University of Canberra in
@@ -270,13 +296,17 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         self.img2 = tk.PhotoImage( master=self, file="pix/welcome_ncfs_sm.gif" )
         self.img3 = tk.PhotoImage( master=self, file="pix/welcome_uc_sm.gif" )
         
-        ttk.Label(self, image=self.img1).pack()
-        ttk.Label(self, text=tm).pack(pady=10)       
-        ttk.Button(self, text="About", command=help).pack(pady=10)
+        ttk.Label(self, image=self.img1, style="HP.TLabel").pack()
+        ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
+        f1 = ttk.Frame(self)
+        ttk.Button(f1, text="About", command=lambda : browseOpen("about.html")).pack(side=tk.LEFT, pady=20)
+        ttk.Button(f1, text="Help", command=lambda : browseOpen("help.html")).pack(side=tk.LEFT, pady=20)
+        ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20)
+        f1.pack()
         f2 = ttk.Frame(self)
         f2.pack()
-        ttk.Label(f2, image=self.img2).pack(side=tk.LEFT, padx=10)
-        ttk.Label(f2, image=self.img3).pack(side=tk.LEFT, padx=10)       
+        ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
+        ttk.Label(f2, image=self.img3, style="HP.TLabel").pack(side=tk.LEFT, padx=10)       
         
         return
     
@@ -293,7 +323,7 @@ class App(ttk.Frame):
     
     def __init__(self, master):
         "set up the UI for the whole Notebook"
-        global __progname__, __version__, __imagedata__, status
+        global __progname__, __version__, __imagedata__, status, progbar, progvar
         
         ttk.Frame.__init__(self, master, border=2)
         
@@ -301,6 +331,7 @@ class App(ttk.Frame):
         sx.configure(".", font="Ariel 12")
         sx.configure("M.TLabel", foreground='darkblue', font="Georgia 14 italic" )
         sx.configure("R.TLabel", foreground="black", font="Ariel 12 bold")  # for required fields
+        sx.configure("HP.TLabel", background="white", foreground="darkblue", font="Ariel 10 italic")
         sx.map("R.TButton", background=[("disabled", "salmon"), ("active", "yellowgreen")])
         # sx.configure("TNotebook", background="salmon")
         
@@ -318,18 +349,16 @@ class App(ttk.Frame):
         pup.state("withdrawn")
 
         # create a Notebook for the Application ... 
-        #mz = ttk.Frame(master)
-        #mz.pack()
-        # ttk.Label(mz, text="Label 0").pack()
         nb = ttk.Notebook(master)
         nb.pack(padx=5, pady=5)
-        # the GUI ... 
-        # self.img = tk.PhotoImage(data=__imagedata__)    # this must be kept in memory!
-        # del __imagedata__   # dispose of the big string!
         
-        # make a status bar at the bottom
+        # make a progress bar and a status bar at the bottom
         # using tk (instead of ttk) so we can set the colour ... 
         # can't get ttk styles to work sufficiently on a Mac
+        pb = MyProgBar(master, mode='determinate',
+                             orient=tk.HORIZONTAL)
+        pb.pack(fill=tk.X, padx=5, pady=5)
+        progbar = pb
         
         sc = "peachpuff" # status background colour
         sf = tk.Frame(master, background=sc, border=2, relief="sunken")
@@ -350,16 +379,14 @@ class App(ttk.Frame):
             res += ' '.join(str(s) for s in txt)    # make into strings and append
             self.sbvar.set(res)
             self.update()
+            return
 
         status = setsb
         
         # setup Notebook pages
-        fp = HomePage(nb)
-        nb.add(fp, text="Home")
+        HomePage(nb)
         for xargs in appPages.pages:
-            cfg = Cfgs(*xargs)
-            np = Page(nb, cfg)
-            nb.add(np, text=cfg.tabname)
+            Page(nb, Cfgs(*xargs))
             
         status("awaiting user activity.")
         return
@@ -369,6 +396,8 @@ def win():
     global __progname__
     root = tk.Tk()
     root.title(__progname__)
+    
+    ss.SplashScreen(root, imageFilename='my.gif', text="NGS Forensics Pipelines")
     app = App(root)
     app.mainloop()
     root.quit()
@@ -378,7 +407,6 @@ def ignore (*args, **kw):
     return
     
 if __name__ == "__main__":
-    # status (sys.argv[0], 'starting.')
     ## embed
 #    import base64
 #    with open('getcore.gif','rb') as src:    

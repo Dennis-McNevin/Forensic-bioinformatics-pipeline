@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+Splash Screen module for Tkinter
+Bob Buckley. ANU Bioinformatics Consultancy
+   20-MAR-2016
+
+Module to display an image in the middle of the screen
+while an application starts up.
+"""
 
 import Tkinter as tk
 import time
@@ -67,15 +75,16 @@ class SplashScreen(tk.Toplevel):
 #--------------------------------------------
 # Now putting up splash screens is simple
 
-# Create the tkRoot window
-r = tk.Tk( )
-
-tm = "ForensiX by ANU Bioinformatics Consultancy"
-SplashScreen( r, imageFilename='my.gif', text=tm,  minSplashTime=3 )
-
-r.geometry(geocentre(r, 600, 400))
-tk.Label(r, text="My application window", bg="lightgreen").pack(padx=20, pady=30)
-
-print "winfo: ", r.winfo_width(), r.winfo_height()
-
-r.mainloop( )
+if __name__ == "__main__":
+    # Create the tkRoot window
+    r = tk.Tk( )
+    
+    tm = "ForensiX by ANU Bioinformatics Consultancy"
+    SplashScreen( r, imageFilename='my.gif', text=tm,  minSplashTime=3 )
+    
+    r.geometry(geocentre(r, 600, 400))
+    tk.Label(r, text="My application window", bg="lightgreen").pack(padx=20, pady=30)
+    
+    print "winfo: ", r.winfo_width(), r.winfo_height()
+    
+    r.mainloop( )
