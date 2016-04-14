@@ -182,17 +182,24 @@ class pipesect(ttk.Frame):
 class MyProgBar(ttk.Progressbar):
     "progress bar ... ends at maximum (no reset - call stop() to reset)"    
     def end(self):
+        "show a completed progress bar"
         self["value"]=self["maximum"]
         self.update()
         return
         
     def step(self, x):
+        "override step() ... that stops at the maximum value"
         mx = self["maximum"]
         self["value"] += x
         if self["value"]>=mx:
             self["value"] = mx
         # ttk.Progressbar.step(self, x)
         self.update()
+        return
+    
+    def status(self, *args, **kw):
+        "update the application's status message ... args are converted to strings."
+        self.statfunc(*args, **kw)
         return
     
 class Page(ttk.Frame):
@@ -249,10 +256,10 @@ class Page(ttk.Frame):
         return
 
     def run(self):
-        global status, progbar, progvar
+        global status, progbar
         "collect the arguments from the GUI widgets and call the processing function"
         # OK ... it's time to do the work!
-        # should disable the 'run' button
+        # should disable the 'run' button?
         status('Doing Run button.')
         try:
             progbar.stop()  # resets to empty
@@ -264,7 +271,7 @@ class Page(ttk.Frame):
             status('Done Run.')
         except:
             status('Run failed.')  
-        # should re-enable the 'run' button ... 
+        # should re-enable the 'run' button ... ?
         return
 
 def browseOpen(url):
@@ -380,6 +387,7 @@ class App(ttk.Frame):
             self.sbvar.set(res)
             self.update()
             return
+        pb.statfunc = setsb
 
         status = setsb
         
