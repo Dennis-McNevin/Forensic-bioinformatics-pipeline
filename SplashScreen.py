@@ -9,6 +9,7 @@ while an application starts up.
 """
 
 import Tkinter as tk
+import ttk
 import time
 
 def geocentre(w, wid, hgt):
@@ -18,7 +19,7 @@ def geocentre(w, wid, hgt):
     
 
 class SplashScreen(tk.Toplevel):
-    def __init__( self, root, imageFilename=None, text=None, minSplashTime=3 ):
+    def __init__( self, root, imageFilename=None, text=None, minSplashTime=3, progbar=False ):
         bd = 5  # bigger than default border
         tk.Toplevel.__init__(self, root, bd=bd, bg="black")
         self.overrideredirect(1)
@@ -27,6 +28,7 @@ class SplashScreen(tk.Toplevel):
         self.root = root
         assert imageFilename
         self.image = tk.PhotoImage(master=self, file=imageFilename )
+        self.pb = None
       
         root.after(int(minSplashTime*1000), self.finish)
       
@@ -51,6 +53,12 @@ class SplashScreen(tk.Toplevel):
         if text:
             tk.Label( self, text=text ).pack(fill=tk.X)
 
+        if progbar:
+            pb = ttk.Progressbar(self, maximum=minSplashTime*20)
+            pb.pack(fill=tk.X)
+            self.pb = pb
+            pb.start()
+
         # Force Tk to draw the splash screen outside of mainloop()
         self.update( )
         return
@@ -60,6 +68,8 @@ class SplashScreen(tk.Toplevel):
         timeNow = time.time()
         if timeNow < self.minSplashTime:
             time.sleep( self.minSplashTime - timeNow )
+        if self.pb:
+            self.pb.stop()
       
         # Destroy the splash window
         self.destroy( )
@@ -80,7 +90,7 @@ if __name__ == "__main__":
     r = tk.Tk( )
     
     tm = "ForensiX by ANU Bioinformatics Consultancy"
-    SplashScreen( r, imageFilename='my.gif', text=tm,  minSplashTime=3 )
+    SplashScreen( r, imageFilename='my.gif', text=tm, progbar=True )
     
     r.geometry(geocentre(r, 600, 400))
     tk.Label(r, text="My application window", bg="lightgreen").pack(padx=20, pady=30)

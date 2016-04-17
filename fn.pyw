@@ -12,12 +12,12 @@
     There's an initial home page.
     
     When the 'run' button is pressed, it calls an external procedure 
-    run_pipeline(argdict, progress=None) that hopefully does the work.
+    that is set up in the appPages module. The demo appPages module uses the 
+    dummy.py module. dummy.py shows how a pileline module is setup and can
+    show it's progress and status in the GUI status region. 
     
     To do:
         - maybe add a menu bar
-        - maybe, add status to the progress bar interface so pipelines can display
-          status updates.
     
 """
 
@@ -33,9 +33,9 @@ import platform
 myos = platform.system()
 
 import Tkinter as tk
+import ttk
 import tkFileDialog
 import tkMessageBox
-import ttk
 import collections
 import subprocess
 
@@ -306,10 +306,10 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         ttk.Label(self, image=self.img1, style="HP.TLabel").pack()
         ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
         f1 = ttk.Frame(self)
+        f1.pack(padx=30)
         ttk.Button(f1, text="About", command=lambda : browseOpen("about.html")).pack(side=tk.LEFT, pady=20)
         ttk.Button(f1, text="Help", command=lambda : browseOpen("help.html")).pack(side=tk.LEFT, pady=20)
         ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20)
-        f1.pack()
         f2 = ttk.Frame(self)
         f2.pack()
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
@@ -405,7 +405,8 @@ def win():
     root = tk.Tk()
     root.title(__progname__)
     
-    ss.SplashScreen(root, imageFilename='my.gif', text="NGS Forensics Pipelines")
+    ss.SplashScreen(root, imageFilename='my.gif', text="NGS Forensics Pipelines",
+                    minSplashTime=40, progbar=True)
     app = App(root)
     app.mainloop()
     root.quit()
