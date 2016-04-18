@@ -3,6 +3,9 @@
 # import each of your python pipeline modules ...
 
 import dummy
+import dummystart as begin
+
+main = begin.main
 
 # tuples specify Pages in the Application
 # 1. Text to appear in the Tab in the application
