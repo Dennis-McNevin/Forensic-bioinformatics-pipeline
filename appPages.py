@@ -6,6 +6,7 @@ import dummy
 import dummystart as begin
 
 main = begin.main
+sstime = begin.sstime
 
 # tuples specify Pages in the Application
 # 1. Text to appear in the Tab in the application
