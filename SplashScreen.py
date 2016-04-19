@@ -10,6 +10,7 @@ while an application starts up.
 
 import Tkinter as tk
 import ttk
+import StatusProgress as sp
 import time
 
 def geocentre(w, wid, hgt):
@@ -19,7 +20,8 @@ def geocentre(w, wid, hgt):
     
 
 class SplashScreen(tk.Toplevel):
-    def __init__( self, root, imageFilename=None, text=None, minSplashTime=3, progbar=False ):
+    def __init__( self, root, imageFilename=None, text=None, minSplashTime=3, 
+                 progbar=False, start=None ):
         bd = 5  # bigger than default border
         tk.Toplevel.__init__(self, root, bd=bd, bg="black")
         self.overrideredirect(1)
@@ -49,13 +51,13 @@ class SplashScreen(tk.Toplevel):
 
         # Create the splash screen      
         self.geometry( '+%d+%d' % (imgXPos, imgYPos) )
-        tk.Label( self, image=self.image, cursor='watch' ).pack( )
+        ttk.Label( self, image=self.image, cursor='watch' ).pack( )
         if text:
-            tk.Label( self, text=text ).pack(fill=tk.X)
+            ttk.Label( self, text=text ).pack(fill=tk.X)
 
         if progbar:
-            pb = ttk.Progressbar(self, maximum=minSplashTime*20)
-            pb.pack(fill=tk.X)
+            pb = sp.StatusProgress(self, maximum=minSplashTime*20)
+            pb.pack(fill=tk.X, side=tk.BOTTOM)
             self.pb = pb
             pb.start()
 
@@ -87,11 +89,20 @@ class SplashScreen(tk.Toplevel):
 
 if __name__ == "__main__":
     # Create the tkRoot window
+        
     r = tk.Tk( )
     
     tm = "ForensiX by ANU Bioinformatics Consultancy"
-    SplashScreen( r, imageFilename='my.gif', text=tm, progbar=True )
-    
+    mst=3
+    ss = SplashScreen( r, imageFilename='my.gif', text=tm, minSplashTime=mst, progbar=True )
+    mypb = ss.pb
+    for i in range(mst):
+        if mypb is not None:
+            mypb.status("Step", i+1)
+            mypb.step(33)
+        time.sleep(1)
+    ss.finish()
+        
     r.geometry(geocentre(r, 600, 400))
     tk.Label(r, text="My application window", bg="lightgreen").pack(padx=20, pady=30)
     

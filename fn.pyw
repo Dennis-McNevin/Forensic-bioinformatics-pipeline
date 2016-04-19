@@ -406,8 +406,7 @@ def win():
     root.title(__progname__)
     
     ss.SplashScreen(root, imageFilename='my.gif', text="NGS Forensics Pipelines",
-                    minSplashTime=appPages.sstime, progbar=True)
-    appPages.main()
+                    progbar=True, start=appPages.main)
     app = App(root)
     app.mainloop()
     root.quit()
