@@ -23,11 +23,10 @@
 
 from __future__ import print_function
 
-__version__ = "0.1-a3"
+__version__ = "0.1-a4"
 __progname__ = "NGS Forensics Pipeline"
 
-status = print
-progbar = None
+progbar = None  # global variable - for the application's progress bar
 
 import platform
 myos = platform.system()
@@ -40,7 +39,8 @@ import collections
 import subprocess
 
 import appPages
-import SplashScreen as ss 
+import SplashScreen as ss
+import StatusProgress as sp 
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -179,29 +179,6 @@ class pipesect(ttk.Frame):
     def getflags(self):
         return self.label, dict(a.myflags() for a in self.vars)
         
-class MyProgBar(ttk.Progressbar):
-    "progress bar ... ends at maximum (no reset - call stop() to reset)"    
-    def end(self):
-        "show a completed progress bar"
-        self["value"]=self["maximum"]
-        self.update()
-        return
-        
-    def step(self, x):
-        "override step() ... that stops at the maximum value"
-        mx = self["maximum"]
-        self["value"] += x
-        if self["value"]>=mx:
-            self["value"] = mx
-        # ttk.Progressbar.step(self, x)
-        self.update()
-        return
-    
-    def status(self, *args, **kw):
-        "update the application's status message ... args are converted to strings."
-        self.statfunc(*args, **kw)
-        return
-    
 class Page(ttk.Frame):
     """
     A Notebook page for a Forensics pipeline
@@ -248,7 +225,7 @@ class Page(ttk.Frame):
                 cx = Cfgline(*tuple(fld))  # make named tuple from config line
                 wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
         
-        status("done reading config file:", cfg.filename)
+        progbar.status("done reading config file:", cfg.filename)
         # ttk.Separator(self, orient="horizontal").pack(pady=2)
         
         w = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
@@ -256,21 +233,21 @@ class Page(ttk.Frame):
         return
 
     def run(self):
-        global status, progbar
+        global progbar
         "collect the arguments from the GUI widgets and call the processing function"
         # OK ... it's time to do the work!
         # should disable the 'run' button?
-        status('Doing Run button.')
+        progbar.status('Doing Run button.')
         try:
             progbar.stop()  # resets to empty
             progbar.update()
             argdict = dict(f.getflags() for f in self.fv)
-            status('Running ...')
+            progbar.status('Running ...')
             self.pipeline(argdict, progress=progbar)
             progbar.end()
-            status('Done Run.')
+            progbar.status('Done Run.')
         except:
-            status('Run failed.')  
+            progbar.status('Run failed.')  
         # should re-enable the 'run' button ... ?
         return
 
@@ -330,7 +307,7 @@ class App(ttk.Frame):
     
     def __init__(self, master):
         "set up the UI for the whole Notebook"
-        global __progname__, __version__, __imagedata__, status, progbar, progvar
+        global __progname__, __version__, __imagedata__, progbar
         
         ttk.Frame.__init__(self, master, border=2)
         
@@ -360,43 +337,18 @@ class App(ttk.Frame):
         nb.pack(padx=5, pady=5)
         
         # make a progress bar and a status bar at the bottom
-        # using tk (instead of ttk) so we can set the colour ... 
-        # can't get ttk styles to work sufficiently on a Mac
-        pb = MyProgBar(master, mode='determinate',
+        pb = sp.StatusProgress(master, mode='determinate',
                              orient=tk.HORIZONTAL)
         pb.pack(fill=tk.X, padx=5, pady=5)
         progbar = pb
-        
-        sc = "peachpuff" # status background colour
-        sf = tk.Frame(master, background=sc, border=2, relief="sunken")
-        sf.pack(fill=tk.X, padx=5, pady=5)
-        sblab = tk.Label(sf, text="status:", border=2, background=sc)
-        sblab.pack(side=tk.LEFT)        
-        
-        self.sbvar = tk.StringVar()
-        self.sbprev ="\n"
-        self.sb = tk.Label(sf, textvariable=self.sbvar, background=sc)
-        self.sb.pack(fill=tk.X, side=tk.LEFT)
-        
-        def setsb(*txt, **kw):
-            res = self.sbvar.get() if self.sbprev=="" else ''
-            self.sbprev = kw["end"] if "end" in kw else "\n"
-            if res:
-                res += ' '
-            res += ' '.join(str(s) for s in txt)    # make into strings and append
-            self.sbvar.set(res)
-            self.update()
-            return
-        pb.statfunc = setsb
-
-        status = setsb
+        #status = pb.status
         
         # setup Notebook pages
         HomePage(nb)
         for xargs in appPages.pages:
             Page(nb, Cfgs(*xargs))
             
-        status("awaiting user activity.")
+        pb.status("awaiting user activity.")
         return
         
 def win():
