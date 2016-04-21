@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# import each of your python pipeline modules ...
+"""
+This module links fn.pyw to initiation and pileline modules.
+
+This version works with the very simple demo code in dummystart.py and dummy.py
+Create a new version of this for real applications.
+The fn.pyw code accesses the three variables defined in this module.
+"""
 
 import dummy
 import dummystart as begin
 
-main = begin.main
-sstime = begin.sstime
+main = begin.main # this procedure is called while the splash screen is being displayed
+sstime = begin.sstime # the minimum splash screen time (in seconds)
 
 # tuples specify Pages in the Application
 # 1. Text to appear in the Tab in the application

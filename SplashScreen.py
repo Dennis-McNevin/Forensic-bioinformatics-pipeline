@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Splash Screen module for Tkinter
+Splash Screen module for Tkinter and ttk
 Bob Buckley. ANU Bioinformatics Consultancy
    20-MAR-2016
 
@@ -10,8 +10,8 @@ while an application starts up.
 
 import Tkinter as tk
 import ttk
-import StatusProgress as sp
 import time
+import StatusProgress as sp
 
 def geocentre(w, wid, hgt):
     sw = w.winfo_screenwidth()
@@ -20,6 +20,12 @@ def geocentre(w, wid, hgt):
     
 
 class SplashScreen(tk.Toplevel):
+    """
+    Create and display a splash screen for an application.
+    
+    Using it's own Toplevel window.
+    """
+    
     def __init__( self, root, imageFilename=None, text=None, minSplashTime=3, 
                  progbar=False, start=None ):
         bd = 5  # bigger than default border
@@ -66,10 +72,15 @@ class SplashScreen(tk.Toplevel):
         return
    
     def finish( self):
+        """Finish the splash screen time, if a further delay is needed.
+        Then destroy the toplevel widget.
+        """
+        
         # Make sure the minimum splash time has elapsed
         timeNow = time.time()
         if timeNow < self.minSplashTime:
             time.sleep( self.minSplashTime - timeNow )
+        # stop the progress bar ... if it's running
         if self.pb:
             self.pb.stop()
       
@@ -88,7 +99,7 @@ class SplashScreen(tk.Toplevel):
 # Now putting up splash screens is simple
 
 if __name__ == "__main__":
-    # Create the tkRoot window
+    # Create a tkRoot window for the demo app
         
     r = tk.Tk( )
     

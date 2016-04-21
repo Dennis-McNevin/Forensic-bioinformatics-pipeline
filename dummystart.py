@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+Code that runs while the application's splash screen is being displayed.
+It can update the progress bar and status.
+This just xemonstrates what can be done. Normally it will do stuff like starting
+background daemons and preparing the application environment.
+"""
 
 # import subprocess
 import time

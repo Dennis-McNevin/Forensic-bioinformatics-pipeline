@@ -16,20 +16,21 @@
     dummy.py module. dummy.py shows how a pileline module is setup and can
     show it's progress and status in the GUI status region. 
     
-    To do:
-        - maybe add a menu bar
-    
+    There's splash screen that allows startup code to run in the background ... 
+    see dummystart.py
 """
 
 from __future__ import print_function
 
-__version__ = "0.1-a4"
+__version__ = "0.1-b1"
 __progname__ = "NGS Forensics Pipeline"
 
 progbar = None  # global variable - for the application's progress bar
 
 import platform
 myos = platform.system()
+import os
+cwd = os.getcwd()
 
 import Tkinter as tk
 import ttk
@@ -38,9 +39,10 @@ import tkMessageBox
 import collections
 import subprocess
 
-import appPages
 import SplashScreen as ss
 import StatusProgress as sp 
+
+import appPages
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -89,6 +91,7 @@ class ifrow:
         return
     
     def myflags(self):
+        "return the flag and its value"
         return self.flg, self.var.get()
     
 class ivar(ifrow):
@@ -156,6 +159,7 @@ class fvar(ifrow):
         return
     
     def myflags(self):
+        "return the flag and its value - message and raise an exception if a required value is absent"
         s = self.var.get()
         if self.required and not s:
             tkMessageBox.showerror("Missing filename", "Please select a filename for\n%s." % self.label)
@@ -177,6 +181,7 @@ class pipesect(ttk.Frame):
         return
     
     def getflags(self):
+        "get the label and a Python dictionary of flags and their values"
         return self.label, dict(a.myflags() for a in self.vars)
         
 class Page(ttk.Frame):
@@ -226,33 +231,32 @@ class Page(ttk.Frame):
                 wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
         
         progbar.status("done reading config file:", cfg.filename)
-        # ttk.Separator(self, orient="horizontal").pack(pady=2)
         
-        w = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
-        w.pack(pady=10)
+        self.runButton = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
+        self.runButton.pack(pady=10)
         return
 
     def run(self):
         global progbar
         "collect the arguments from the GUI widgets and call the processing function"
         # OK ... it's time to do the work!
-        # should disable the 'run' button?
-        progbar.status('Doing Run button.')
+        self.runButton.configure(state=tk.DISABLED)
+        progbar.status('start running.')
         try:
             progbar.stop()  # resets to empty
             progbar.update()
             argdict = dict(f.getflags() for f in self.fv)
-            progbar.status('Running ...')
+            progbar.status('running ...')
             self.pipeline(argdict, progress=progbar)
             progbar.end()
-            progbar.status('Done Run.')
+            progbar.status('Done.')
         except:
             progbar.status('Run failed.')  
-        # should re-enable the 'run' button ... ?
+        self.runButton.configure(state=tk.NORMAL)
         return
 
 def browseOpen(url):
-    "fire up a browser with the help screen"
+    "fire up a browser window/tab with the specified URL open"
     global myos
     
     # need to get the following right for your system configuration.
@@ -284,9 +288,12 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
         f1 = ttk.Frame(self)
         f1.pack(padx=30)
-        ttk.Button(f1, text="About", command=lambda : browseOpen("about.html")).pack(side=tk.LEFT, pady=20)
-        ttk.Button(f1, text="Help", command=lambda : browseOpen("help.html")).pack(side=tk.LEFT, pady=20)
-        ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20)
+        ttk.Button(f1, text="About", command=lambda : browseOpen("file://"+cwd+"/about.html")).pack(side=tk.LEFT, pady=20, padx=50)
+        if os.path.isfile("help.html"): # no button unless the help file exists
+            ttk.Button(f1, text="Help", command=lambda : browseOpen("file://"+cwd+"/help.html")).pack(side=tk.LEFT, pady=20, padx=50)
+        else:
+            print("No help.html file")
+        ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
         f2 = ttk.Frame(self)
         f2.pack()
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
@@ -337,11 +344,9 @@ class App(ttk.Frame):
         nb.pack(padx=5, pady=5)
         
         # make a progress bar and a status bar at the bottom
-        pb = sp.StatusProgress(master, mode='determinate',
-                             orient=tk.HORIZONTAL)
+        pb = sp.StatusProgress(master, mode='determinate', orient=tk.HORIZONTAL)
         pb.pack(fill=tk.X, padx=5, pady=5)
         progbar = pb
-        #status = pb.status
         
         # setup Notebook pages
         HomePage(nb)
@@ -364,12 +369,5 @@ def win():
     root.quit()
     return
 
-def ignore (*args, **kw):
-    return
-    
 if __name__ == "__main__":
-    ## embed
-#    import base64
-#    with open('getcore.gif','rb') as src:    
-#        __imagedata__ = base64.b64encode(src.read())
     win()

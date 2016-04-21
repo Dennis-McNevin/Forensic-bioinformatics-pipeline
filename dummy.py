@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This is a stub module for testing fn.pyw
+This is a demo module for testing fn.pyw
+and to show what can be done ... with the progress bar and status.
 """
 import time
 def run_pipeline(argdict, progress=None):
