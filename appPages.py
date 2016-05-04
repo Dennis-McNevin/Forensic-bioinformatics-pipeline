@@ -20,6 +20,7 @@ sstime = begin.sstime # the minimum splash screen time (in seconds)
 # 3. function to call when "Run" is clicked
 
 pages = [
-        ("Main", "cfg.tab", dummy.run_pipeline),
-        ("Tab #1", "cfg2.tab", dummy.run_pipeline)
+        ("Main", "cfg.tab", dummy.run_pipeline, None),
+        ("Tab #1", "cfg2.tab", dummy.run_pipeline, None),
+        ("Tab #2", "cfg3.tab", dummy.run_pipeline, [("Subtab #1", "cfg3.1.tab"), ("Subtab #2", "cfg3.2.tab")])
     ]

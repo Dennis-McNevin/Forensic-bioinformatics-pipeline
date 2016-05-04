@@ -203,37 +203,51 @@ class Page(ttk.Frame):
         self.fv = []    # Frames vector/list - needed to get pipe-section arguments
         self.pipeline = cfg.run_pipeline
         
-        # read the configuration file
-        # there's a header line, then a series of lines describing the App parameters.
+        # read the configuration file for this notebook page and it's associated pipeline code
+        # there's a header line, then a series of lines describing the pipeline's parameters.
         # It's a TAB separated file. Fields vary a bit depending on the value type.
         # The differences are handled by the various subclasses of class ifrow above ...
         # the wfunc dict maps row types to subclass constructors
         
-        with open(cfg.filename) as inp:
-            lxfirst, m = True, None
-            for lx in inp:
-                lxs = lx.rstrip()
-                if lxs=='' or lxs.startswith('#'): # drop comment or blank rows
-                    continue
-                fld = lxs.split("\t")
-                if lxfirst: # skip the header line
-                    assert len(fld)==cfglen     # check that the CFG file has the right number of fields
-                    lxfirst = False
-                    continue
-                if not (m and m.label==fld[0]): # column 0? Start a new pipe-section ... 
-                    m = pipesect(self, fld[0])  # start a new pipe section
-                    self.fv.append(m)           # add this pipe-section to the frames-vector
-                    
-                if len(fld)<cfglen:
-                    fld += [None]*(cfglen-len(fld))
-                assert len(fld)==cfglen
-                cx = Cfgline(*tuple(fld))  # make named tuple from config line
-                wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
+        fs = [(self, cfg.filename)]
+        nbx = None
+        if cfg.subtabs:
+            nbx = ttk.Notebook(self)
+            for p in cfg.subtabs:
+                nbxf = ttk.Frame(nbx)
+                nbx.add(nbxf, text=p[0])
+                fs.append((nbxf, p[1]))
         
-        progbar.status("done reading config file:", cfg.filename)
+        for myf, fn in fs:
+            progbar.status("start reading config file:", fn)
+            with open(fn) as inp:
+                lxfirst, m = True, None
+                for lx in inp:
+                    lxs = lx.rstrip()
+                    if lxs=='' or lxs.startswith('#'): # drop comment or blank rows
+                        continue
+                    fld = lxs.split("\t")
+                    if lxfirst: # skip the header line
+                        assert len(fld)==cfglen     # check that the CFG file has the right number of fields
+                        lxfirst = False
+                        continue
+                    if not (m and m.label==fld[0]): # column 0? Start a new pipe-section ... 
+                        m = pipesect(myf, fld[0])  # start a new pipe section
+                        self.fv.append(m)           # add this pipe-section to the frames-vector
+                        
+                    if len(fld)<cfglen:
+                        fld += [None]*(cfglen-len(fld))
+                    assert len(fld)==cfglen
+                    cx = Cfgline(*tuple(fld))  # make named tuple from config line
+                    wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
+        
+            progbar.status("done reading config file:", fn)
+            
+        if nbx:
+            nbx.pack(fill=tk.BOTH)
         
         self.runButton = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
-        self.runButton.pack(pady=10)
+        self.runButton.pack(pady=10, side=tk.BOTTOM)
         return
 
     def run(self):
@@ -254,6 +268,12 @@ class Page(ttk.Frame):
             progbar.status('Run failed.')  
         self.runButton.configure(state=tk.NORMAL)
         return
+
+class SimplePage(Page):
+    "A simple notebook page"
+    def __init__(self, nb, cfg):
+        Page.__init__(self, nb, cfg)
+        
 
 def browseOpen(url):
     "fire up a browser window/tab with the specified URL open"
@@ -302,7 +322,7 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         return
     
                 
-Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline"])
+Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline", "subtabs"])
 
 class App(ttk.Frame):
     """Forensics Application
