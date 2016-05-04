@@ -210,6 +210,8 @@ class Page(ttk.Frame):
         # the wfunc dict maps row types to subclass constructors
         
         fs = [(self, cfg.filename)]
+        
+        # create a Notebook if its needed for complex options
         nbx = None
         if cfg.subtabs:
             nbx = ttk.Notebook(self)
@@ -218,6 +220,10 @@ class Page(ttk.Frame):
                 nbx.add(nbxf, text=p[0])
                 fs.append((nbxf, p[1]))
         
+        # run though the configuration file(s) building the GUI for the pipelines
+        # Note: there is still just one frame-vector with argument widgets
+        # so just one dictionary is passed as a parameter to the pipeline (there is
+        # one Run button for each pipeline)
         for myf, fn in fs:
             progbar.status("start reading config file:", fn)
             with open(fn) as inp:
@@ -242,7 +248,8 @@ class Page(ttk.Frame):
                     wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
         
             progbar.status("done reading config file:", fn)
-            
+        
+        # wait to now to pack the inner notebook ... if it exists.
         if nbx:
             nbx.pack(fill=tk.BOTH)
         
@@ -268,12 +275,6 @@ class Page(ttk.Frame):
             progbar.status('Run failed.')  
         self.runButton.configure(state=tk.NORMAL)
         return
-
-class SimplePage(Page):
-    "A simple notebook page"
-    def __init__(self, nb, cfg):
-        Page.__init__(self, nb, cfg)
-        
 
 def browseOpen(url):
     "fire up a browser window/tab with the specified URL open"

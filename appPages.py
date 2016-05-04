@@ -22,5 +22,6 @@ sstime = begin.sstime # the minimum splash screen time (in seconds)
 pages = [
         ("Main", "cfg.tab", dummy.run_pipeline, None),
         ("Tab #1", "cfg2.tab", dummy.run_pipeline, None),
+        # the following line has an inner Notebook with two Tabs for more complex arguments
         ("Tab #2", "cfg3.tab", dummy.run_pipeline, [("Subtab #1", "cfg3.1.tab"), ("Subtab #2", "cfg3.2.tab")])
     ]
