@@ -1,0 +1,2 @@
+tool_group	argument	label	type	editing_constraints	default	mouse_over
+input	1	Forward FASTQ	file	required	.fq;.fastq;.gz	File containing forward NGS reads in FASTQ format
