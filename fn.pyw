@@ -382,10 +382,17 @@ def win():
     global __progname__
     root = tk.Tk()
     root.title(__progname__)
+    root.lift()
+    root.wm_attributes("-topmost", 1)   # put at the front
+    root.withdraw()
     
-    ss.SplashScreen(root, imageFilename='my.gif', text="NGS Forensics Pipelines",
-                    progbar=True, start=appPages.main)
+    ss.SplashScreen(imageFilename='my.gif', text="NGS Forensics Pipelines",
+                    progbar=True, minSplashTime=appPages.sstime, start=appPages.main)
+    
     app = App(root)
+    root.deiconify()
+    root.wm_attributes("-topmost", 0)   # allow other windows at the front
+    
     app.mainloop()
     root.quit()
     return

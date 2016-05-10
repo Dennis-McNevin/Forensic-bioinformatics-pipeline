@@ -26,26 +26,21 @@ class SplashScreen(tk.Toplevel):
     Using it's own Toplevel window.
     """
     
-    def __init__( self, root, imageFilename=None, text=None, minSplashTime=3, 
-                 progbar=False, start=None ):
-        bd = 5  # bigger than default border
-        tk.Toplevel.__init__(self, root, bd=bd, bg="black")
+    def __init__( self, imageFilename=None, text=None, minSplashTime=5, 
+                 bd=2, progbar=False, start=None ):
+                     
+        time0 = time.time()
+        tk.Toplevel.__init__(self, None, bd=bd, bg="black")
         self.overrideredirect(1)
 
         self.minSplashTime = time.time() + minSplashTime
-        self.root = root
         assert imageFilename
         self.image = tk.PhotoImage(master=self, file=imageFilename )
         self.pb = None
       
-        root.after(int(minSplashTime*1000), self.finish)
-      
-        # Remove the app window from the display
-        root.withdraw( )
-      
         # Calculate the geometry to center the splash image
-        scrnWt = root.winfo_screenwidth( )
-        scrnHt = root.winfo_screenheight( )
+        scrnWt = self.winfo_screenwidth( )
+        scrnHt = self.winfo_screenheight( )
       
         imgWt = self.image.width()
         imgHt = self.image.height()
@@ -64,59 +59,65 @@ class SplashScreen(tk.Toplevel):
         if progbar:
             pb = sp.StatusProgress(self, maximum=minSplashTime*20)
             pb.pack(fill=tk.X, side=tk.BOTTOM)
-            self.pb = pb
-            pb.start()
-
-        # Force Tk to draw the splash screen outside of mainloop()
-        self.update( )
+            self.pb = pb    # self.finish() uses this value
+            # pb.start()
+            
+        self.lift()
+        self.wm_attributes("-topmost", 1)   # put Spash Screen at the front
+        
+        # call the startup code - done while splash screen is displayed            
+        if start:
+            start(pb)
+        # schedule splash screen finish() 
+        tdiff = time.time() - time0
+        self.after(max(int((minSplashTime-tdiff)*1000), 50), self.finish)
+        
         return
    
-    def finish( self):
-        """Finish the splash screen time, if a further delay is needed.
+    def finish(self):
+        """Finish the splash screen.
         Then destroy the toplevel widget.
         """
         
-        # Make sure the minimum splash time has elapsed
-        timeNow = time.time()
-        if timeNow < self.minSplashTime:
-            time.sleep( self.minSplashTime - timeNow )
         # stop the progress bar ... if it's running
         if self.pb:
-            self.pb.stop()
-      
+            self.pb.end()
+
         # Destroy the splash window
         self.destroy( )
       
-        # Display the application window
-        self.root.deiconify( )
-        self.root.lift()
-        
         if self.image:
             del self.image
+        
         return
 
 #--------------------------------------------
 # Now putting up splash screens is simple
 
 if __name__ == "__main__":
+    
+    def ssbg(mypb=None):
+        steps=3
+        for i in range(steps):
+            if mypb is not None:
+                mypb.status("Start step", i+1, "of", steps)
+                mypb.step(33)
+            time.sleep(1)
+        mypb.status("Done.")
+        return
     # Create a tkRoot window for the demo app
         
     r = tk.Tk( )
+    r.lift()
+    r.wm_attributes("-topmost", 1)   # put at the front    
     
     tm = "ForensiX by ANU Bioinformatics Consultancy"
-    mst=3
-    ss = SplashScreen( r, imageFilename='my.gif', text=tm, minSplashTime=mst, progbar=True )
-    mypb = ss.pb
-    for i in range(mst):
-        if mypb is not None:
-            mypb.status("Step", i+1)
-            mypb.step(33)
-        time.sleep(1)
-    ss.finish()
-        
+    SplashScreen( imageFilename='my.gif', text=tm, minSplashTime=5, progbar=True, start=ssbg )
+         
     r.geometry(geocentre(r, 600, 400))
     tk.Label(r, text="My application window", bg="lightgreen").pack(padx=20, pady=30)
     
     print "winfo: ", r.winfo_width(), r.winfo_height()
-    
+
+    r.wm_attributes("-topmost", 0)   # allow other windows at front      
     r.mainloop( )

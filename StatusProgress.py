@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-A combination widget to display both a text status
-and a progress bar.
+A combination widget to display both a text status and a progress bar.
 
 based on Tkinter and ttk widgets ...
 """
@@ -45,9 +44,9 @@ class StatusProgress(tk.Frame):
         "stop progress bar and display 100% (completed)"
         pb = self.pb
         pb.stop()
-        pb["value"] = pb["maximum"]
+        pb["value"] = float(pb["maximum"])
+        pb.update()
         return
-
         
     def status(self, *args):
         "display a message in the status message ... works like print(...)"
