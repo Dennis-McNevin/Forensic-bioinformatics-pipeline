@@ -8,7 +8,9 @@ Create a new version of this for real applications.
 The fn.pyw code accesses the three variables defined in this module.
 """
 
-import dummy
+import dummy1
+import dummy2
+import dummy3
 import dummystart as begin
 
 main = begin.main # this procedure is called while the splash screen is being displayed
@@ -20,8 +22,8 @@ sstime = begin.sstime # the minimum splash screen time (in seconds)
 # 3. function to call when "Run" is clicked
 
 pages = [
-        ("Main", "cfg.tab", dummy.run_pipeline, None),
-        ("Tab #1", "cfg2.tab", dummy.run_pipeline, None),
+        ("Main", "cfg1.tab", dummy1.run_pipeline, None),
+        ("Tab #1", "cfg2.tab", dummy2.run_pipeline, None),
         # the following line has an inner Notebook with two Tabs for more complex arguments
-        ("Tab #2", "cfg3.tab", dummy.run_pipeline, [("Subtab #1", "cfg3.1.tab"), ("Subtab #2", "cfg3.2.tab")])
+        ("Tab #2", "cfg3.tab", dummy3.pipecode, [("Subtab #1", "cfg3.1.tab"), ("Subtab #2", "cfg3.2.tab")])
     ]

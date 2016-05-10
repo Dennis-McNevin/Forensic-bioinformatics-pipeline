@@ -1,5 +1,5 @@
 #id	tool_group	argument	label	type	editing_constraints	default	mouse_oover
-params	parameters 2	c	Option #3	tickbox		unticked	This is to turn on option #3
+params2	parameters 2	c	Option #3	tickbox		unticked	This is to turn on option #3
 		s	Option #4	tickbox		unticked	This will turn on option #4
-more params	more parameters	c	Option #5	tickbox		unticked	This is to turn on option #5
+params3	more parameters	c	Option #5	tickbox		unticked	This is to turn on option #5
 		s	Option #6	tickbox		unticked	This will turn on option #6
