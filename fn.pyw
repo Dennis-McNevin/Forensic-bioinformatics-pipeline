@@ -168,14 +168,14 @@ class fvar(ifrow):
 
 class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
-    def __init__(self, master, label):
+    def __init__(self, master, label, labtext):
         assert label     # our LabelFrames must have a name ...
         ttk.Frame.__init__(self, master, borderwidth=2, relief="raised") # , style="M.TFrame")
         self.pack(fill='x', padx=5, pady=5, ipadx=5) # should increment row ...
         self.label = label
         self.master = master
         self.vars = [] # a list of ifrows
-        l = ttk.Label(self, text=label, width=18, style="M.TLabel")
+        l = ttk.Label(self, text=labtext, width=18, style="M.TLabel")
         l.grid(row=0, column=0)
         self.rows = 1
         return
@@ -195,7 +195,7 @@ class Page(ttk.Frame):
                 
         wfunc   = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
 
-        cfglabs = ['group', 'flag', 'label', 'type', 'constraint', \
+        cfglabs = ['group', 'grouplab', 'flag', 'label', 'type', 'constraint', \
                         'default', 'mouse_over' ]
         cfglen  = len(cfglabs)
         Cfgline = collections.namedtuple('Cfgline', cfglabs)
@@ -227,25 +227,26 @@ class Page(ttk.Frame):
         for myf, fn in fs:
             progbar.status("start reading config file:", fn)
             with open(fn) as inp:
-                lxfirst, m = True, None
+                # fldprev is fields from the previous row ... value replace blank fields
+                # popts is the pipeline options section being constructed
+                fldprev, popts = [None]*cfglen, None
                 for lx in inp:
                     lxs = lx.rstrip()
-                    if lxs=='' or lxs.startswith('#'): # drop comment or blank rows
+                    if lxs=='' or lxs.lstrip().startswith('#'): # drop comment or blank rows
                         continue
                     fld = lxs.split("\t")
-                    if lxfirst: # skip the header line
-                        assert len(fld)==cfglen     # check that the CFG file has the right number of fields
-                        lxfirst = False
-                        continue
-                    if not (m and m.label==fld[0]): # column 0? Start a new pipe-section ... 
-                        m = pipesect(myf, fld[0])  # start a new pipe section
-                        self.fv.append(m)           # add this pipe-section to the frames-vector
-                        
                     if len(fld)<cfglen:
                         fld += [None]*(cfglen-len(fld))
+                    fld = [fx if fx else prev for fx, prev in zip(fld, fldprev)]
                     assert len(fld)==cfglen
                     cx = Cfgline(*tuple(fld))  # make named tuple from config line
-                    wfunc[cx.type](m, cx)      # generate the parameter line in the GUI
+                    if not (popts and popts.label==cx.group): # column 0? Start a new pipe-section ... 
+                        popts = pipesect(myf, cx.group, cx.grouplab)  # start a new pipe section
+                        self.fv.append(popts)           # add this pipe-section to the frames-vector
+                        
+                    print("type =", cx.type, cx)
+                    wfunc[cx.type](popts, cx)      # generate the parameter line in the GUI
+                    fldprev = fld
         
             progbar.status("done reading config file:", fn)
         

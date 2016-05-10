@@ -1,17 +1,17 @@
 # Single end Mpileup interface						
-tool_group	argument	label	type	editing_constraints	default	mouse_over
-input	1	Forward FASTQ	file	required	.fq;.fastq;.gz	File containing forward NGS reads in FASTQ format
-input	R	Custom reference	file	optional	.fa;.fasta;.gz	FASTA file for indexed custom reference (default hg19)
-QC	a	Adapter file	file		.fa;.fasta	File containing adapter sequences
-QC	c	Clip  adapters	tickbox		unticked	Cut specific adapter sequences from reads
-QC	s	Sliding Window	tickbox		ticked	Perform sliding window trimming
-QC	w	Window size	int	1-20	4	Number of bases to average across
-QC	q	Average quality	int	1-40	20	Average quality required
-QC	d	Minimum length reads	tickbox		unticked	Drop reads below a specified length
-QC	m	Minimum bases	int	1-200	20	Minimum length of reads to be kept
-mapping	p	Platform	choice	CAPILLARY;LS454;ILLUMINA;SOLID;HELICOS;IONTORRENT;PACBIO	ILLUMINA	Platform/technology used to produce sequences
-mapping	T	Score threshold	int	1-40	30	Minimum Phred score for reporting match
-mpileup	B	No BAQ	tickbox		unticked	Disable per-Base Alignment Quality
-mpileup	E	Redo BAQ	tickbox		unticked	Recalculate BAQ on the fly
-mpileup	C	Adjust MapQ	int	0-100	0	Adjust mapping quality; recommended:50, disable:0
-mpileup	l	Positions	file	optional	.bed	Call variants only in given regions in BED file
+#id	tool_group	argument	label	type	editing_constraints	default	mouse_over
+input	source files	1	Forward FASTQ	file	required	.fq;.fastq;.gz	File containing forward NGS reads in FASTQ format
+		R	Custom reference	file	optional	.fa;.fasta;.gz	FASTA file for indexed custom reference (default hg19)
+qc	Quality control	a	Adapter file	file		.fa;.fasta	File containing adapter sequences
+		c	Clip  adapters	tickbox		unticked	Cut specific adapter sequences from reads
+		s	Sliding Window	tickbox		ticked	Perform sliding window trimming
+		w	Window size	int	1-20	4	Number of bases to average across
+		q	Average quality	int	1-40	20	Average quality required
+		d	Minimum length reads	tickbox		unticked	Drop reads below a specified length
+		m	Minimum bases	int	1-200	20	Minimum length of reads to be kept
+mapping	Seq mapping	p	Platform	choice	CAPILLARY;LS454;ILLUMINA;SOLID;HELICOS;IONTORRENT;PACBIO	ILLUMINA	Platform/technology used to produce sequences
+		T	Score threshold	int	1-40	30	Minimum Phred score for reporting match
+mp	mpileup	B	No BAQ	tickbox		unticked	Disable per-Base Alignment Quality
+		E	Redo BAQ	tickbox		unticked	Recalculate BAQ on the fly
+		C	Adjust MapQ	int	0-100	0	Adjust mapping quality; recommended:50, disable:0
+		l	Positions	file	optional	.bed	Call variants only in given regions in BED file
