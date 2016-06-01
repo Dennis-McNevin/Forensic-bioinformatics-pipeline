@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 """
-    NGS Forensic GUI and Pipeline Caller
+    MPS Forensic GUI and Pipeline Caller
     author: Bob Buckley, ANU Bioinformatics Consultancy, 
-        John Curtin School of Medical Research, Australian National University
+        John Curtin School of Medical Research,
+        Australian National University
     4-APR-2016
     
     This program imports the appPages module and uses its contents to build a
     user interface. There are multiple configuration files that describe pipeline
     pages in a "notebook" style interface.
     
-    There's an initial home page.
+    The notebook has an initial home page.
     
     When the 'run' button is pressed, it calls an external procedure 
     that is set up in the appPages module. The demo appPages module uses the 
@@ -22,15 +23,15 @@
 
 from __future__ import print_function
 
-__version__ = "0.1-b1"
-__progname__ = "NGS Forensics Pipeline"
+__version__ = "0.1-b2"
+__progname__ = "MPS Forensics"
 
 progbar = None  # global variable - for the application's progress bar
 
 import platform
 myos = platform.system()
 import os
-cwd = os.getcwd()
+cwd = None
 
 import Tkinter as tk
 import ttk
@@ -42,7 +43,8 @@ import subprocess
 import SplashScreen as ss
 import StatusProgress as sp 
 
-import appPages
+#import dummyapp as appPages
+import forensicsapp as appPages
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -108,6 +110,19 @@ class ivar(ifrow):
         master.rows += 1
         return
     
+class tvar(ifrow):
+    """Text input in interface"""
+    def __init__(self, master, cfgline):
+        ifrow.__init__(self, master, cfgline)   # init superclass
+        self.flg = cfgline.flag
+        self.default = cfgline.default
+        self.var = tk.StringVar()
+        self.var.set(self.default)
+        w1 = tk.Entry(master, textvariable=self.var, width=max(20, int(cfgline.constraint)))
+        w1.grid(row=master.rows, column=1, sticky='w')
+        master.rows += 1
+        return
+    
 class bvar(ifrow):
     """Boolean input (Checkbox) in interface"""
     def __init__(self, master, cfgline):
@@ -135,8 +150,8 @@ class cvar(ifrow):
         return
     
 class fvar(ifrow):
-    """File input in interface - with browse buttin, calls file dialog"""
-    def __init__(self, master, cfgline):
+    """File input in interface - with browse button, calls file dialog"""
+    def __init__(self, master, cfgline, dirflag=False):
         self.required = cfgline.constraint=="required"
         sz = "R.TLabel" if self.required else None
         ifrow.__init__(self, master, cfgline, style=sz)   # init superclass
@@ -148,12 +163,19 @@ class fvar(ifrow):
         w1.grid(row=master.rows, column=1, sticky='w')
         # I can't get .fq.gz to work ... just put .gz in the allowed extentions?
         # self.ft = [('FASTQ file', x+z) for x in cfgline.default.split(';') for z in ['', '.gz']]
-        self.ft = [('FASTQ file', x) for x in cfgline.default.split(';')]
-        def varset():
+        if dirflag:
+            self.var.set(cfgline.default)
+        else:
+            self.ft = [('File', x) for x in cfgline.default.split(';')]
+        def fileset():
             fn = tkFileDialog.askopenfilename(title=self.label, filetypes=self.ft)
             self.var.set(fn)
             return
-        w2 = ttk.Button(master, text="Browse", command=varset )
+        def dirset():
+            fn = tkFileDialog.askdirectory(title=self.label)
+            self.var.set(fn)
+            return
+        w2 = ttk.Button(master, text="Browse", command=dirset if dirflag else fileset )
         w2.grid(row=master.rows, column=2 )
         master.rows += 1
         return
@@ -170,8 +192,8 @@ class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
     def __init__(self, master, label, labtext):
         assert label     # our LabelFrames must have a name ...
-        ttk.Frame.__init__(self, master, borderwidth=2, relief="raised") # , style="M.TFrame")
-        self.pack(fill='x', padx=5, pady=5, ipadx=5) # should increment row ...
+        ttk.Frame.__init__(self, master, borderwidth=2) # , style="M.TFrame")
+        self.pack(fill=tk.X, ipadx=5, ipady=2) # should increment row ...
         self.label = label
         self.master = master
         self.vars = [] # a list of ifrows
@@ -193,7 +215,8 @@ class Page(ttk.Frame):
         ttk.Frame.__init__(self, nb)    # border=?
         nb.add(self, text=cfg.tabname)  # instead of pack or grid
                 
-        wfunc   = {'tickbox': bvar, 'int': ivar, 'file': fvar, 'choice': cvar}
+        wfunc   = {'tickbox': bvar, 'int': ivar, 'text': tvar, 'file': fvar, 'choice': cvar,
+                    'directory': (lambda m, cfg: fvar(m, cfg, dirflag=True)) }
 
         cfglabs = ['group', 'grouplab', 'flag', 'label', 'type', 'constraint', \
                         'default', 'mouse_over' ]
@@ -224,7 +247,8 @@ class Page(ttk.Frame):
         # Note: there is still just one frame-vector with argument widgets
         # so just one dictionary is passed as a parameter to the pipeline (there is
         # one Run button for each pipeline)
-        for myf, fn in fs:
+        for myf, fnx in fs:
+            fn = fnx if fnx.startswith(os.path.sep) else os.path.join(cwd, fnx)
             progbar.status("start reading config file:", fn)
             with open(fn) as inp:
                 # fldprev is fields from the previous row ... value replace blank fields
@@ -237,14 +261,24 @@ class Page(ttk.Frame):
                     fld = lxs.split("\t")
                     if len(fld)<cfglen:
                         fld += [None]*(cfglen-len(fld))
-                    fld = [fx if fx else prev for fx, prev in zip(fld, fldprev)]
+                    for i, fx in enumerate(fld):
+                        if fx:
+                            break
+                        fld[i] = fldprev[i]
+                    # fld = [fx if fx else prev for fx, prev in zip(fld, fldprev)]
                     assert len(fld)==cfglen
                     cx = Cfgline(*tuple(fld))  # make named tuple from config line
                     if not (popts and popts.label==cx.group): # column 0? Start a new pipe-section ... 
                         popts = pipesect(myf, cx.group, cx.grouplab)  # start a new pipe section
                         self.fv.append(popts)           # add this pipe-section to the frames-vector
                         
-                    print("type =", cx.type, cx)
+                    if cx.type not in wfunc:	# report problem in config file
+                        print()
+                        print("In config. file:", fn)
+                        print("   **** unknown option type:", cx.type)
+                        print("type =", cx.type, cx)
+
+                    assert cx.type in wfunc
                     wfunc[cx.type](popts, cx)      # generate the parameter line in the GUI
                     fldprev = fld
         
@@ -252,10 +286,11 @@ class Page(ttk.Frame):
         
         # wait to now to pack the inner notebook ... if it exists.
         if nbx:
-            nbx.pack(fill=tk.BOTH)
+            #nbx.pack(fill=tk.BOTH)
+            nbx.pack()
         
         self.runButton = ttk.Button(self, text="Run", style="R.TButton", command=self.run)
-        self.runButton.pack(pady=10, side=tk.BOTTOM)
+        self.runButton.pack(pady=5)
         return
 
     def run(self):
@@ -279,12 +314,12 @@ class Page(ttk.Frame):
 
 def browseOpen(url):
     "fire up a browser window/tab with the specified URL open"
-    global myos
+    global myos, cwd
     
     # need to get the following right for your system configuration.
     cmds = {
-    'Darwin': "open -a 'Google Chrome.app' %s &",
-    'Linux' : 'firefox %s &',
+    'Darwin': "cd " + cwd + " ; open -a 'Google Chrome.app' %s &",
+    'Linux' : "cd " + cwd + ' ; firefox %s &',
     'Windows': 'echo no help with %s here.'
     }
 
@@ -294,6 +329,7 @@ def browseOpen(url):
 class HomePage(ttk.Frame):
     """The Home tab ... pretty graphics and text."""
     def __init__(self, nb):
+        global cwd
         ttk.Frame.__init__(self, nb, border=2)
         nb.add(self, text="Home")
         
@@ -302,11 +338,11 @@ Development and Engineering Command (ITC-PAC). It was developed by the National 
 collaboration with: Australian National University, Bioinformatics Consultancy; Victoria Police Forensic Services Department (Office of the
 Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australian Federal Police (Forensics)"""
         
-        self.img1 = tk.PhotoImage( master=self, file="pix/welcome_image_sm.gif" )
-        self.img2 = tk.PhotoImage( master=self, file="pix/welcome_ncfs_sm.gif" )
-        self.img3 = tk.PhotoImage( master=self, file="pix/welcome_uc_sm.gif" )
+        self.img1 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_image_sm.gif") )
+        self.img2 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_ncfs_sm.gif") )
+        self.img3 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_uc_sm.gif") )
         
-        ttk.Label(self, image=self.img1, style="HP.TLabel").pack()
+        ttk.Label(self, image=self.img1, style="HP.TLabel").pack(pady=5)
         ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
         f1 = ttk.Frame(self)
         f1.pack(padx=30)
@@ -317,9 +353,9 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
             print("No help.html file")
         ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
         f2 = ttk.Frame(self)
-        f2.pack()
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
         ttk.Label(f2, image=self.img3, style="HP.TLabel").pack(side=tk.LEFT, padx=10)       
+        f2.pack(pady=5)
         
         return
     
@@ -341,9 +377,9 @@ class App(ttk.Frame):
         ttk.Frame.__init__(self, master, border=2)
         
         sx=ttk.Style()
-        sx.configure(".", font="Ariel 12")
-        sx.configure("M.TLabel", foreground='darkblue', font="Georgia 14 italic" )
-        sx.configure("R.TLabel", foreground="black", font="Ariel 12 bold")  # for required fields
+        sx.configure(".", font="Ariel 10")
+        sx.configure("M.TLabel", foreground='darkblue', font="Georgia 12 italic" )
+        sx.configure("R.TLabel", foreground="black", font="Ariel 10 bold")  # for required fields
         sx.configure("HP.TLabel", background="white", foreground="darkblue", font="Ariel 10 italic")
         sx.map("R.TButton", background=[("disabled", "salmon"), ("active", "yellowgreen")])
         # sx.configure("TNotebook", background="salmon")
@@ -355,39 +391,40 @@ class App(ttk.Frame):
         pup.pupmsg = tk.StringVar()
         pup.puplab = tk.Label(pup, textvariable=pup.pupmsg, bg="lightyellow", 
                               width=60, wraplength=600 ) # these may not be right
-        pup.puplab.pack(padx=10, pady=10)
+        pup.puplab.pack(padx=10, pady=5)
         
         pup.transient(self)
         pup.lower(self)
         pup.state("withdrawn")
+        
+        # make a progress bar and a status bar at the bottom
+        pb = sp.StatusProgress(master, mode='determinate', orient=tk.HORIZONTAL)
+        progbar = pb
+        pb.pack(padx=5, pady=5, fill=tk.X, side=tk.BOTTOM)
 
         # create a Notebook for the Application ... 
         nb = ttk.Notebook(master)
         nb.pack(padx=5, pady=5)
         
-        # make a progress bar and a status bar at the bottom
-        pb = sp.StatusProgress(master, mode='determinate', orient=tk.HORIZONTAL)
-        pb.pack(fill=tk.X, padx=5, pady=5)
-        progbar = pb
-        
         # setup Notebook pages
         HomePage(nb)
         for xargs in appPages.pages:
+            # assert len(xargs)==4
             Page(nb, Cfgs(*xargs))
             
-        pb.status("awaiting user activity.")
+        pb.status("")
         return
         
 def win():
     """GUI version - main program"""      
-    global __progname__
+    global __progname__, cwd
     root = tk.Tk()
     root.title(__progname__)
     root.lift()
     root.wm_attributes("-topmost", 1)   # put at the front
     root.withdraw()
     
-    ss.SplashScreen(imageFilename='my.gif', text="NGS Forensics Pipelines",
+    ss.SplashScreen(imageFilename=os.path.join(cwd, 'my.gif'), text="MPS Forensics Pipelines",
                     progbar=True, minSplashTime=appPages.sstime, start=appPages.main)
     
     app = App(root)
@@ -399,4 +436,9 @@ def win():
     return
 
 if __name__ == "__main__":
+    import sys
+    cwd, cmd = os.path.split(sys.argv[0])
+    if not cwd:
+        cwd = os.getcwd()
+    print("current home =", cwd)
     win()

@@ -3,9 +3,9 @@
 """
 This module links fn.pyw to initiation and pileline modules.
 
-This version works with the very simple demo code in dummystart.py and dummy.py
-Create a new version of this for real applications.
-The fn.pyw code accesses the three variables defined in this module.
+This version works with the very simple demo code in dummystart.py and dummy[123].py
+Create a new version of this for a real application.
+The fn.pyw code accesses the four tuple elements defined in this module.
 """
 
 import dummy1
@@ -22,8 +22,9 @@ sstime = begin.sstime # the minimum splash screen time (in seconds)
 # 3. function to call when "Run" is clicked
 
 pages = [
-        ("Main", "cfg1.tab", dummy1.run_pipeline, None),
-        ("Tab #1", "cfg2.tab", dummy2.run_pipeline, None),
+        ("Main", "dummyapp/cfg1.tab", dummy1.run_pipeline, None),
+        ("Tab #1", "dummyapp/cfg2.tab", dummy2.run_pipeline, None),
+        # ("Lobstr", "dummyapp/lobstrSE.cfg", dummy1.run_pipeline, None),    # testing using Cam's file
         # the following line has an inner Notebook with two Tabs for more complex arguments
-        ("Tab #2", "cfg3.tab", dummy3.pipecode, [("Subtab #1", "cfg3.1.tab"), ("Subtab #2", "cfg3.2.tab")])
+        ("Tab #2", "dummyapp/cfg3.tab", dummy3.pipecode, [("Subtab #1", "dummyapp/cfg3.1.tab"), ("Subtab #2", "dummyapp/cfg3.2.tab")])
     ]
