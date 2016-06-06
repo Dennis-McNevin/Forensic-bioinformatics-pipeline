@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 """
-BamToFASTQ module
+BamToFASTQ pipeline
+
 Authors: Cameron Jack & Bob Buckley
-ANU Bioinformatics Consultancy, John Curtin School of Medical Research,
+ANU Bioinformatics Consultancy,
+John Curtin School of Medical Research,
 Australian National University
 18/5/2016
+
+This code is part os the Forensics project.
 """
 
 import os
@@ -37,6 +41,7 @@ def bamToFQ(itrfce, progress=None):
     files, sf = com.bam2fq(srcdir, dstdir, args['single'])
     cmds = [(None, 'b')]	# first task shows up on progress bar
     for f in files:
+        # use -f flag to avoid user dialog - force progress/overwrite
         cmds.append((['gzip', '-f', f], 'nb'))
 
     success = px.run_pipeline(cmds, logger=logger, progress=progress)

@@ -1,12 +1,30 @@
 #!/usr/bin/env python
 
+"""
+Mpileup and Freebayes pipeline
+
+Authors: Cameron Jack & Bob Buckley
+ANU Bioinformatics Consultancy,
+John Curtin School of Medical Research,
+Australian National University
+18/5/2016
+
+This code is part os the Forensics project.
+It uses mpileup or freebayes to get a VCF file ...
+"""
+
+
 import os
 import time
 import modpipe as px
 import modcommon as com
 
+home, results = com.forensicsenv
+
 freebayes="~/src/freebayes/bin/freebayes"
 default_reference = '/home/ngsforensics/human/human.fa'
+# freebayes=os.path.join(home, 'bin', "freebayes")
+# default_reference = os.path.join(home, 'lib', 'ref', 'human.fa')
 
 def tovcf(itrfce, progress=None):
     """
@@ -20,7 +38,15 @@ def tovcf(itrfce, progress=None):
         argument and the value being the value of said argument.
 
         progress is an optional progress bar object we can update
+
+        It calls the following programs (expected on $PATH somewhere):
+            samtools
+            bcftools
+            bwa
     """
+
+
+    cmdsnp_convert = '/home/ngsforensics/forensicsapp/snp_convert.sh'
 
     for sect in ['Shared', 'mpileup']: # BWA? Trimmomatic?
         if not sect in itrfce:
@@ -98,7 +124,7 @@ def tovcf(itrfce, progress=None):
     logger.info('Preparing to filter loci')
     ai_fn = bn + '_ai.vcf'
     ii_fn = bn + '_ii.vcf'
-    cmds.append((['/home/ngsforensics/forensicsapp/snp_convert.sh', vcf_fn, ai_fn, ii_fn], 'b'))
+    cmds.append(([cmdsnp_convert, vcf_fn, ai_fn, ii_fn], 'b'))
 
     #vcf_filt_pfx = vcf_fn.split('.')[0] + '_filt'
     #cmd12 = ['vcftools', '--vcf', vcf_fn, '--out', vcf_filt_pfx, '--minDP', '50', '--recode', '--record-INFO-all']
@@ -170,3 +196,4 @@ if __name__ == '__main__':
         print 'ToVCF pipeline completed successfully'
     else:
         print 'ToVCF pipeline failed'
+    print "... using", interface['Shared']['tovcf']

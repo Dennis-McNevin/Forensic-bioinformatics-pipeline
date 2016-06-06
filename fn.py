@@ -31,6 +31,7 @@ progbar = None  # global variable - for the application's progress bar
 import platform
 myos = platform.system()
 import os
+import sys
 cwd = None
 
 import Tkinter as tk
@@ -43,8 +44,6 @@ import subprocess
 import SplashScreen as ss
 import StatusProgress as sp 
 
-#import dummyapp as appPages
-import forensicsapp as appPages
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -299,7 +298,8 @@ class Page(ttk.Frame):
         # OK ... it's time to do the work!
         self.runButton.configure(state=tk.DISABLED)
         progbar.status('start running.')
-        try:
+        #try:
+        if 1:
             progbar.stop()  # resets to empty
             progbar.update()
             argdict = dict(f.getflags() for f in self.fv)
@@ -307,7 +307,8 @@ class Page(ttk.Frame):
             self.pipeline(argdict, progress=progbar)
             progbar.end()
             progbar.status('Done.')
-        except:
+        #except:
+        else:
             progbar.status('Run failed.')  
         self.runButton.configure(state=tk.NORMAL)
         return
@@ -347,10 +348,11 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         f1 = ttk.Frame(self)
         f1.pack(padx=30)
         ttk.Button(f1, text="About", command=lambda : browseOpen("file://"+cwd+"/about.html")).pack(side=tk.LEFT, pady=20, padx=50)
-        if os.path.isfile("help.html"): # no button unless the help file exists
-            ttk.Button(f1, text="Help", command=lambda : browseOpen("file://"+cwd+"/help.html")).pack(side=tk.LEFT, pady=20, padx=50)
+        helpname = os.path.join(cwd, "help.html")
+        if os.path.isfile(helpname): # no button unless the help file exists
+            ttk.Button(f1, text="Help", command=lambda : browseOpen("file://"+helpname)).pack(side=tk.LEFT, pady=20, padx=50)
         else:
-            print("No help.html file")
+            print("No file:", helpname)
         ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
         f2 = ttk.Frame(self)
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
@@ -370,7 +372,7 @@ class App(ttk.Frame):
     is it calls its own python run_pipeline() procedure).
     """
     
-    def __init__(self, master):
+    def __init__(self, master, appPages):
         "set up the UI for the whole Notebook"
         global __progname__, __version__, __imagedata__, progbar
         
@@ -415,9 +417,14 @@ class App(ttk.Frame):
         pb.status("")
         return
         
-def win():
+def win(pages):
     """GUI version - main program"""      
-    global __progname__, cwd
+    global __progname__, cwd, cmd
+    cwd, cmd = os.path.split(sys.argv[0])
+    if not cwd:
+        cwd = os.getcwd()
+    else:
+        cwd = os.path.abspath(cwd)
     root = tk.Tk()
     root.title(__progname__)
     root.lift()
@@ -425,9 +432,9 @@ def win():
     root.withdraw()
     
     ss.SplashScreen(imageFilename=os.path.join(cwd, 'my.gif'), text="MPS Forensics Pipelines",
-                    progbar=True, minSplashTime=appPages.sstime, start=appPages.main)
+                    progbar=True, minSplashTime=pages.sstime, start=pages.main)
     
-    app = App(root)
+    app = App(root, pages)
     root.deiconify()
     root.wm_attributes("-topmost", 0)   # allow other windows at the front
     
@@ -436,9 +443,5 @@ def win():
     return
 
 if __name__ == "__main__":
-    import sys
-    cwd, cmd = os.path.split(sys.argv[0])
-    if not cwd:
-        cwd = os.getcwd()
-    print("current home =", cwd)
-    win()
+    import dummyapp as appPages
+    win(appPages)

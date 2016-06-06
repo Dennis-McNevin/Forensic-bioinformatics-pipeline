@@ -29,6 +29,13 @@ def lobstr(itrfce, progress=None):
         progress is a progress bar and status line object for user feedback
     """
 
+    home, results = com.forensicsenv
+    cmdlobstr = com.getexec('lobSTR', pd=[ '/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0' ])
+    cmdallelotype = com.getexec('allelotype', pd=[ '/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0' ])
+    cmdlobstr_convert = '/home/ngsforensics/forensicsapp/lobstr_convert.sh'
+    cmdstr2json = '/home/ngsforensics/forensicsapp/ngs_forensics/data/str2json.pl'
+    cmdsamtools = 'samtools' # assume it's on the regular PATH
+
     trim_fq, bn, cmds, logger = com.prepare(itrfce, 'lobstr', progress)
     # note: len(trim_fq)==1 for single end, ==2 for paired-end data
 
@@ -37,20 +44,16 @@ def lobstr(itrfce, progress=None):
 
     # LobSTR specific
     LOBINDEX = '/home/ngsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_ref/lobSTR_'
-    LOBINFO = '/home/ngsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_strinfo.tab'
+    LOBINFO  = '/home/ngsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_strinfo.tab'
     LOBNOISE = '/home/ngsforensics/lobstr_ref/share/lobSTR/models/illumina_v3.pcrfree'
 
     # stage 4 LobSTR.
-    # lobstr/bin/lobSTR --index-prefix lobstr/hg19_v3.0.2/lobstr_v3.0.2_hg19_ref/lobSTR_ -p 12
-    # -q --gzip -f ../forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz
-    # --rg-sample $SAMPLE --rg-lib $SAMPLE --fft-window-size 24 --fft-window-step 12 --out $SAMPLE
     logger.info ('Preparing LobSTR alignment')
     bam_fn = bn + '.aligned.bam'
     # prefix_fn = trim_fq.split('.')[0]
  
     cmd4x = [x for xs in zip((['--p1', '--p2'] if len(trim_fq)==2 else ['-f']), trim_fq) for x in xs ] 
-    # cmd4x = ([ '--p1', trim_fq[0], '--p2', trim_fq[1] ] if len(trim_fq)==2 else ( ['-f']+trim_fq )) 
-    cmd4 = ['/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0/bin/lobSTR',
+    cmd4 = [cmdlobstr,
             '--index-prefix', LOBINDEX,
             '-p', threads, '-q'
            ] + cmd4x + \
@@ -72,35 +75,32 @@ def lobstr(itrfce, progress=None):
     # Stage 6 Sort
     logger.info ('Preparing BAM sorting')
     sorted_fn = bn + '_sorted.bam'
-    cmd6 = ['samtools', 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn]
+    cmd6 = [cmdsamtools, 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn]
     cmds.append((cmd6, 'b'))
 
     # Stage 7 Index
     logger.info ('Preparing BAM indexing')
-    cmd7 = ['samtools', 'index', sorted_fn]
+    cmd7 = [cmdsamtools, 'index', sorted_fn]
     cmds.append((cmd7, 'b'))
 
     # May need dedup from tovcf pipeline in here ...
     # Stage 8 rmdup
     #dedup_fn = sorted_fn.split('.')[0] + '_dedup.bam'
-    #cmd8 = ['samtools', 'rmdup', '-s', sorted_fn, dedup_fn]
+    #cmd8 = [cmdsamtools, 'rmdup', '-s', sorted_fn, dedup_fn]
 
     # Stage 9 Index
-    #cmd9 = ['samtools', 'index', dedup_fn]
+    #cmd9 = [cmdsamtools, 'index', dedup_fn]
 
     # Stage 10 LobSTR
     logger.info ('Preparing LobSTR allelotyping')
     str_fn = bn + '_lobstr'
-    # CMD="../lobstr/bin/allelotype --index-prefix $LOBINDEX --strinfo $LOBINFO
-    # --command classify --noise_model $LOBNOISE --bam $SAMPLE.sorted.bam --min-border 5
-    # --min-bp-before-indel 7 --maximal-end-match 15 --min-read-end-match 5 --out $SAMPLE"
 
     min_bp_before_indel = itrfce['LobSTR']['min-bp-before-indel']
     maximal_end_match   = itrfce['LobSTR']['maximal-end-match']
     min_read_end_match  = itrfce['LobSTR']['min-read-end-match']
     min_border          = itrfce['LobSTR']['min-border']
 
-    cmd10 = ['/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0/bin/allelotype',
+    cmd10 = [cmdallelotype,
             '--index-prefix', LOBINDEX, '--strinfo', LOBINFO,
             '--command', 'classify', '--noise_model', LOBNOISE, '--bam',
             sorted_fn, '--min-border', min_border,
@@ -118,13 +118,13 @@ def lobstr(itrfce, progress=None):
     vcf_fn = str_fn + '.vcf'
     ystr_fn = str_fn + '.ystr.txt'
     codis_fn = str_fn + '.codis.txt'
-    cmd11 = ['/home/ngsforensics/forensicsapp/lobstr_convert.sh', vcf_fn, ystr_fn, codis_fn]
+    cmd11 = [cmdlobstr_convert, vcf_fn, ystr_fn, codis_fn]
     cmds.append((cmd11, 'b'))
 
     # Upload results to DB
     results = trim_fq[0].rsplit('/',1)[:-1]
     cmd12 = ['cd', results[0], ';'] if results else []
-    cmd12 += [ '/home/ngsforensics/forensicsapp/ngs_forensics/data/str2json.pl',
+    cmd12 += [ cmdstr2json,
              '*lobstr*/*.txt', '>', 'all.json', '&&', 'mongoimport', '-h',
              'localhost:3001', '--db', 'meteor', '--collection', 'str', '--type',
              'json', '--drop', '--file', 'all.json', '--jsonArray']

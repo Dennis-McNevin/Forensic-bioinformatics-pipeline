@@ -1,12 +1,22 @@
 #!/usr/bin/env python
+"""
+STRaitRazor pipeline
+
+Authors: Cameron Jack & Bob Buckley
+ANU Bioinformatics Consultancy,
+John Curtin School of Medical Research,
+Australian National University
+18/5/2016
+
+This code is part os the Forensics project.
+"""
+
 
 import os
 import time
 import modpipe as px
 import modcommon as com
 
-strrazor_home = '/home/bobb/Downloads/STRaitRazorv2.5/Newest_STRait_Razor'
-destdir = '/home/ngsforensics/results'
 
 def strrazor(itrfce, progress=None):
     """
@@ -21,12 +31,17 @@ def strrazor(itrfce, progress=None):
 
         progress is an optional progress bar object we can update
     """
-    global strrazor_home, destdir
+    strrazor_home = '/home/bobb/Downloads/STRaitRazorv2.5/Newest_STRait_Razor'
+    # Note: STRaitRazor needs its own configuration ...
+    # it's modified to process FASTQ .gz file
+    # and to find it's agrep program
 
     for sect in ['Shared', 'Trimmomatic', 'strrazor']: 
         if not sect in itrfce:
             print sect, "is not present in the interface dictionary :("
             return False
+
+    home, destdir = com.forensicsenv
 
     fqs, bn, cmds, logger = com.prepare(itrfce, 'STRaitRazor', progress)
 

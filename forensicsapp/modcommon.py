@@ -10,15 +10,49 @@ Extract FASTQ from a BAM file if that's the starting point
 Run FASTQC and Trimmomatic ...
 """
 
-default_directory = '/home/ngsforensics/results'
-
 import os
+import sys
 import time
 import re
 import subprocess
 import glob
+import tkMessageBox as tkmb
 
 import modpipe as px
+
+# set up default directories/locations
+#forensicsenv = tuple(os.getenv(x, d) for x, d in [('FORENSICSHOME', '/usr/local'), ('FORENSICSRESULTS', os.path.expanduser('~/forensics'))])
+forensicsvar = ['FORENSICSHOME', 'FORENSICSRESULTS']
+forensicsenv = tuple(os.getenv(x) for x in forensicsvar)
+
+def initcheck():
+    global forensicsvar, forensicsenv
+    if not all(forensicsenv):
+        tkmb.showerror("Environment variables", 
+            "This program needs several enviroment variables set.\n"
+            "Currently not set:\n  " +
+            "\n  ".join(k for k, v in zip(forensicsvar, forensicsenv) if not v))
+        sys.exit(1)
+    if not forensicsenv[1]:
+        tkmb.showerror("Unknown results directory", """
+Unknown results directory: 
+please set the FORENSICSRESULTS environment variable
+before you run this program.
+""")
+        sys.exit(1)
+    return
+
+def getexec(cmdname, pd=[]):
+    """
+    Try to find the required executable for cmdname ...
+    pd is a list of directories for the specific program (this was useful
+        when we were developing since the executables were in their own
+        specific directories)
+    """
+    global forensicsenv
+    home = forensicsenv[0]
+    progs = (os.path.join(os.path.expanduser(d), 'bin', cmdname) for d in home.split(':')+pd)
+    return (p for p in progs if os.path.isfile(p)).next()
 
 def bam2fq(srcnm, dstdir, sf):
     """
@@ -30,29 +64,31 @@ def bam2fq(srcnm, dstdir, sf):
     assert ext in ['.bam', '.ubam']
     fn, fn1, fn2 = [os.path.join(dstdir, bn+x+'.fq') for x in ['', '_1', '_2']]
     if sf.startswith('single'):
-        cmd = ['java', '-jar', jarfile,'SamToFastq', 'I='+srcnm, 'F='+fn]
+        cmd = ['java', '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn]
         res = subprocess.call(cmd, shell=False)
-        assert res==0	# need better testing
+        assert res==0	# needs better testing
         return [fn], sf
 
-    cmd = ['java', '-jar', jarfile,'SamToFastq', 'I='+srcnm, 'F='+fn1, 'F2='+fn2]
+    cmd = ['java', '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn1, 'F2='+fn2]
     res = subprocess.call(cmd, shell=False)
     assert res==0	# needs better result check!
     if os.path.isfile(fn2):
-        ss = os.stat(fn2)
+        ss = os.stat(fn2)	# use os.stat() to get file size
         if ss.st_size==0:
+            assert not sf.startswith('pair')	# needs to complain to user via GUI
             os.remove(fn2)
             sf = 'single-end'
         elif sf.startswith('auto'):
             sf = 'paired-end'
-    else:
+     
+    else:	#doubt that it gets here ... more likely we got an empty file
         sf = 'single-end'
     if sf.startswith('single'):
         os.rename(fn1, fn)
         return [fn], sf
     return [fn1, fn2], 'paired-end'
 
-def prepare(itrfce, pipename, progress=None):
+def prepare(itrfce, pipename, progress=None, trim=True):
     """
         Pipeline for running LobSTR STR caller in single- and paired-end mode
 
@@ -64,10 +100,13 @@ def prepare(itrfce, pipename, progress=None):
         argument and the value being the value of said argument.
 
         progress is a progress bar and status line object for user feedback
+
+        Note: fastqc and java commands are expected to be in the PATH variable
     """
     args = itrfce['Shared']
     cmds = []
-    global default_directory
+    global forensicsenv
+    home, default_directory = forensicsenv
     results = args['results'] if 'results' in args else default_directory 
     # couple of useful properties to have for the pipeline
     sflag = args['single']
@@ -95,9 +134,9 @@ def prepare(itrfce, pipename, progress=None):
         # find a paired-end file if it exists ??? use glob.glob
         srcdir, fn = os.path.split(r1)
         fnpat = re.sub('(_R?)1($|(?=[._L]))', '\g<1>[12]', fn)
-        print "looking for files:", fnpat
+        # print "looking for files:", fnpat
         files = sorted(glob.glob(os.path.join(srcdir, fnpat)))
-        print "glob gives:", files
+        # print "glob gives:", files
         assert files[0]==r1
         assert len(files)<=2
         if sflag.startswith('paired'):
@@ -109,7 +148,7 @@ def prepare(itrfce, pipename, progress=None):
     else:	# single-end
         files = [r1]
 
-    print "files =", files
+    # print "files =", files
 
     dirhdr, fname = os.path.split(r1)
     fn1, ext = fname.split('.',1)	# split at first dot!
@@ -218,5 +257,4 @@ if __name__ == '__main__':
     print "   bn =", res[1]
     for cmd in res[2]:
         print "\t", cmd
-
 

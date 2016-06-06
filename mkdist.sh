@@ -1,1 +1,2 @@
-tar cvf ../forensics.tar fn.pyw SplashScreen.py StatusProgress.py my.gif *app/*.py *app/*.tab *app/*.tab pix/*_sm.gif pix/ANU*.gif *.html
+echo Creating ../forensics.tar
+tar cvf ../forensics.tar *.py my.gif *app/*.py dummyapp/*.tab for*app/*.cfg pix/*_sm.gif pix/ANU*.gif *.html
