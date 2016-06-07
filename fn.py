@@ -74,7 +74,6 @@ class ifrow:
     """
     def __init__(self, master, cfgline, style=None):
         self.flg = cfgline.flag
-        self.var = None
         self.default = cfgline.default
         w0 = ttk.Label(master, text=cfgline.label)
         if style:
@@ -98,10 +97,8 @@ class ifrow:
 class ivar(ifrow):
     """Integer input in interface"""
     def __init__(self, master, cfgline):
-        ifrow.__init__(self, master, cfgline)   # init superclass
-        self.flg = cfgline.flag
-        self.default = cfgline.default
         self.var = tk.StringVar()
+        ifrow.__init__(self, master, cfgline)   # init superclass
         self.var.set(self.default)
         f,t = cfgline.constraint.split('-',1)
         w1 = tk.Spinbox(master, textvariable=self.var, from_=f, to=t)
@@ -112,10 +109,8 @@ class ivar(ifrow):
 class tvar(ifrow):
     """Text input in interface"""
     def __init__(self, master, cfgline):
-        ifrow.__init__(self, master, cfgline)   # init superclass
-        self.flg = cfgline.flag
-        self.default = cfgline.default
         self.var = tk.StringVar()
+        ifrow.__init__(self, master, cfgline)   # init superclass
         self.var.set(self.default)
         w1 = tk.Entry(master, textvariable=self.var, width=max(20, int(cfgline.constraint)))
         w1.grid(row=master.rows, column=1, sticky='w')
@@ -125,10 +120,9 @@ class tvar(ifrow):
 class bvar(ifrow):
     """Boolean input (Checkbox) in interface"""
     def __init__(self, master, cfgline):
-        ifrow.__init__(self, master,cfgline)   # init superclass
-        self.flg = cfgline.flag
         self.var = tk.BooleanVar()
-        self.default = cfgline.default=="ticked"
+        ifrow.__init__(self, master,cfgline)   # init superclass
+        self.default = cfgline.default.startswith("tick")
         self.var.set(self.default)
         w1 = ttk.Checkbutton(master, variable=self.var)
         w1.grid(row=master.rows, column=1, sticky='w')
@@ -138,11 +132,9 @@ class bvar(ifrow):
 class cvar(ifrow):
     """Combobox - choice input in interface"""
     def __init__(self, master, cfgline):
+        opt = cfgline.constraint.split(';')
+        self.var = ttk.Combobox(master, values=opt, state="readonly")
         ifrow.__init__(self, master, cfgline)   # init superclass
-        self.flg = cfgline.flag
-        self.opt = cfgline.constraint.split(';')
-        self.default = cfgline.default
-        self.var = ttk.Combobox(master, values=self.opt, state="readonly")
         self.var.set(cfgline.default)
         self.var.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
@@ -151,12 +143,11 @@ class cvar(ifrow):
 class fvar(ifrow):
     """File input in interface - with browse button, calls file dialog"""
     def __init__(self, master, cfgline, dirflag=False):
+        self.var = tk.StringVar()
         self.required = cfgline.constraint=="required"
         sz = "R.TLabel" if self.required else None
         ifrow.__init__(self, master, cfgline, style=sz)   # init superclass
-        self.label = cfgline.label
-        self.flg = cfgline.flag
-        self.var = tk.StringVar()
+        self.label = cfgline.label	# used for dialog titles
         self.default = None
         w1 = ttk.Entry(master, textvariable=self.var, width=80)
         w1.grid(row=master.rows, column=1, sticky='w')

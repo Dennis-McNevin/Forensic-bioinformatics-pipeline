@@ -43,17 +43,18 @@ def strrazor(itrfce, progress=None):
 
     home, destdir = com.forensicsenv
 
-    fqs, bn, cmds, logger = com.prepare(itrfce, 'STRaitRazor', progress)
+    fqs, bn, cmds, wkdir, logger = com.prepare(itrfce, 'STRaitRazor', progress)
 
     # target directory must not be present
-    wkdir = os.path.join(destdir, itrfce['strrazor']['sample'])
-    cmd = [ 'test', '-d', wkdir, '&&', 'rm', '-rf', wkdir, ';', 'true' ]
-    cmds.append((cmd, 'bsh'))
+    # cmd = [ 'test', '-d', wkdir, '&&', 'rm', '-rf', wkdir, ';', 'true' ]
+    # cmds.append((cmd, 'bsh'))
 
     # run STRaitRazor
-    cmd = [ 'cd', strrazor_home, ';', 'perl', './STRaitRazor.pl', '-dir',
-             destdir ] + [ x for f in fqs for x in [ '-fastq', f ]] + [
-             '-sampleNum', itrfce['strrazor']['sample'],
+    cmd = [ 'cd', strrazor_home, ';', 
+             # "PPSS_DIR="+os.path.join(destdir, 'ppss_dir'), # this would not work well
+             'perl', './STRaitRazor.pl', '-dir', wkdir,
+          ] + [ x for f in fqs for x in [ '-fastq', f ]] + [
+             '-sampleNum', itrfce['strrazor']['workdir'],
              '-typeselection', itrfce['strrazor']['opt'],
           ]
     cmds.append((cmd, 'bsh'))

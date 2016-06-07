@@ -36,7 +36,7 @@ def lobstr(itrfce, progress=None):
     cmdstr2json = '/home/ngsforensics/forensicsapp/ngs_forensics/data/str2json.pl'
     cmdsamtools = 'samtools' # assume it's on the regular PATH
 
-    trim_fq, bn, cmds, logger = com.prepare(itrfce, 'lobstr', progress)
+    trim_fq, bn, cmds, pipedir, logger = com.prepare(itrfce, 'lobstr', progress)
     # note: len(trim_fq)==1 for single end, ==2 for paired-end data
 
     threads = itrfce['Shared']['threads']

@@ -21,7 +21,7 @@ import modcommon as com
 
 home, results = com.forensicsenv
 
-freebayes="~/src/freebayes/bin/freebayes"
+freebayes="~bobb/src/freebayes/bin/freebayes"
 default_reference = '/home/ngsforensics/human/human.fa'
 # freebayes=os.path.join(home, 'bin', "freebayes")
 # default_reference = os.path.join(home, 'lib', 'ref', 'human.fa')
@@ -56,7 +56,7 @@ def tovcf(itrfce, progress=None):
     tovcfprog = itrfce['Shared']['tovcf']
     assert tovcfprog in ['mpileup', 'freebayes']
 
-    trim_fq, bn, cmds, logger = com.prepare(itrfce, tovcfprog, progress)
+    trim_fq, bn, cmds, pipedir, logger = com.prepare(itrfce, tovcfprog, progress)
     threads = itrfce['Shared']['threads']
     ref = itrfce['Shared']['R']
     if not ref:

@@ -22,8 +22,10 @@ import modpipe as px
 
 # set up default directories/locations
 #forensicsenv = tuple(os.getenv(x, d) for x, d in [('FORENSICSHOME', '/usr/local'), ('FORENSICSRESULTS', os.path.expanduser('~/forensics'))])
-forensicsvar = ['FORENSICSHOME', 'FORENSICSRESULTS']
-forensicsenv = tuple(os.getenv(x) for x in forensicsvar)
+forensicsvar = [('FORENSICSHOME', ":".join(filter(os.path.isdir, map(os.path.expanduser, '~/forensics:/usr/local:/home/ngsforensics'.split(':'))))), 
+                ('FORENSICSRESULTS', os.path.expanduser('~/forensics/results'))
+               ]
+forensicsenv = tuple(os.getenv(x,d) for x,d in forensicsvar)
 
 def initcheck():
     global forensicsvar, forensicsenv
@@ -197,15 +199,15 @@ def prepare(itrfce, pipename, progress=None, trim=True):
         trim_x  = [ n + x + '.fq'+gz for n in [bn1, bn2] for x in ['_trimmed', '_unpaired'] ]
 
     logger.info ('Preparing Trimmomatic')
-    cmd2 = ['Trimmomatic'+ending, '-threads', threads, '-phred33'] + trim_in + trim_x + ['AVGQUAL:16'] 
+    cmd2 = ['Trimmomatic'+ending, '-threads', threads, '-phred33'] + trim_in + trim_x + ['AVGQUAL:'+itrfce['Trimmomatic']['q']] 
 
     # if 'clip' in itrfce:
     #    cmd2.append(itrfce['clip']) # need to have an adapter file
 
-    if all(c in itrfce['Trimmomatic'] for c in "qw"):
+    if itrfce['Trimmomatic']['s'] and all(c in itrfce['Trimmomatic'] for c in "qw"):
         sliding = ':'.join(['SLIDINGWINDOW', itrfce['Trimmomatic']['w'], itrfce['Trimmomatic']['q']])
         cmd2.append(sliding)
-    if 'm' in itrfce['Trimmomatic']:
+    if itrfce['Trimmomatic']['d'] and 'm' in itrfce['Trimmomatic']:
         minlen = ':'.join(['MINLEN', itrfce['Trimmomatic']['m']])
         cmd2.append(minlen)
 
@@ -216,7 +218,7 @@ def prepare(itrfce, pipename, progress=None, trim=True):
     # the common commands for used for several pipelines
     cmds += [(cmd1, 'nb'), (cmd2, 'b'), (cmd3, 'nb')]
 
-    return trim_fq, bn, cmds, logger
+    return trim_fq, bn, cmds, proj_dn, logger
 
 if __name__ == '__main__':
     """ Run the 'common' pipeline """
