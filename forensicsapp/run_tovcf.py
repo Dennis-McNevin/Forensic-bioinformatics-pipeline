@@ -19,6 +19,13 @@ import time
 import modpipe as px
 import modcommon as com
 
+files = [
+           "samtools", "bcftools", "bwa",
+           "freebayes",
+           "snp_convert.sh", 
+           "human.fa",
+        ]
+
 home, results = com.forensicsenv
 
 freebayes="~bobb/src/freebayes/bin/freebayes"

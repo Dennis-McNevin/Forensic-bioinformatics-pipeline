@@ -17,6 +17,10 @@ import time
 import modpipe as px
 import modcommon as com
 
+files = [
+          'perl', 'STRaitRazor.pl', 'agrep',
+        ]
+
 
 def strrazor(itrfce, progress=None):
     """
@@ -64,7 +68,7 @@ def strrazor(itrfce, progress=None):
     return success
 
 if __name__ == '__main__':
-    """ Run a Mpileup or Freebayes SNP calling pipeline """
+    """ Run STRaitRazor """
     import sys
     import dummypb
     # define dummy interface output so we can get started
@@ -74,17 +78,12 @@ if __name__ == '__main__':
             'single': 'single-end',
             'threads': '3',
         },
-        'Trimmomatic': {'a': '', 'c': 0, 'd': 0, 'm': '20', 'q': '20', 's': 1, 'w': '4'}, 
+        'Trimmomatic': {'a': '', 'd': False, 'm': '20', 'q': '20', 's': True, 'w': '4'}, 
         'strrazor': {
-            'sample': 'S5',
+            'workdir': 'STRaitRazor',
             'opt' : 'ALL',	# choice of X, Y, AUTOSOMAL, ALL
         },
     }
-
-    # parameters for paired end testing
-    if 0:	# set paired end values
-        interface['Shared']['r1'] = '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz'
-
 
     if 1:
         interface['Shared']['single'] = 'auto-detect'

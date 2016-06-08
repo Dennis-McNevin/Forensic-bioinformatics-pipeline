@@ -20,10 +20,16 @@ import tkMessageBox as tkmb
 
 import modpipe as px
 
+files = [
+          'java', 'picard.jar', 
+          'fastqc', 
+          'TrimmomaticSE', 'TrimmomaticPE',
+          # 'fastqc' again
+        ]
+
 # set up default directories/locations
-#forensicsenv = tuple(os.getenv(x, d) for x, d in [('FORENSICSHOME', '/usr/local'), ('FORENSICSRESULTS', os.path.expanduser('~/forensics'))])
 forensicsvar = [('FORENSICSHOME', ":".join(filter(os.path.isdir, map(os.path.expanduser, '~/forensics:/usr/local:/home/ngsforensics'.split(':'))))), 
-                ('FORENSICSRESULTS', os.path.expanduser('~/forensics/results'))
+                ('FORENSICSRESULTS', os.path.expanduser('~/mpsforensics/results'))
                ]
 forensicsenv = tuple(os.getenv(x,d) for x,d in forensicsvar)
 
@@ -121,7 +127,7 @@ def prepare(itrfce, pipename, progress=None, trim=True):
     tmp = '_'.join([tmp.split('.',1)[0], pipename, date_and_time])
     proj_dn = os.path.join(results, tmp)
     if not os.path.isdir(proj_dn):
-        os.mkdir(proj_dn)
+        os.makedirs(proj_dn)
 
     if any(r1.endswith(x) for x in ['.bam', '.ubam']):
         # this is a BAM (or unmapped BAM) file ... we need to extract the FASTQ file(s)
@@ -227,7 +233,6 @@ if __name__ == '__main__':
     interface = {
         'Shared': {
             'r1': '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz',
-            'R': '', 		# use default - '/home/cam/human/human.fa'
             'single': 'single-end',
             'threads': '2'
         },
@@ -243,11 +248,9 @@ if __name__ == '__main__':
     }
     if 0:
         interface['Shared']['single'] = 'paired-end'
-        interface['Shared']['r1'] = '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz'
     if 1:
         interface['Shared']['single'] = 'auto-detect'
 
-    import sys
     import dummypb
     if len(sys.argv) == 2:
         interface['Shared']['r1'] = sys.argv[1]

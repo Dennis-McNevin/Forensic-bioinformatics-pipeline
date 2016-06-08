@@ -19,6 +19,10 @@ import time
 import modpipe as px
 import modcommon as com
 
+files = [
+          "gzip", 
+        ]
+
 def bamToFQ(itrfce, progress=None):
     """
         Pipeline for converting BAM contents to FASTQ

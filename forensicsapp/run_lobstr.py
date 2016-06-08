@@ -15,6 +15,12 @@ import modcommon as com
 #import logging
 #import sys
 
+files = [
+          "allelotype", "lobSTR", 
+          "lobstr_convert.sh", "str2json.pl", 
+          "samtools",
+        ]
+
 def lobstr(itrfce, progress=None):
     """
         Pipeline for running LobSTR STR caller in single- and paired-end mode
@@ -147,17 +153,18 @@ if __name__ == '__main__':
         'Shared': {
             'threads': '2',
             'r1': '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz',
-            'R': '/home/cam/human/human.fa',
-            'single': True
+            'single': 'single-end',
         },
         'Trimmomatic': {
-            'clip': 'ILLUMINACLIP:TruSeq3-SE:2:30:10',
-            'sliding': 'SLIDINGWINDOW:4:15',
+            'c': False,
+            # 'clip': 'ILLUMINACLIP:TruSeq3-SE:2:30:10',
+            's': True,
             'w': '4',
             'q': '15',
-            'minlen': 'MINLEN:30',
+            # 'minlen': 'MINLEN:30',
+            'd': False,
             'm': '30',
-            'phred': '-phred33',
+            # 'phred': '-phred33',
         },
         'LobSTR': {
             'min-bp-before-indel': '7',
@@ -169,8 +176,7 @@ if __name__ == '__main__':
     import sys
     import dummypb
     if 0:
-        interface['Shared']['single'] = False
-        interface['Shared']['r1'] = '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz'
+        interface['Shared']['single'] = 'auto-detect'
     if len(sys.argv) == 2:
         interface['Shared']['r1'] = sys.argv[1]
 
