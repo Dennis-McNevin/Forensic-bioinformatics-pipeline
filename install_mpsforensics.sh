@@ -39,7 +39,8 @@ then
     apt-get install -y bedtools
     apt-get install -y curl
     apt-get install -y mongodb
-    apt-get install -y libgsl0ldbl libgsl0-dev gsl-bin
+    apt-get install -y libgsl2
+    apt-get install -y gsl-bin
     apt-get install -y firefox
     apt-get install -y git
     # we need Chrome to fully support meteor
