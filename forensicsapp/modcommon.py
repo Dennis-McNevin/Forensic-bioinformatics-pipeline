@@ -16,68 +16,30 @@ import time
 import re
 import subprocess
 import glob
-import tkMessageBox as tkmb
+# import tkMessageBox as tkmb
 
 import modpipe as px
 
-files = [
-          'java', 'picard.jar', 
-          'fastqc', 
-          'TrimmomaticSE', 'TrimmomaticPE',
-          # 'fastqc' again
-        ]
-
-# set up default directories/locations
-forensicsvar = [('FORENSICSHOME', ":".join(filter(os.path.isdir, map(os.path.expanduser, '~/forensics:/usr/local:/home/ngsforensics'.split(':'))))), 
-                ('FORENSICSRESULTS', os.path.expanduser('~/mpsforensics/results'))
-               ]
-forensicsenv = tuple(os.getenv(x,d) for x,d in forensicsvar)
-
-def initcheck():
-    global forensicsvar, forensicsenv
-    if not all(forensicsenv):
-        tkmb.showerror("Environment variables", 
-            "This program needs several enviroment variables set.\n"
-            "Currently not set:\n  " +
-            "\n  ".join(k for k, v in zip(forensicsvar, forensicsenv) if not v))
-        sys.exit(1)
-    if not forensicsenv[1]:
-        tkmb.showerror("Unknown results directory", """
-Unknown results directory: 
-please set the FORENSICSRESULTS environment variable
-before you run this program.
-""")
-        sys.exit(1)
-    return
-
-def getexec(cmdname, pd=[]):
-    """
-    Try to find the required executable for cmdname ...
-    pd is a list of directories for the specific program (this was useful
-        when we were developing since the executables were in their own
-        specific directories)
-    """
-    global forensicsenv
-    home = forensicsenv[0]
-    progs = (os.path.join(os.path.expanduser(d), 'bin', cmdname) for d in home.split(':')+pd)
-    return (p for p in progs if os.path.isfile(p)).next()
+import location
+loc = location.location
 
 def bam2fq(srcnm, dstdir, sf):
     """
 	Input is a BAM file ... extract FASTQ file(s)
     """
-    jarfile = '/home/ngsforensics/forensicsapp/binaries/picard-tools-2.2.1/picard.jar'
+    # jarfile = '/home/ngsforensics/forensicsapp/binaries/picard-tools-2.2.1/picard.jar'
+    jarfile = loc['picard.jar']
     srcdir, srcname = os.path.split(srcnm)
     bn, ext = os.path.splitext(srcname)
     assert ext in ['.bam', '.ubam']
     fn, fn1, fn2 = [os.path.join(dstdir, bn+x+'.fq') for x in ['', '_1', '_2']]
     if sf.startswith('single'):
-        cmd = ['java', '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn]
+        cmd = [loc['java'], '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn]
         res = subprocess.call(cmd, shell=False)
         assert res==0	# needs better testing
         return [fn], sf
 
-    cmd = ['java', '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn1, 'F2='+fn2]
+    cmd = [loc['java'], '-jar', jarfile, 'SamToFastq', 'I='+srcnm, 'F='+fn1, 'F2='+fn2]
     res = subprocess.call(cmd, shell=False)
     assert res==0	# needs better result check!
     if os.path.isfile(fn2):
@@ -113,9 +75,7 @@ def prepare(itrfce, pipename, progress=None, trim=True):
     """
     args = itrfce['Shared']
     cmds = []
-    global forensicsenv
-    home, default_directory = forensicsenv
-    results = args['results'] if 'results' in args else default_directory 
+    results = loc['results']
     # couple of useful properties to have for the pipeline
     sflag = args['single']
     assert any(sflag.startswith(x) for x in ['auto', 'single', 'paired'])
@@ -156,8 +116,6 @@ def prepare(itrfce, pipename, progress=None, trim=True):
     else:	# single-end
         files = [r1]
 
-    # print "files =", files
-
     dirhdr, fname = os.path.split(r1)
     fn1, ext = fname.split('.',1)	# split at first dot!
     gz = '.gz' if fname.endswith('.gz') else ''
@@ -166,18 +124,26 @@ def prepare(itrfce, pipename, progress=None, trim=True):
 
     bn = os.path.join(proj_dn, fn1)
     bn1 = bn
-    if ending=='PE':
+
+    if ending=='SE':
+        trim_in = [ r1 ]
+        trim_fq = [ bn+'_trimmed.fq'+gz ]
+        trim_x  = trim_fq
+        trimmo = 'TrimmomaticSE'
+    else:
         r2 = files[1]
         fn2, tmp = os.path.split(r2)[1].split('.', 1)
         
         # find a paired file ... ???
-        # basename without pairing end identifier
+        # bn is basename without pairing end identifier
         bn = re.sub('_R?1($|(?=[._L]))', '', fn1, count=1)
         bn = os.path.join(proj_dn, bn)
         bn2 = os.path.join(proj_dn, fn2)
-        # print "r1              =", r1
-        # print "looking for file:", r2
-        # assert os.path.isfile(r2)
+        trim_in = [ r1, r2 ]
+        trim_fq = [ n+'_trimmed.fq'+gz for n in [bn1, bn2] ]
+        trim_x  = [ n + x + '.fq'+gz for n in [bn1, bn2] for x in ['_trimmed', '_unpaired'] ]
+        trimmo = 'TrimmomaticPE'
+
 
     logger = px.get_logger(pipename+ending, proj_dn)
 
@@ -189,23 +155,12 @@ def prepare(itrfce, pipename, progress=None, trim=True):
 
     # Stage 1 FASTQC
     logger.info ('Preparing FASTQC on raw data')
-    cmd1 = ['fastqc', '-f', 'fastq', '-q', '-O', proj_dn, r1]
-    if ending=='PE':
-        cmd1.append(r2)
+    cmd1 = [loc['fastqc'], '-f', 'fastq', '-q', '-O', proj_dn] + trim_in
 
     # Stage 2 Trimmomatic
     # trimlog = os.path.join(proj_dn, 'raw_trimlog.txt')
-    if ending=='SE':
-        trim_in = [ r1 ]
-        trim_fq = [ bn+'_trimmed.fq'+gz ]
-        trim_x  = trim_fq
-    else:
-        trim_in = [ r1, r2 ]
-        trim_fq = [ n+'_trimmed.fq'+gz for n in [bn1, bn2] ]
-        trim_x  = [ n + x + '.fq'+gz for n in [bn1, bn2] for x in ['_trimmed', '_unpaired'] ]
-
     logger.info ('Preparing Trimmomatic')
-    cmd2 = ['Trimmomatic'+ending, '-threads', threads, '-phred33'] + trim_in + trim_x + ['AVGQUAL:'+itrfce['Trimmomatic']['q']] 
+    cmd2 = [loc['java'], '-classpath', loc['java-version'], 'org.usadelllab.trimmomatic.'+trimmo, -threads, threads, '-phred33'] + trim_in + trim_x + ['AVGQUAL:'+itrfce['Trimmomatic']['q']] 
 
     # if 'clip' in itrfce:
     #    cmd2.append(itrfce['clip']) # need to have an adapter file
@@ -219,7 +174,7 @@ def prepare(itrfce, pipename, progress=None, trim=True):
 
     # Stage 3 FASTQC
     logger.info ('Preparing FASTQC on trimmed data')
-    cmd3 = ['fastqc', '-f', 'fastq', '-q', '-O', proj_dn] + trim_fq
+    cmd3 = [loc['fastqc'], '-f', 'fastq', '-q', '-O', proj_dn] + trim_fq
 
     # the common commands for used for several pipelines
     cmds += [(cmd1, 'nb'), (cmd2, 'b'), (cmd3, 'nb')]
@@ -234,7 +189,7 @@ if __name__ == '__main__':
         'Shared': {
             'r1': '/home/cam/projects/forensics/forensics_data/MiSeq_DFSC/R701-A506_S5_L001_R1_001.fastq.gz',
             'single': 'single-end',
-            'threads': '2'
+            'threads': '2',
         },
         'Trimmomatic': {
             'clip': 'ILLUMINACLIP:TruSeq3-SE:2:30:10',

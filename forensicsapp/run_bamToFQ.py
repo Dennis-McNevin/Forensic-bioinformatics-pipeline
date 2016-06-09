@@ -19,6 +19,9 @@ import time
 import modpipe as px
 import modcommon as com
 
+import location
+loc = location.location
+
 files = [
           "gzip", 
         ]
@@ -30,14 +33,15 @@ def bamToFQ(itrfce, progress=None):
         Define a hardcoded pipeline that gets its optional command strings
         from Bob's interface code.
 
-        itrface is a dictionary of dictionaries
+        itrfce is a dictionary of dictionaries
     """
+    global loc
     assert 'Shared' in itrfce
     args = itrfce['Shared']
     srcdir = args['b']
     dstdir = args['d']
     if not dstdir:
-       r = srcdir 
+       dstdir = loc['results'] 
     date_and_time = time.strftime('%Y%m%d%H%M%S')
     logger = px.get_logger('bamToFQ'+date_and_time, dstdir)
     logger.info('Interface options: ' + str(itrfce))
@@ -46,7 +50,7 @@ def bamToFQ(itrfce, progress=None):
     cmds = [(None, 'b')]	# first task shows up on progress bar
     for f in files:
         # use -f flag to avoid user dialog - force progress/overwrite
-        cmds.append((['gzip', '-f', f], 'nb'))
+        cmds.append(([loc['gzip'], '-f', f], 'nb'))
 
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
     if success:

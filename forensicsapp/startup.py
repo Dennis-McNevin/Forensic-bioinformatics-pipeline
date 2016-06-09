@@ -11,7 +11,6 @@ def main(pb):
     # the command needs to be run in the background if the splash screen progress bar
     # is going to move ...
     # tkmb.showinfo("Say hello", "Hello!")
-    com.initcheck()
     os.umask(0077)	# make all files that are created private
     pb.status("Starting MPS Forensics application")
     pb.status("Starting meteor web service")

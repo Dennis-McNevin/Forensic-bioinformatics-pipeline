@@ -8,18 +8,14 @@ Australian National University
 """
 
 
-import os
-import time
+#import os
+#import time
 import modpipe as px
 import modcommon as com
 #import logging
 #import sys
-
-files = [
-          "allelotype", "lobSTR", 
-          "lobstr_convert.sh", "str2json.pl", 
-          "samtools",
-        ]
+import location
+loc = location.location
 
 def lobstr(itrfce, progress=None):
     """
@@ -34,13 +30,14 @@ def lobstr(itrfce, progress=None):
 
         progress is a progress bar and status line object for user feedback
     """
+    global loc
 
-    home, results = com.forensicsenv
-    cmdlobstr = com.getexec('lobSTR', pd=[ '/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0' ])
-    cmdallelotype = com.getexec('allelotype', pd=[ '/home/ngsforensics/forensicsapp/binaries/lobSTR-bin-Linux-x86_64-4.0.0' ])
-    cmdlobstr_convert = '/home/ngsforensics/forensicsapp/lobstr_convert.sh'
-    cmdstr2json = '/home/ngsforensics/forensicsapp/ngs_forensics/data/str2json.pl'
-    cmdsamtools = 'samtools' # assume it's on the regular PATH
+    # home, results = com.forensicsenv
+    cmdlobstr = loc['lobSTR']
+    cmdallelotype = loc['allelotype']
+    cmdlobstr_convert = loc['lobstr_convert.sh']
+    cmdstr2json = loc['str2json.pl']
+    cmdsamtools = loc['samtools']
 
     trim_fq, bn, cmds, pipedir, logger = com.prepare(itrfce, 'lobstr', progress)
     # note: len(trim_fq)==1 for single end, ==2 for paired-end data
@@ -128,6 +125,7 @@ def lobstr(itrfce, progress=None):
     cmds.append((cmd11, 'b'))
 
     # Upload results to DB
+    # this might be better using python's json converter
     results = trim_fq[0].rsplit('/',1)[:-1]
     cmd12 = ['cd', results[0], ';'] if results else []
     cmd12 += [ cmdstr2json,
@@ -135,10 +133,6 @@ def lobstr(itrfce, progress=None):
              'localhost:3001', '--db', 'meteor', '--collection', 'str', '--type',
              'json', '--drop', '--file', 'all.json', '--jsonArray']
     cmds.append((cmd12, 'bsh'))
-
-    run_order = cmds + [(cmd4, 'bsh'),
-                 (cmd6, 'b'), (cmd7, 'b'), (cmd10, 'b'), (cmd11, 'b'),
-                 (cmd12, 'bsh')]
 
     logger.info ('Launching pipeline')
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
@@ -182,7 +176,7 @@ if __name__ == '__main__':
 
     success = lobstr(interface, progress=dummypb.StatusProgress())
     if success:
-         print 'LobSTR pipeline completed successfully'
+        print 'LobSTR pipeline completed successfully'
     else:
         print 'LobSTR pipeline failed'
 

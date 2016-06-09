@@ -1,6 +1,7 @@
 .spyderworkspace
-test/*
 *.pyc
 *-old
-gc*
+forensicsapp/xxx.py
+forensicsapp/location.py
 xpix/*
+test/*

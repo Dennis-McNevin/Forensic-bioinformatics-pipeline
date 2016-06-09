@@ -14,22 +14,25 @@ It uses mpileup or freebayes to get a VCF file ...
 """
 
 
-import os
-import time
+#import os
+#import time
 import modpipe as px
 import modcommon as com
 
-files = [
-           "samtools", "bcftools", "bwa",
-           "freebayes",
-           "snp_convert.sh", 
-           "human.fa",
-        ]
+import location
+loc = location.location
 
-home, results = com.forensicsenv
+#files = [
+#           "samtools", "bcftools", "bwa",
+#           "freebayes",
+#           "snp_convert.sh", 
+#           "human.fa",
+#        ]
+#
+#home, results = com.forensicsenv
 
-freebayes="~bobb/src/freebayes/bin/freebayes"
-default_reference = '/home/ngsforensics/human/human.fa'
+#results = loc['results']
+#default_reference = loc['human.fa']
 # freebayes=os.path.join(home, 'bin', "freebayes")
 # default_reference = os.path.join(home, 'lib', 'ref', 'human.fa')
 
@@ -51,9 +54,7 @@ def tovcf(itrfce, progress=None):
             bcftools
             bwa
     """
-
-
-    cmdsnp_convert = '/home/ngsforensics/forensicsapp/snp_convert.sh'
+    global loc
 
     for sect in ['Shared', 'mpileup']: # BWA? Trimmomatic?
         if not sect in itrfce:
@@ -67,33 +68,32 @@ def tovcf(itrfce, progress=None):
     threads = itrfce['Shared']['threads']
     ref = itrfce['Shared']['R']
     if not ref:
-        global default_reference
-        ref = default_reference
+        ref = loc['human.fa']
     assert ref
 
     # Stage 4 BWA
     logger.info ('Preparing BWA alignment')
     sam_fn = bn + '.sam'
     cmds.append((
-                 ['bwa', 'mem', '-t', threads, ref] + trim_fq + [ '>', sam_fn],
+                 [loc['bwa'], 'mem', '-t', threads, ref] + trim_fq + [ '>', sam_fn],
                  'bsh'
                ))
 
     # Stage 5 SAM to BAM
     logger.info ('Preparing SAM to BAM conversion')
     bam_fn = bn + '.bam'
-    cmds.append((['samtools', 'view', '-Sb', '-o', bam_fn, sam_fn], 'b'))
+    cmds.append(([loc['samtools'], 'view', '-Sb', '-o', bam_fn, sam_fn], 'b'))
 
     # Stage 6 Sort
     logger.info ('Preparing BAM sorting')
     sorted_fn = bn + '_sorted.bam'
-    cmds.append((['samtools', 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn], 'b'))
+    cmds.append(([loc['samtools'], 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn], 'b'))
 
     # Stage 7 optional deduplication
     if itrfce['Shared']['dedup']:
         logger.info ('Preparing BAM deduplication')
         dedup_fn = bn + '_dedup.bam'
-        cmds.append((['samtools', 'rmdup', '-s', sorted_fn, dedup_fn], 'b'))
+        cmds.append(([loc['samtools'], 'rmdup', '-s', sorted_fn, dedup_fn], 'b'))
         finsrc = dedup_fn
     else:
         finsrc = sorted_fn
@@ -105,33 +105,32 @@ def tovcf(itrfce, progress=None):
 
     # Stage 9 Index
     logger.info ('Preparing final indexing')
-    cmds.append((['samtools', 'index', final_fn], 'b'))
+    cmds.append(([loc['samtools'], 'index', final_fn], 'b'))
 
     if tovcfprog=='mpileup':
 
         # Stage 10 mpileup
         logger.info ('Preparing Mpileup')
         bcf_fn = bn + '.bcf'
-        cmds.append((['samtools', 'mpileup', '-uf', ref, final_fn, '>', bcf_fn], 'bsh'))
+        cmds.append(([loc['samtools'], 'mpileup', '-uf', ref, final_fn, '>', bcf_fn], 'bsh'))
 
         # Stage 11 convert to VCF
         logger.info ('Preparing conversion to VCF')
         vcf_fn = bn + '.vcf'
-        cmds.append((['bcftools', 'view', '-cvg', bcf_fn, '>', vcf_fn], 'bsh'))
+        cmds.append(([loc['bcftools'], 'view', '-cvg', bcf_fn, '>', vcf_fn], 'bsh'))
     else:	# assert tovcfprog=='freebayes'
 
         # Stage 10 Freebayes
         logger.info ('Running freebayes')
         vcf_fn = bn + '.vcf'
-        global freebayes
         # cmd10 = [ freebayes, '-f', ref, final_fn, '|', 'vcffilter', '-f', '"QUAL > 20"', '>', vcf_fn ]
-        cmds.append(([freebayes, '-f', ref, final_fn, '>', vcf_fn ], 'bsh'))
+        cmds.append(([loc["freebayes"], '-f', ref, final_fn, '>', vcf_fn ], 'bsh'))
 
     # Stage 12 Restrict by snp panels
     logger.info('Preparing to filter loci')
     ai_fn = bn + '_ai.vcf'
     ii_fn = bn + '_ii.vcf'
-    cmds.append(([cmdsnp_convert, vcf_fn, ai_fn, ii_fn], 'b'))
+    cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
 
     #vcf_filt_pfx = vcf_fn.split('.')[0] + '_filt'
     #cmd12 = ['vcftools', '--vcf', vcf_fn, '--out', vcf_filt_pfx, '--minDP', '50', '--recode', '--record-INFO-all']
