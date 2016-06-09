@@ -44,9 +44,11 @@ then
     apt-get install -y firefox
     apt-get install -y git
     # we need Chrome to fully support meteor
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
-    sudo dpkg -i google-chrome-stable_current_amd64.deb
-    sudo apt-get install -y -f
+    if [ ! -f google-stable_current_amd64.deb ] ; then 
+      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
+      sudo dpkg -i google-chrome-stable_current_amd64.deb
+      sudo apt-get install -y -f
+    fi
 
 else
     # required on Fedora - this is not up to date and needs more testing
