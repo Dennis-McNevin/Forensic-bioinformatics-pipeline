@@ -129,8 +129,8 @@ ln ~/mpsforensics/mpsforensics_bin/Trimmomatic-0.36/trimmomatic-0.36.jar /usr/sh
 cd ..
 
 # Freebayes
-tar -xzf freebayes-1.0.2.tar.gz
-cd freebayes-1.0.2
+tar -xzf freebayes-v1.0.2.tar.gz
+cd freebayes-v1.0.2
 make
 make install
 cd ..
