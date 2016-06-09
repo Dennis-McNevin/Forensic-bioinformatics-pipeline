@@ -26,19 +26,19 @@ then
     # required on Ubuntu 14.04.14 LTS or 16.04 LTS
     add-apt-repository -y ppa:openjdk-r/ppa
     apt-get update -y
-    apt-get install -y gcc=4:5.2.1-3ubuntu1
-    apt-get install -y g++=4:5.2.1-3ubuntu1
-    apt-get install -y gfortran=4:5.2.1-3ubuntu1
+    apt-get install -y gcc
+    apt-get install -y g++
+    apt-get install -y gfortran
     apt-get install -y build-essential linux-headers-`uname -r` dkms
-    apt-get install -y cmake=3.2.2-2ubuntu3
+    apt-get install -y cmake
     apt-get install -y openjdk-8-jdk
-    apt-get install -y samtools=0.1.19-1ubuntu1
-    apt-get install -y bwa=0.7.12-4
-    apt-get install -y python-tk=2.7.9-1
-    apt-get install -y vcftools=0.1.13+dfsg-1
-    apt-get install -y bedtools=2.24.0-2
+    apt-get install -y samtools
+    apt-get install -y bwa
+    apt-get install -y python-tk
+    apt-get install -y vcftools
+    apt-get install -y bedtools
     apt-get install -y curl
-    apt-get install -y mongodb=1:2.6.10-0ubuntu1
+    apt-get install -y mongodb
     apt-get install -y libgsl0ldbl libgsl0-dev gsl-bin
     apt-get install -y firefox
     apt-get install -y git
