@@ -1,0 +1,71 @@
+*** ../../STRaitRazorv2.5/Newest_STRait_Razor/STRaitRazorDB.pl	2014-09-05 03:43:34.000000000 +1000
+--- STRaitRazorDB.pl	2016-06-09 14:02:24.093838346 +1000
+***************
+*** 162,168 ****
+  
+      my ($searchString, $searchFile, $outputFile) = @_;
+  
+!     `tre-agrep -${maxErrors} -S${subPenalty} -D${delPenalty} -I${insPenalty} --show-position $searchString $searchFile > $outputFile`;
+  
+  }
+      
+--- 162,168 ----
+  
+      my ($searchString, $searchFile, $outputFile) = @_;
+  
+!     `~/mpsforensics/bin/agrep -${maxErrors} -S${subPenalty} -D${delPenalty} -I${insPenalty} --show-position $searchString $searchFile > $outputFile`;
+  
+  }
+      
+*** ../../STRaitRazorv2.5/Newest_STRait_Razor/STRaitRazor.pl	2015-07-27 14:44:46.000000000 +1000
+--- STRaitRazor.pl	2016-06-07 11:33:05.921748373 +1000
+***************
+*** 88,94 ****
+      
+      `mkdir -p $subdir[$i]`;
+  #    my $cmd = "cat $fastq[$i] | ./readfq.pl  > $subdir[$i]/fastq.shortened";
+!      my $cmd = "cat $fastq[$i] > $subdir[$i]/fastq.shortened";
+      sleep(2);
+  	print "\nExtracting sequences from FASTQ file(s)\n";
+      `$cmd`;
+--- 88,97 ----
+      
+      `mkdir -p $subdir[$i]`;
+  #    my $cmd = "cat $fastq[$i] | ./readfq.pl  > $subdir[$i]/fastq.shortened";
+!      # process regular FASTQ or .gz (gzipped) files
+!      my $cmd = "cat";
+!      $cmd =  "zcat" if substr($fastq[$i], -3) eq ".gz";	# or use "gunzip -c"
+!      $cmd .= " $fastq[$i] > $subdir[$i]/fastq.shortened";
+      sleep(2);
+  	print "\nExtracting sequences from FASTQ file(s)\n";
+      `$cmd`;
+***************
+*** 133,144 ****
+      die "\nNo loci selected. Check to make sure -typeselection and the locus.config file are correct\n";
+  }
+  
+! if (-d "ppss_dir") {
+!     `rm -rf ppss_dir`;
+  }
+  
+  
+! system("./ppss -f $script -c 'perl  \$ITEM' ") == 0
+      or die "system call failed: $?";
+  
+  print "\nExtraction complete.  Flanks and surrounding sequences have also been trimmed \nfrom repeat sequences. Now writing allele calls to text file... \n";
+--- 136,150 ----
+      die "\nNo loci selected. Check to make sure -typeselection and the locus.config file are correct\n";
+  }
+  
+! # locate ppss_dir in a separate directory (where we have write permission, hopefully)
+! my $ppss_dir = "$dir/ppss_dir";
+! $ppss_dir = $ENV{'PPSS_DIR'} if defined $ENV{'PPSS_DIR'};
+! if (-d $ppss_dir) {
+!     `rm -rf $ppss_dir`;
+  }
+  
+  
+! system("PPSS_DIR=$ppss_dir ./ppss -f $script -c 'perl  \$ITEM' ") == 0
+      or die "system call failed: $?";
+  
+  print "\nExtraction complete.  Flanks and surrounding sequences have also been trimmed \nfrom repeat sequences. Now writing allele calls to text file... \n";

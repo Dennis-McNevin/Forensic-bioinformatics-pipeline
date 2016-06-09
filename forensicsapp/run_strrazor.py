@@ -13,9 +13,12 @@ This code is part os the Forensics project.
 
 
 import os
-import time
+#import time
 import modpipe as px
 import modcommon as com
+
+import location
+loc = location.location
 
 files = [
           'perl', 'STRaitRazor.pl', 'agrep',
@@ -35,7 +38,8 @@ def strrazor(itrfce, progress=None):
 
         progress is an optional progress bar object we can update
     """
-    strrazor_home = '/home/bobb/Downloads/STRaitRazorv2.5/Newest_STRait_Razor'
+    global loc
+    # strrazor_home = '/home/bobb/Downloads/STRaitRazorv2.5/Newest_STRait_Razor'
     # Note: STRaitRazor needs its own configuration ...
     # it's modified to process FASTQ .gz file
     # and to find it's agrep program
@@ -54,9 +58,11 @@ def strrazor(itrfce, progress=None):
     # cmds.append((cmd, 'bsh'))
 
     # run STRaitRazor
-    cmd = [ 'cd', strrazor_home, ';', 
+    tmp = loc['agrep']  # STRaitRazor uses this - just check that it's there
+    srdir, srscript = os.path.split(loc['STRaitRazor.pl'])
+    cmd = [ 'cd', srdir, ';', 
              # "PPSS_DIR="+os.path.join(destdir, 'ppss_dir'), # this would not work well
-             'perl', './STRaitRazor.pl', '-dir', wkdir,
+             loc['perl'], srscript, '-dir', wkdir,
           ] + [ x for f in fqs for x in [ '-fastq', f ]] + [
              '-sampleNum', itrfce['strrazor']['workdir'],
              '-typeselection', itrfce['strrazor']['opt'],
