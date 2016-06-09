@@ -20,11 +20,6 @@ import modcommon as com
 import location
 loc = location.location
 
-files = [
-          'perl', 'STRaitRazor.pl', 'agrep',
-        ]
-
-
 def strrazor(itrfce, progress=None):
     """
         Pipeline for running STRaitRazor script
@@ -39,8 +34,7 @@ def strrazor(itrfce, progress=None):
         progress is an optional progress bar object we can update
     """
     global loc
-    # strrazor_home = '/home/bobb/Downloads/STRaitRazorv2.5/Newest_STRait_Razor'
-    # Note: STRaitRazor needs its own configuration ...
+    # Note: STRaitRazor needs its own configuration ... there is a patch file
     # it's modified to process FASTQ .gz file
     # and to find it's agrep program
 
@@ -48,8 +42,6 @@ def strrazor(itrfce, progress=None):
         if not sect in itrfce:
             print sect, "is not present in the interface dictionary :("
             return False
-
-    home, destdir = com.forensicsenv
 
     fqs, bn, cmds, wkdir, logger = com.prepare(itrfce, 'STRaitRazor', progress)
 
@@ -61,7 +53,6 @@ def strrazor(itrfce, progress=None):
     tmp = loc['agrep']  # STRaitRazor uses this - just check that it's there
     srdir, srscript = os.path.split(loc['STRaitRazor.pl'])
     cmd = [ 'cd', srdir, ';', 
-             # "PPSS_DIR="+os.path.join(destdir, 'ppss_dir'), # this would not work well
              loc['perl'], srscript, '-dir', wkdir,
           ] + [ x for f in fqs for x in [ '-fastq', f ]] + [
              '-sampleNum', itrfce['strrazor']['workdir'],
