@@ -17,7 +17,7 @@ if len(sys.argv)<2:
     sys.exit(0)
 
 px = subprocess.PIPE
-cmd = "find -L ~/mpsforensics/bin ~/bin /usr/bin /usr/local ~/mpsforensics /var/share -name %s -type f 2>/dev/null"
+cmd = "find -L ~/mpsforensics/bin ~/bin /bin /usr/bin /usr/local/bin ~/mpsforensics /usr/local /var/share -name %s -type f 2>/dev/null"
 jv = subprocess.check_output('ls /usr/share/java/trimmomatic-*.jar | sort | tail -n 1', shell=True).rstrip()
 hdr = """
 
@@ -25,8 +25,10 @@ import os
  
 location = {
     'results': os.path.expanduser('~/mpsforensics/results'),
+    #'gzip': '/bin/gzip',
+    # this is not a real program - it's a directory and a program name
+    'meteor': os.path.expanduser('~/mpsforensics/results/viewer/meteor'),
     'java-version': '%s',
-    'gzip': '/bin/gzip',
 """ % jv
 
 files = {'results':'*** default ***', 'java-version' : jv, 'gzip': '/bin/gzip', }
