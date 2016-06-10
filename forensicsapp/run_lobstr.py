@@ -68,7 +68,7 @@ def lobstr(itrfce, progress=None):
            ]
     if trim_fq[0].endswith('.gz'):
         cmd4.append('--gzip')
-    cmds.append((cmd4, 'b'))
+    cmds.append((cmd4, 'bsh'))
 
     # Stage 6 Sort
     logger.info ('Preparing BAM sorting')
@@ -109,7 +109,7 @@ def lobstr(itrfce, progress=None):
             '--no-rmdup',
             '--max-diff-ref', '500',
             '--out', str_fn]
-    cmds.append((cmd10, 'b'))
+    cmds.append((cmd10, 'bsh'))
 
     # Stage 11 Restrict by Y-chrom and CODIS loci
     logger.info ('Preparing to filter loci')
