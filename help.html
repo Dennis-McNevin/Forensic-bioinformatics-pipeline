@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 4.4.3.2 (MacOSX)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Bob Buckley"/>
+	<meta name="changed" content="2016-04-13T12:01:53.073720000"/>
+</head>
+<body lang="en-AU" dir="ltr">
+<h1>Help for the NGS Forensics Pipeline Application</h1>
+<p>The <i>ANU Bioinfomatics Consultancy</i> developed this forensics
+bioinformatics pipeline for the National Centre for Forensic Studies at the University of Canberra.
+</p>
+<p>
+<br/>
+<br/>
+<h2>Installation</h2>
+<p> To install the NGS Forensics application:
+<ol>
+<li>
+Download https://www.dropbox.com/s/nhi8e9vzfgwga0q/setup_ngsforensics.sh
+</li>
+<li>
+The application requires at least 20 GB of disk space to accomodate multiple indexes of the human genomic reference.
+</li>
+<li>
+Make sure there is no existing account named ngsforensics (no directory/folder with the path /home/ngsforensics). The application creates a new user named ‘ngsforensics’. If there is an existing user account of this name the script will give errors and could even overwrite existing data
+</li>
+<li>
+Run this script as administrator/with administrator privileges. <br/>
+It will take a long time as it has to download the lobSTR genomic index as well as the hg19 complete human reference genome as indexed with BWA. (If you already have these downloaded you can comment out the appropriate ‘wget’ lines with a # symbol, but will need to create links to your own copies which is a non-trivial task).
+</li>
+<li>
+Once this is complete, the administrator will need to add the ngsforensics group to each user account that should be allowed access to the application. This can be done from the command line with:
+# usermod -a -G ngsforensics username
+Or through the graphical interface:
+On Ubuntu:
+On Fedora:
+</li>
+<li>
+Lastly the administrator should create a link for each user of the application to /home/ngsforensics/forensicsapp/start.sh which is the launcher for the application. This launcher makes sure that the database and web service are running (to support the viewer application) and after a 30 second delay starts the main application and NGS pipeline launcher.
+</li>
+</ol>
+<br/>
+</p>
+
+<h2>Using the NGS Forensics application</h2>
+<p><br/>Running the NGS Forensics application is as simple as double-clicking the link provided by your administrator. Ideally this is placed on the desktop, or somewhere else that is equally obvious to find.</p>
+<p>When you start the application it will first ensure that the required database and web server are running. These are needed by the visualisation component of the pipeline. After a 30 second delay (to guarantee enough time for these services to start cleanly) the main application is started.</p>
+<p>The application is composed of a number of tabs. The first of these is a welcome page that also contains three buttons, which launch the viewer service in the Firefox web browser.</p>
+
+</body>
+</html>
