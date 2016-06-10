@@ -157,6 +157,9 @@ fi
 
 # STRait Razor v2.5
 unzip -o STRaitRazorv2.zip
+if [ ! -d "$HOME/mpsforensics/STRaitRazorv2.5" ]; then
+  mkdir "$HOME/mpsforensics/STRaitRazorv2.5"
+fi
 mv STRaitRazorv2.5/Newest_STRait_Razor/* "$HOME/mpsforensics/STRaitRazorv2.5/."
 cd "$HOME/mpsforensics/STRaitRazorv2.5"
 chmod +x ppss
