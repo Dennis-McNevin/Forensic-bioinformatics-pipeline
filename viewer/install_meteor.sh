@@ -1,4 +1,4 @@
-meteor add accounts-password@=1.1.18
+meteor add accounts-password@=1.1.8
 meteor add aldeed:autoform@=5.8.1
 meteor add aldeed:autoform-select2@=2.0.2
 meteor add aldeed:collection2@=2.9.1
@@ -15,7 +15,7 @@ meteor add http
 meteor add ian:accounts-ui-bootstrap-3
 meteor add iron:router@=1.0.13
 meteor add jquery@=1.11.8
-meteor add maazlik:highcharts@=0.4.0
+meteor add maazalik:highcharts@=0.4.0
 meteor add materialize:materialize@=0.97.5
 meteor add mizzao:bootboxjs
 meteor add mizzao:jquery-ui
