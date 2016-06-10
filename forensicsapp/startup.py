@@ -2,13 +2,14 @@
 
 import subprocess
 import os
+import time
 # import modcommon as com
 # import tkMessageBox as tkmb
 import location
 
 sstime = 40 # no. seconds to display splash screen ... 
 
-def main(pb):
+def main(pb, Splash=None):
     # the command needs to be run in the background if the splash screen progress bar
     # is going to move ...
     # tkmb.showinfo("Say hello", "Hello!")
@@ -17,10 +18,17 @@ def main(pb):
     pb.status("Starting MPS Forensics application")
     pb.status("Starting meteor web service")
     mdir, mprog = os.path.split(loc['meteor'])
-    cmd = ["cd", mdir, ';', mprog, '&', 'sleep', '3', ]
+    cmd = ["cd", mdir, ';', mprog, '&', ]
+    time.sleep(3)
     subprocess.Popen(cmd, shell=True)
-    pb.step(100/3)
+    pb.step(6)
     pb.status("Starting IGV")
-    subprocess.Popen([loc["igv.sh"], '&', 'sleep', '3',], shell=True)
-    pb.step(100/3)
+    subprocess.Popen([loc["igv.sh"], '&', ], shell=True)
+    time.sleep(3)
+    pb.step(6)
+    for i in range(40-6):
+        if Splash:
+            Splash.front()
+        time.sleep(1)
+        pb.step(2)
     return
