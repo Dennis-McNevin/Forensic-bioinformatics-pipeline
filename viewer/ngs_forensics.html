@@ -1,0 +1,93 @@
+<head>
+  <title>MPS Forensics Browser</title>
+</head>
+<body>
+  {{>menu}}
+{{#if currentUser}}
+  {{> currentView}}
+  {{> lobstr}}
+  {{> snptable}}
+  {{> notes}}
+{{/if}}
+</body>
+
+<template name="currentView">
+	{{#autoForm id="currentViewForm" collection="CurrentView"}}
+		{{> afQuickField name='sample'}}
+	{{/autoForm}}
+</template>
+
+<template name="lobstr">
+	<div id="containerChart0" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart1" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart2" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart3" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart4" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart5" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart6" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart7" style="min-width: 300px; height: 110px;"></div>
+</template>
+
+<template name="notes">
+	{{#autoForm id="notesForm" collection="Notes"}}
+		{{> afQuickField name="notes"}}
+	{{/autoForm}}
+</template>
+
+<template name="menu">
+<div class="navbar navbar-default" role="navigation">
+    <form id="menuForm" class="form-inline" role="form">
+    <div class="navbar-header">
+    	<div class="form-group">
+        <a class="navbar-brand form-control" href="#">MPS Forensics</a>
+        </div>
+        <div class="form-group">
+        <select id="layout" class="selectpicker form-control">
+            <option>GlobalFiler</option>
+            <option>PowerPlex Fusion</option>
+            <option>PowerPlex 21</option>
+            <option>Promega CS7</option>
+            <option>Qiagen HDplex</option>
+            <option>Qiagen Argus X12</option>
+            <option>Y-Filer Plus</option>
+            <option>Y-Filer 17</option>
+            <option>PowerPlex Y-23</option>            
+        </select>
+        </div>
+    </div>
+    <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+            {{> loginButtons}}
+        </ul>
+    </div>
+    </form>
+</div>
+</template>
+
+<template name="_loginButtonsAdditionalLoggedInDropdownActions">
+    <button class="btn btn-default btn-block" id="login-buttons-edit-profile">Edit profile</button>
+</template>
+
+<template name="home">
+</template>
+
+<template name="snptable">
+	<div class="inner" style="width:80%">
+	<table class="table" id="SNPtable" align="center">
+	<caption>SNP calls:</caption>
+	<tbody>
+	<tr>
+	{{#each snps}}
+		<td>
+			<a target="_blank" href="http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs={{rsid}}">{{rsid}}</a><br/>
+			<strong style="font-size:35px;">
+				<a id="{{rsid}}" href="#" data-toggle="popover" data-content="<div id='{{rsid}}con' style='min-width:300px; height:300px'></div>" title="{{rsid}}" ref="{{ref}}" refC="{{refCount}}" alt="{{alt}}" altC="{{altCount}}">
+					{{geno1}} {{geno2}}</a>
+			</strong>
+		</td>
+	{{/each}}
+	</tr>
+	</tbody>
+	</table>
+	</div>
+</template>
