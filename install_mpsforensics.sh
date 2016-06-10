@@ -28,7 +28,7 @@ if python -mplatform | grep -qi ubuntu
 then
     # required on Ubuntu 14.04.14 LTS or 16.04 LTS
     sudo add-apt-repository -y ppa:openjdk-r/ppa
-    sudo apt-get update -y
+#    sudo apt-get update -y
     sudo apt-get install -y gcc
     sudo apt-get install -y g++
     sudo apt-get install -y gfortran
@@ -109,11 +109,13 @@ if [ ! -d "$HOME/.meteor" ] ; then
   #mv meteor "$HOME/.meteor"
   #cp "$HOME/mpsforensics/meteor" /usr/local/bin/meteor
   curl https://install.meteor.com/ | sh
-  cd "$HOME/mpsforensics/viewer"
-  ./install_meteor.sh
-  cd "$HOME/mpsforensics"
-
 fi
+  cd "$HOME/mpsforensics/viewer"
+if [ ! -d "$HOME/mpsforensics/viewer/.meteor" ]; then
+  meteor create .
+fi
+./install_meteor.sh
+cd "$HOME/mpsforensics"
 
 # Pull down mpsforensics_bin supporting binaries
 if [ ! -d "$HOME/mpsforensics/mpsforensics_bin" ] ; then

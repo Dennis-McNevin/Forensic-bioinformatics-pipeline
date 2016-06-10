@@ -27,7 +27,7 @@ location = {
     'results': os.path.expanduser('~/mpsforensics/results'),
     #'gzip': '/bin/gzip',
     # this is not a real program - it's a directory and a program name
-    'meteor': os.path.expanduser('~/mpsforensics/results/viewer/meteor'),
+    'meteor': os.path.expanduser('~/mpsforensics/viewer/meteor'),
     'java-version': '%s',
 """ % jv
 
