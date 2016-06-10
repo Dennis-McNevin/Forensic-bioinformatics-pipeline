@@ -18,9 +18,9 @@ def main(pb):
     pb.status("Starting meteor web service")
     mdir, mprog = os.path.split(loc['meteor'])
     cmd = ["cd", mdir, ';', mprog, '&', 'sleep', '3', ]
-    subprocess.call(cmd, shell=True)
+    subprocess.Popen(cmd, shell=True)
     pb.step(100/3)
     pb.status("Starting IGV")
-    subprocess.call([loc["igv.sh"], '&', 'sleep', '3',], shell=True)
+    subprocess.Popen([loc["igv.sh"], '&', 'sleep', '3',], shell=True)
     pb.step(100/3)
     return
