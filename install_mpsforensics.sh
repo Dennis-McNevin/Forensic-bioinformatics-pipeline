@@ -187,11 +187,18 @@ fi
 cd "$HOME/mpsforensics"
 ./install.sh
 
+# create application links
 if [ ! -f "$HOME/Desktop/MPSforensics.sh" ]; then
   echo '#!/bin/bash' > "$HOME/Desktop/MPSforensics.sh"
   echo "python $HOME/mpsforensics/forensics.py" >> "$HOME/Desktop/MPSforensics.sh"
   chmod +x "$HOME/Desktop/MPSforensics.sh"
 fi
+
+if [ ! -L "$HOME/Desktop/MPS_results" ]; then
+  ln -s "$HOME/mpsforensics/results" "$HOME/Desktop/MPS_results"
+fi
+
+cd "$HOME"
 
 echo "Installation of MPS Forensics pipeline complete"
 
