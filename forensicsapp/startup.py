@@ -13,6 +13,7 @@ def main(pb, Splash=None):
     # the command needs to be run in the background if the splash screen progress bar
     # is going to move ...
     # tkmb.showinfo("Say hello", "Hello!")
+    global sstime
     loc = location.location
     os.umask(0077)	# make all files that are created private
     pb.status("Starting MPS Forensics application")
@@ -26,9 +27,10 @@ def main(pb, Splash=None):
     subprocess.Popen([loc["igv.sh"], '&', ], shell=True)
     time.sleep(3)
     pb.step(6)
-    for i in range(40-6):
+    stepinc = max(100/sstime, 1)
+    for i in range(sstime-3*2-2):
         if Splash:
             Splash.front()
         time.sleep(1)
-        pb.step(2)
+        pb.step(stepinc)
     return
