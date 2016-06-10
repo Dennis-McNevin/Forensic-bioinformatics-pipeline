@@ -1,3 +1,3 @@
 cd forensicsapp
 
-python ../locater.py modcommon.py run_*.py 
+python ../locater.py modcommon.py startup.py run_*.py 
