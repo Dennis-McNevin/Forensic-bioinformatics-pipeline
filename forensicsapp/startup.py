@@ -19,9 +19,12 @@ def main(pb, Splash=None):
     pb.status("Starting MPS Forensics application")
     pb.status("Starting meteor web service")
     mdir, mprog = os.path.split(loc['meteor'])
-    cmd = ["cd", mdir, ';', mprog, '&', ]
-    time.sleep(3)
+    #cmd = ["cd", mdir, '&&', mprog, '&', ]
+    #cmd = ["cd", "$HOME/mpsforensics/viewer", "&&", "meteor", "run", "&",]
+    cmd = ["$HOME/mpsforensics/start_meteor.sh"]
     subprocess.Popen(cmd, shell=True)
+    time.sleep(3)
+
     pb.step(6)
     pb.status("Starting IGV")
     subprocess.Popen([loc["igv.sh"], '&', ], shell=True)

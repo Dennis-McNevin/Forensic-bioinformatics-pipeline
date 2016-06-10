@@ -31,7 +31,7 @@ location = {
     'java-version': '%s',
 """ % jv
 
-files = {'results':'*** default ***', 'java-version' : jv, 'gzip': '/bin/gzip', }
+files = {'results':'*** default ***', 'java-version' : jv, 'gzip': '/bin/gzip', 'meteor': '~/mpsforensics/viewer/meteor'}
 with open('location.py', 'w') as dst:
     print >> dst, hdr.rstrip()
     for fn in sys.argv[1:]:
