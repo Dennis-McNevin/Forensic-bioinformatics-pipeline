@@ -62,12 +62,13 @@ class SplashScreen(tk.Toplevel):
             self.pb = pb    # self.finish() uses this value
             # pb.start()
             
-        self.lift()
-        self.wm_attributes("-topmost", 1)   # put Spash Screen at the front
+        self.front()
         
         # call the startup code - done while splash screen is displayed 
         if start:
-            start(pb)
+            start(pb, Splash=self)
+        
+        self.front()
 
         self.lift()
         self.wm_attributes("-topmost", 1)   # keep Spash Screen at the front?
@@ -76,6 +77,11 @@ class SplashScreen(tk.Toplevel):
         tdiff = time.time() - time0
         self.after(max(int((minSplashTime-tdiff)*1000), 50), self.finish)
         
+        return
+    
+    def front(self):
+        self.lift()
+        self.wm_attributes("-topmost", 1)   # keep Spash Screen at the front?
         return
    
     def finish(self):

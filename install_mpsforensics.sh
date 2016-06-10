@@ -102,12 +102,17 @@ fi
 
 if [ ! -d "$HOME/.meteor" ] ; then
   # Pull down prebuilt meteor
-  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/cF63EohzFRcjD22/download
-  mv download meteor.tgz
-  tar -xzf meteor.tgz
-  rm meteor.tgz
-  mv meteor "$HOME/.meteor"
-  cp "$HOME/mpsforensics/meteor" /usr/local/bin/meteor
+  #wget https://cloudstor.aarnet.edu.au/plus/index.php/s/cF63EohzFRcjD22/download
+  #mv download meteor.tgz
+  #tar -xzf meteor.tgz
+  #rm meteor.tgz
+  #mv meteor "$HOME/.meteor"
+  #cp "$HOME/mpsforensics/meteor" /usr/local/bin/meteor
+  curl https://install.meteor.com/ | sh
+  cd "$HOME/mpsforensics/viewer"
+  ./install_meteor.sh
+  cd "$HOME/mpsforensics"
+
 fi
 
 # Pull down mpsforensics_bin supporting binaries
