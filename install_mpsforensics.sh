@@ -165,7 +165,7 @@ cd tre-0.8.0
 ./configure --prefix="$HOME/mpsforensics/"
 make clean
 make
-sudo make install
+make install
 cd "$HOME/mpsforensics/mpsforensics_bin"
 
 # IGV
