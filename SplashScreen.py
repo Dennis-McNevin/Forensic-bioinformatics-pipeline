@@ -70,12 +70,9 @@ class SplashScreen(tk.Toplevel):
         
         self.front()
 
-        self.lift()
-        self.wm_attributes("-topmost", 1)   # keep Spash Screen at the front?
-            
         # schedule splash screen finish() 
         tdiff = time.time() - time0
-        self.after(max(int((minSplashTime-tdiff)*1000), 50), self.finish)
+        self.after(max(int((minSplashTime-tdiff)*1000), 50), self.finalise)
         
         return
     
@@ -84,7 +81,7 @@ class SplashScreen(tk.Toplevel):
         self.wm_attributes("-topmost", 1)   # keep Spash Screen at the front?
         return
    
-    def finish(self):
+    def finalise(self):
         """Finish the splash screen.
         Then destroy the toplevel widget.
         """
@@ -92,7 +89,12 @@ class SplashScreen(tk.Toplevel):
         # stop the progress bar ... if it's running
         if self.pb:
             self.pb.end()
+            self.pb.update()
+        self.after(2000, self.finish)
+        self.front()
+        return
 
+    def finish(self):
         # Destroy the splash window
         self.destroy( )
       
