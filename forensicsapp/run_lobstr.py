@@ -8,7 +8,7 @@ Australian National University
 """
 
 
-#import os
+import os
 #import time
 import modpipe as px
 import modcommon as com
@@ -32,23 +32,18 @@ def lobstr(itrfce, progress=None):
     """
     global loc
 
-    # home, results = com.forensicsenv
-    cmdlobstr = loc['lobSTR']
-    cmdallelotype = loc['allelotype']
-    cmdlobstr_convert = loc['lobstr_convert.sh']
-    cmdstr2json = loc['str2json.pl']
     cmdsamtools = loc['samtools']
 
     trim_fq, bn, cmds, pipedir, logger = com.prepare(itrfce, 'lobstr', progress)
     # note: len(trim_fq)==1 for single end, ==2 for paired-end data
+    assert bn.startswith(pipedir)
 
     threads = itrfce['Shared']['threads']
-    fnb = bn.rsplit('/', 1)[-1]
 
     # LobSTR specific
-    LOBINDEX = '/home/ngsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_ref/lobSTR_'
-    LOBINFO  = '/home/ngsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_strinfo.tab'
-    LOBNOISE = '/home/ngsforensics/lobstr_ref/share/lobSTR/models/illumina_v3.pcrfree'
+    LOBINDEX = '~/mpsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_ref/lobSTR_'
+    LOBINFO  = '~/mpsforensics/lobstr_ref/hg19_v3.0.2/lobstr_v3.0.2_hg19_strinfo.tab'
+    LOBNOISE = '~/mpsforensics/lobstr_ref/share/lobSTR/models/illumina_v3.pcrfree'
 
     # stage 4 LobSTR.
     logger.info ('Preparing LobSTR alignment')
@@ -56,12 +51,12 @@ def lobstr(itrfce, progress=None):
     # prefix_fn = trim_fq.split('.')[0]
  
     cmd4x = [x for xs in zip((['--p1', '--p2'] if len(trim_fq)==2 else ['-f']), trim_fq) for x in xs ] 
-    cmd4 = [cmdlobstr,
+    cmd4 = [loc['lobSTR'],
             '--index-prefix', LOBINDEX,
             '-p', threads, '-q'
            ] + cmd4x + \
            [
-            '--rg-sample', fnb, '--rg-lib', fnb,
+            '--rg-sample', pipedir, '--rg-lib', pipedir,
             '--fft-window-size', '24', '--fft-window-step', '12',
             '--mapq', '300',
             '--mismatch', '3',
@@ -103,7 +98,7 @@ def lobstr(itrfce, progress=None):
     min_read_end_match  = itrfce['LobSTR']['min-read-end-match']
     min_border          = itrfce['LobSTR']['min-border']
 
-    cmd10 = [cmdallelotype,
+    cmd10 = [loc['allelotype'],
             '--index-prefix', LOBINDEX, '--strinfo', LOBINFO,
             '--command', 'classify', '--noise_model', LOBNOISE, '--bam',
             sorted_fn, '--min-border', min_border,
@@ -121,15 +116,16 @@ def lobstr(itrfce, progress=None):
     vcf_fn = str_fn + '.vcf'
     ystr_fn = str_fn + '.ystr.txt'
     codis_fn = str_fn + '.codis.txt'
-    cmd11 = [cmdlobstr_convert, vcf_fn, ystr_fn, codis_fn]
+    cmd11 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn]
     cmds.append((cmd11, 'b'))
 
     # Upload results to DB
     # this might be better using python's json converter
-    results = trim_fq[0].rsplit('/',1)[:-1]
-    cmd12 = ['cd', results[0], ';'] if results else []
-    cmd12 += [ cmdstr2json,
-             '*lobstr*/*.txt', '>', 'all.json', '&&', 'mongoimport', '-h',
+    resultdir, fn = os.path.split(trim_fq[0])
+    cmd12 = ['cd', resultdir, ';'] if resultdir else []
+    cmd12 += [ loc['str2json.pl'],
+             # '*lobstr*/*.txt', 
+             '*.txt', '>', 'all.json', '&&', loc['mongoimport'], '-h',
              'localhost:3001', '--db', 'meteor', '--collection', 'str', '--type',
              'json', '--drop', '--file', 'all.json', '--jsonArray']
     cmds.append((cmd12, 'bsh'))

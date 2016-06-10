@@ -35,7 +35,7 @@ with open('location.py', 'w') as dst:
     for fn in sys.argv[1:]:
         with open(fn) as src:
             prog = src.read()
-        for m in re.finditer(r'loc\[(["\'])([^"\']+)\1\]', prog):
+        for m in re.finditer(r'loc\s*\[\s*(["\'])([^"\']+)\1\s*\]', prog):
             target = m.group(2)
             if target in files:
                 continue
