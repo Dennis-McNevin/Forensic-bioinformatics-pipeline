@@ -69,6 +69,9 @@ class SplashScreen(tk.Toplevel):
         if start:
             start(pb)
 
+        self.lift()
+        self.wm_attributes("-topmost", 1)   # keep Spash Screen at the front?
+            
         # schedule splash screen finish() 
         tdiff = time.time() - time0
         self.after(max(int((minSplashTime-tdiff)*1000), 50), self.finish)
