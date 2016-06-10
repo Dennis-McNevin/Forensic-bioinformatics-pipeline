@@ -160,7 +160,11 @@ def prepare(itrfce, pipename, progress=None, trim=True):
     # Stage 2 Trimmomatic
     # trimlog = os.path.join(proj_dn, 'raw_trimlog.txt')
     logger.info ('Preparing Trimmomatic')
-    cmd2 = [loc['java'], '-classpath', loc['java-version'], 'org.usadelllab.trimmomatic.'+trimmo, -threads, threads, '-phred33'] + trim_in + trim_x + ['AVGQUAL:'+itrfce['Trimmomatic']['q']] 
+    cmd2 = [loc['java'], '-classpath', loc['java-version'], 
+               'org.usadellab.trimmomatic.'+trimmo, '-threads', threads, 
+               '-phred33'] + trim_in + trim_x + [
+               'AVGQUAL:'+itrfce['Trimmomatic']['q']
+            ] 
 
     # if 'clip' in itrfce:
     #    cmd2.append(itrfce['clip']) # need to have an adapter file
