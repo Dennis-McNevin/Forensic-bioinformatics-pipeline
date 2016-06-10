@@ -9,7 +9,8 @@
 	<meta name="changed" content="2016-04-13T12:01:53.073720000"/>
 </head>
 <body lang="en-AU" dir="ltr">
-<h1>Help for the NGS Forensics Pipeline Application</h1>
+<h1>Help for the MPS Forensics Pipeline Application</h1>
+<p><i>This help is very out-of-date.</i></p>
 <p>The <i>ANU Bioinfomatics Consultancy</i> developed this forensics
 bioinformatics pipeline for the National Centre for Forensic Studies at the University of Canberra.
 </p>
@@ -17,16 +18,13 @@ bioinformatics pipeline for the National Centre for Forensic Studies at the Univ
 <br/>
 <br/>
 <h2>Installation</h2>
-<p> To install the NGS Forensics application:
+<p> To install the MPS Forensics application:
 <ol>
 <li>
-Download https://www.dropbox.com/s/nhi8e9vzfgwga0q/setup_ngsforensics.sh
+Download https://www.dropbox.com/s/nhi8e9vzfgwga0q/install_mpsforensics.sh
 </li>
 <li>
 The application requires at least 20 GB of disk space to accomodate multiple indexes of the human genomic reference.
-</li>
-<li>
-Make sure there is no existing account named ngsforensics (no directory/folder with the path /home/ngsforensics). The application creates a new user named ‘ngsforensics’. If there is an existing user account of this name the script will give errors and could even overwrite existing data
 </li>
 <li>
 Run this script as administrator/with administrator privileges. <br/>
@@ -40,14 +38,14 @@ On Ubuntu:
 On Fedora:
 </li>
 <li>
-Lastly the administrator should create a link for each user of the application to /home/ngsforensics/forensicsapp/start.sh which is the launcher for the application. This launcher makes sure that the database and web service are running (to support the viewer application) and after a 30 second delay starts the main application and NGS pipeline launcher.
+Lastly the administrator should create a link for each user of the application to /home/ngsforensics/forensicsapp/start.sh which is the launcher for the application. This launcher makes sure that the database and web service are running (to support the viewer application) and after a 30 second delay starts the main application and MPS pipeline launcher.
 </li>
 </ol>
 <br/>
 </p>
 
-<h2>Using the NGS Forensics application</h2>
-<p><br/>Running the NGS Forensics application is as simple as double-clicking the link provided by your administrator. Ideally this is placed on the desktop, or somewhere else that is equally obvious to find.</p>
+<h2>Using the MPS Forensics application</h2>
+<p><br/>Running the MPS Forensics application is as simple as double-clicking the link provided by your administrator. Ideally this is placed on the desktop, or somewhere else that is equally obvious to find.</p>
 <p>When you start the application it will first ensure that the required database and web server are running. These are needed by the visualisation component of the pipeline. After a 30 second delay (to guarantee enough time for these services to start cleanly) the main application is started.</p>
 <p>The application is composed of a number of tabs. The first of these is a welcome page that also contains three buttons, which launch the viewer service in the Firefox web browser.</p>
 
