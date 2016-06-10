@@ -14,37 +14,42 @@
 
 # Installer by Cameron Jack, ANU 2016.
 # Must be run with root privileges, but all code is
-# placed under ~/mpsforensics, which simplifies both
+# placed under $HOME/mpsforensics, which simplifies both
 # installation and data security concerns.
 
 # Supported platforms: Ubuntu 14.04.4 LTS, 16.04 LTS
 
-cd ~
+set -x
+set -e
+
+cd "$HOME"
 
 if python -mplatform | grep -qi ubuntu
 then
     # required on Ubuntu 14.04.14 LTS or 16.04 LTS
-    add-apt-repository -y ppa:openjdk-r/ppa
-    apt-get update -y
-    apt-get install -y gcc
-    apt-get install -y g++
-    apt-get install -y gfortran
-    apt-get install -y build-essential linux-headers-`uname -r` dkms
-    apt-get install -y cmake
-    apt-get install -y openjdk-8-jdk
-    apt-get install -y samtools
-    apt-get install -y bwa
-    apt-get install -y python-tk
-    apt-get install -y vcftools
-    apt-get install -y bedtools
-    apt-get install -y curl
-    apt-get install -y mongodb
-    apt-get install -y libgsl2
-    apt-get install -y gsl-bin
-    apt-get install -y firefox
-    apt-get install -y git
+    sudo add-apt-repository -y ppa:openjdk-r/ppa
+    sudo apt-get update -y
+    sudo apt-get install -y gcc
+    sudo apt-get install -y g++
+    sudo apt-get install -y gfortran
+    sudo apt-get install -y build-essential linux-headers-`uname -r` dkms
+    sudo apt-get install -y cmake
+    sudo apt-get install -y zlib1g-dev
+    sudo apt-get install -y openjdk-8-jdk
+    sudo apt-get install -y samtools
+    sudo apt-get install -y bwa
+    sudo apt-get install -y python-tk
+    sudo apt-get install -y vcftools
+    sudo apt-get install -y bedtools
+    sudo apt-get install -y curl
+    sudo apt-get install -y mongodb
+    sudo apt-get install -y libgsl2
+    sudo apt-get install -y gsl-bin
+    sudo apt-get install -y firefox
+    sudo apt-get install -y git
     # we need Chrome to fully support meteor
-    if [ ! -f google-stable_current_amd64.deb ] ; then 
+    if [ ! -f "$HOME/google-chrome-stable_current_amd64.deb" ] ; then 
+      cd "$HOME"
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
       sudo dpkg -i google-chrome-stable_current_amd64.deb
       sudo apt-get install -y -f
@@ -66,19 +71,18 @@ else
     dnf install -y mongodb
     dnf install -y gsl-devel
     #dnf install -y firefox
-
 fi
 
 # Pull down application
-if [ ! -d "~/mpsforensics" ] ; then
+if [ ! -d "$HOME/mpsforensics" ] ; then
   git clone https://cameronjack@bitbucket.org/gdu_jcsmr/mpsforensics.git
   cd mpsforensics
   mkdir results
 fi
 
-cd ~/mpsforensics
+cd "$HOME/mpsforensics"
 
-if [ ! -d "~/mpsforensics/human" ] ; then
+if [ ! -d "$HOME/mpsforensics/human" ] ; then
   # Pull down BWA indexed human reference
   wget https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
   mv download hg19.tgz
@@ -87,7 +91,7 @@ if [ ! -d "~/mpsforensics/human" ] ; then
   # wget https://www.dropbox.com/s/p47hqi8zde3qmqn/hg19.tgz
 fi
 
-if [ ! -d "~/lobstr_ref" ] ; then
+if [ ! -d "$HOME/mpsforensics/lobstr_ref" ] ; then
   # Pull down LobSTR prebuilt
   wget https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
   mv download lobstr_ref.tgz
@@ -96,18 +100,18 @@ if [ ! -d "~/lobstr_ref" ] ; then
   # wget https://www.dropbox.com/s/2asy40bx9agfjhk/lobstr.tgz
 fi
 
-if [ ! -d "~/.meteor" ] ; then
+if [ ! -d "$HOME/.meteor" ] ; then
   # Pull down prebuilt meteor
-  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/cF63EohzFRcjD22
+  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/cF63EohzFRcjD22/download
   mv download meteor.tgz
   tar -xzf meteor.tgz
   rm meteor.tgz
-  mv meteor ~/.meteor
-  cp ~/mpsforensics/meteor /usr/local/bin/meteor
+  mv meteor "$HOME/.meteor"
+  cp "$HOME/mpsforensics/meteor" /usr/local/bin/meteor
 fi
 
 # Pull down mpsforensics_bin supporting binaries
-if [ ! -d "~/mpsforensics/mpsforensics_bin" ] ; then
+if [ ! -d "$HOME/mpsforensics/mpsforensics_bin" ] ; then
   wget https://cloudstor.aarnet.edu.au/plus/index.php/s/SI91o90UGCkkGFN/download
   mv download mpsforensics_bin.tgz
   tar -xzf mpsforensics_bin.tgz
@@ -115,48 +119,78 @@ if [ ! -d "~/mpsforensics/mpsforensics_bin" ] ; then
 fi
 
 # install binaries as needed: FASTQC, Trimmomatic, LobSTR, STRaitRazor, Freebayes
-cd ~/mpsforensics/mpsforensics_bin
+cd "$HOME/mpsforensics/mpsforensics_bin"
 
 # FASTQC
-unzip fastqc_v0.11.5.zip
+unzip -o fastqc_v0.11.5.zip
 cd FastQC
 chmod +x fastqc
-ln ~/mpsforensics/mpsforensics_bin/FastQC/fastqc /usr/local/bin/fastqc
+if [ ! -f "/usr/local/bin/fastqc" ]; then
+  ln "$HOME/mpsforensics/mpsforensics_bin/FastQC/fastqc" /usr/local/bin/fastqc
+fi
 cd ..
 
 # Trimmomatic
-unzip Trimmomatic-0.36.zip
-cd Trimmomatic-0.36
-ln ~/mpsforensics/mpsforensics_bin/Trimmomatic-0.36/trimmomatic-0.36.jar /usr/share/java/trimmomatic-0.36.jar
-cd ..
+unzip -o Trimmomatic-0.36.zip
+if [ ! -f "/usr/share/java/trimmomatic-0.36.jar" ]; then
+  ln "$HOME/mpsforensics/mpsforensics_bin/Trimmomatic-0.36/trimmomatic-0.36.jar" /usr/share/java/trimmomatic-0.36.jar
+fi
 
 # Freebayes
-tar -xzf freebayes-v1.0.2.tar.gz
-cd freebayes-v1.0.2
-make
-make install
-cd ..
+if [ ! -f "/usr/local/bin/freebayes" ]; then
+  tar -xzf freebayes-v1.0.2.tgz
+  cd freebayes
+  make clean
+  make
+  sudo make install
+  cd ..
+fi
 
 # LobSTR v4
 tar -xzf lobSTR-bin-Linux-x86_64-4.0.0.tar.gz
-ln ~/mpsforensics/mpsforensics_bin/lobSTR-bin-Linux-x86_64-4.0.0/bin/allelotype /usr/local/bin/allelotype
-ln ~/mpsforensics/mpsforensics_bin/lobSTR-bin-Linux-x86_64-4.0.0/bin/lobSTR /usr/local/bin/lobSTR
+if [ -f "/usr/local/bin/allelotype" ]; then
+  ln "$HOME/mpsforensics/mpsforensics_bin/lobSTR-bin-Linux-x86_64-4.0.0/bin/allelotype" /usr/local/bin/allelotype
+fi
+if [ -f "/usr/local/bin/lobSTR" ]; then
+  ln "$HOME/mpsforensics/mpsforensics_bin/lobSTR-bin-Linux-x86_64-4.0.0/bin/lobSTR" /usr/local/bin/lobSTR
+fi
 
 # STRait Razor v2.5
-unzip STRaitRazorv2.zip
-mv STRaitRazorv2.5/Newest_STRait_Razor/ ~/mpsforensics/STRaitRazorv2.5
-cd ~/mpsforensics/STRaitRazor
+unzip -o STRaitRazorv2.zip
+mv STRaitRazorv2.5/Newest_STRait_Razor/* "$HOME/mpsforensics/STRaitRazorv2.5/."
+cd "$HOME/mpsforensics/STRaitRazorv2.5"
 chmod +x ppss
 tar -xzf tre-0.8.0.tar.gz
 cd tre-0.8.0
-./configure --prefix=/usr/local
+./configure --prefix="$HOME/mpsforensics/"
+make clean
 make
-make install
-cd ~/mpsforensics/mpsforensics_bin
+sudo make install
+cd "$HOME/mpsforensics/mpsforensics_bin"
 
 # IGV
-tar -xzf IGV_2.3.67.tgz
-mv IGV_2.3.67 ~/mpsforensics/IGV_2.3.67
+if [ ! -d "$HOME/mpsforensics/IGV_2.3.67" ]; then
+  tar -xzf IGV_2.3.67.tgz
+  mv IGV_2.3.67 "$HOME/mpsforensics/IGV_2.3.67"
+fi
+
+# Picard tools
+if [ ! -d "$HOME/mpsforensics/picard-tools-2.2.1" ]; then
+  tar -xzf picard-tools-2.2.1.tgz
+  mv picard-tools-2.2.1 "$HOME/mpsforensics/picard-tools-2.2.1"
+fi
+
+# set paths in application
+cd "$HOME/mpsforensics"
+./install.sh
+
+if [ ! -f "$HOME/Desktop/MPSforensics.sh" ]; then
+  echo '#!/bin/bash' > "$HOME/Desktop/MPSforensics.sh"
+  echo "python $HOME/mpsforensics/forensics.py" >> "$HOME/Desktop/MPSforensics.sh"
+  chmod +x "$HOME/Desktop/MPSforensics.sh"
+fi
+
+echo "Installation of MPS Forensics pipeline complete"
 
 ### End of mpsforensics installer script ###
 
