@@ -16,7 +16,7 @@ def main(pb):
     os.umask(0077)	# make all files that are created private
     pb.status("Starting MPS Forensics application")
     pb.status("Starting meteor web service")
-    mdir, mprog = loc['meteor']
+    mdir, mprog = os.path.split(loc['meteor'])
     cmd = ["cd", mdir, ';', mprog, '&' ]
     subprocess.call(cmd, shell=True)
     pb.step(100/3)
