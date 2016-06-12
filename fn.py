@@ -105,6 +105,20 @@ class ivar(ifrow):
         w1.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
         return
+class gvar(ifrow):
+    """Float input in interface
+    The constaint option has a 3rd value - the number of digits after the decimal point"""
+    def __init__(self, master, cfgline):
+        self.var = tk.StringVar()
+        ifrow.__init__(self, master, cfgline)   # init superclass
+        self.var.set(self.default)
+        f,t,d = cfgline.constraint.split('-',1)
+        w1 = tk.Spinbox(master, textvariable=self.var, from_=float(f), to=float(t),
+                        format='%%.%df'%d, increment=float('.'+'0'*(d-1)+'1'))
+        w1.grid(row=master.rows, column=1, sticky='w')
+        master.rows += 1
+        return
+    
     
 class tvar(ifrow):
     """Text input in interface"""
@@ -205,7 +219,8 @@ class Page(ttk.Frame):
         ttk.Frame.__init__(self, nb)    # border=?
         nb.add(self, text=cfg.tabname)  # instead of pack or grid
                 
-        wfunc   = {'tickbox': bvar, 'int': ivar, 'text': tvar, 'file': fvar, 'choice': cvar,
+        wfunc   = {'tickbox': bvar, 'int': ivar, 'float': gvar,
+                    'text': tvar, 'file': fvar, 'choice': cvar,
                     'directory': (lambda m, cfg: fvar(m, cfg, dirflag=True)) }
 
         cfglabs = ['group', 'grouplab', 'flag', 'label', 'type', 'constraint', \
