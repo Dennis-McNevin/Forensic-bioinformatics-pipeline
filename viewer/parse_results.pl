@@ -120,7 +120,7 @@ for my $origname(@files) {
 			}
 			my $refC=$dp[0]+$dp[1];
 			my $altC=$dp[2]+$dp[3];
-			push @snps,[$id,"{rsid:'$rsid',ref:'$ref',alt:'$alt',geno1:'$geno[0]',geno2:'$geno[1]',panel:'$panel',depth:'$dp4',refCount:$refC,altCount:$altC}"] unless ($panel eq 'str') || (length($ref)>0) || (length($alt)>0);
+			push @snps,[$id,"{rsid:'$rsid',ref:'$ref',alt:'$alt',geno1:'$geno[0]',geno2:'$geno[1]',panel:'$panel',depth:'$dp4',refCount:$refC,altCount:$altC}"] unless $panel eq 'str' or length($ref)>1 or length($alt)>1;
 		}
 		close IN;
 		$json.="{ _id: '$filename',\n  orig: '$origname',\n  file: '$filename',\n  sample: '$sample',\n  type: '$type',\n  layout: '$layout',\n";
