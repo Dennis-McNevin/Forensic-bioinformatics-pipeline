@@ -1,0 +1,9 @@
+/* CSS declarations go here */
+.select {
+	margin-bottom:10px; 
+}
+.inner {
+    margin-left:15px;
+}
+#SNPtable  {display: block; }
+#SNPtable  td {display: inline-block; background:#FFFAF8; width:90px}
