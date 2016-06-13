@@ -10,13 +10,33 @@ It is used to configure an applicatioin that calls various other programs.
 """
 
 import sys
+import os
 import re
 import subprocess
 
 if len(sys.argv)<2:
     sys.exit(0)
 
-cmd = "find -L ~/mpsforensics/bin ~/bin /bin /usr/bin /usr/local/bin ~/mpsforensics /usr/local /var/share -name %s -type f 2>/dev/null"
+# the following are expected to be present ... or installed with apt-get
+native = [
+    'gcc',
+    'g++',
+    'java',
+    'gfortran',
+    'bwa',
+    'samtools', 'bcftools', 'vcftools', 'bedtools',
+    'curl',
+    'mongodb', 'mongoimport',
+    'firefox',
+    'git',
+    'gzip', 'gunzip',
+    'perl', 'python',
+]
+
+cmd = "find -L ~/mpsforensics/bin ~/mpsforensics /var/share ~ -name %s -type f 2>/dev/null"
+npath = [x for x in os.getenv('PATH').split(':') if not x.endswith('games')]
+ncmd ="find -L "+' '.join(npath)+" -name %s -type f 2>/dev/null"
+
 location = {
     'results': "os.path.expanduser('~/mpsforensics/results')",
     # 'meteor' is not a real program - it's a directory and a program name
@@ -37,7 +57,8 @@ for fn in sys.argv[1:]:
         target = m.group(2)
         if target in location:
             continue
-        proc = subprocess.Popen(cmd%target, shell=True, stdout=px, stderr=px)
+        xcmd = ncmd if target in native else cmd
+        proc = subprocess.Popen(xcmd%target, shell=True, stdout=px, stderr=px)
         proc.wait()
         out, err = proc.communicate()
         out = out.rstrip()
