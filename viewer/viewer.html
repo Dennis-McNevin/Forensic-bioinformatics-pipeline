@@ -5,8 +5,7 @@
   {{>menu}}
 {{#if currentUser}}
   {{> currentView}}
-  {{> lobstr}}
-  {{> snptable}}
+  {{> Template.dynamic template=currentViz}}
   {{> notes}}
 {{/if}}
 </body>

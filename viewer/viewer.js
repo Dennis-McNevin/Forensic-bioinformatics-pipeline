@@ -158,6 +158,14 @@ Template.currentView.events({
 	}
 });
 
+Session.setDefault('viz','lobstr');
+
+Template.body.helpers({
+	currentViz: function(){
+		return Session.get('viz');
+	}
+})
+
 Template.menu.events({
 	'change form#menuForm #layout': function(e){
 //		console.log('Selected layout '+e.target.value);
@@ -327,11 +335,13 @@ function builtLobstr(collection) {
 //				graphOptions.title.text = null;
 //			}
 			new Highcharts.Chart(graphOptions);
+			Session.set('viz','lobstr');
 		}
 	}else {
 		sample=Str.findOne({_id:sampleName});
 		if(sample!=null) {
 			Session.set('snps',sample.snpsArray);
+			Session.set('viz','snptable');
 //			console.log(JSON.stringify(sample.snpsArray));
 		}
 	}
