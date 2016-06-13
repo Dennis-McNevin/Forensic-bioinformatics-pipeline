@@ -128,7 +128,7 @@ def tovcf(itrfce, progress=None):
 
     # Stage 12 Restrict by snp panels
     logger.info('Preparing to filter loci')
-    snp_fn = bn + 'snp.txt'
+    snp_fn = bn + '.snp.txt'
     cmds.append(([loc["bedtools"], 'intersect', '-b', vcf_fn, '-a', loc["standard.pnl"], #$HOME/mpsforensics/standard.pnl,
             '-wb', '>', snp_fn], 'bsh'))
     #ai_fn = bn + '_ai.vcf'
