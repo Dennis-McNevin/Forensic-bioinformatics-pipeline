@@ -62,7 +62,7 @@ cd "$MPSFOR/mpsforensics_bin"
 if [ ! -f "$MPSFOR/bin/fastqc" ]; then
   unzip -o fastqc_v0.11.5.zip
   chmod +x FastQC/fastqc
-  ln "$MPSFOR/mpsforensics_bin/FastQC/fastqc" "$MPSFOR/bin/fastqc"
+  #ln "$MPSFOR/mpsforensics_bin/FastQC/fastqc" "$MPSFOR/bin/fastqc"
 fi
 
 # Trimmomatic
