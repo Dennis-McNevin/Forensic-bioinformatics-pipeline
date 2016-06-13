@@ -9,8 +9,8 @@ John Curtin School of Medical Research,
 Australian National University
 18/5/2016
 
-This code is part os the Forensics project.
-It uses mpileup or freebayes to get a VCF file ...
+This code is part of the Forensics project.
+It uses mpileup or freebayes to get a SNP VCF file ...
 """
 
 
@@ -128,9 +128,12 @@ def tovcf(itrfce, progress=None):
 
     # Stage 12 Restrict by snp panels
     logger.info('Preparing to filter loci')
-    ai_fn = bn + '_ai.vcf'
-    ii_fn = bn + '_ii.vcf'
-    cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
+    snp_fn = bn + 'snp.txt'
+    cmds.append(([loc["bedtools"], 'intersect', '-b', vcf_fn, '-a', loc["standard.pnl"], #$HOME/mpsforensics/standard.pnl,
+            '-wb', '>', snp_fn], 'bsh'))
+    #ai_fn = bn + '_ai.vcf'
+    #ii_fn = bn + '_ii.vcf'
+    #cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
 
     # Stage 13 upload to DB
     logger.info('Uploading to DB')
