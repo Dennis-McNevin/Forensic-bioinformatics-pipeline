@@ -17,6 +17,26 @@ import modcommon as com
 import location
 loc = location.location
 
+def add_args(arg_dict, cmd):
+    """
+        Go through args dict and add arguments to command line
+    """
+    for key in arg_dict.keys():
+        if not isinstance(arg_dict[key], bool):
+            if len(key) == 1:
+                cmd.append('-' + key)
+                cmd.append(arg_dict[key])
+            else:
+                cmd.append('--' + key)
+                cmd.append(arg_dict[key])
+        elif arg_dict[key]: # include if true
+            if len(key) == 1:
+                cmd.append('-' + key)
+                #cmd.append(arg_dict[key])
+            else:
+                cmd.append('--' + key)
+                #cmd.append(arg_dict[key])
+
 def lobstr(itrfce, progress=None):
     """
         Pipeline for running LobSTR STR caller in single- and paired-end mode
@@ -49,79 +69,58 @@ def lobstr(itrfce, progress=None):
     logger.info ('Preparing LobSTR alignment')
     bam_fn = bn + '.aligned.bam'
     # prefix_fn = trim_fq.split('.')[0]
- 
     cmd4x = [x for xs in zip((['--p1', '--p2'] if len(trim_fq)==2 else ['-f']), trim_fq) for x in xs ] 
     cmd4 = [loc['lobSTR'],
             '--index-prefix', LOBINDEX,
             '-p', threads, '-q'
            ] + cmd4x + \
            [
-            '--rg-sample', pipedir, '--rg-lib', pipedir,
-            '--fft-window-size', '24', '--fft-window-step', '12',
-            '--mapq', '300',
-            '--mismatch', '3',
-            '-e', '2',
-            '--max-diff-ref', '500',
-            '--maxflank', '100',
-            '--bwaq', '25',
-            '--out', bn
-           ]
+            '--rg-sample', pipedir, '--rg-lib', pipedir, '--out', bn]
+    logger.debug ('LobSTR options')
+    logger.debug (itrfce['LobSTR'])
+    logger.debug ('Allelotype options')
+    logger.debug (itrfce['allelotype'])
+    add_args(itrfce['LobSTR'], cmd4)
+
     if trim_fq[0].endswith('.gz'):
         cmd4.append('--gzip')
     cmds.append((cmd4, 'bsh'))
 
-    # Stage 6 Sort
+    # Stage 5 Sort
     logger.info ('Preparing BAM sorting')
     sorted_fn = bn + '_sorted.bam'
-    cmd6 = [cmdsamtools, 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn]
+    cmd5 = [cmdsamtools, 'sort', '-f', '-@', threads, '-m', '2G', bam_fn, sorted_fn]
+    cmds.append((cmd5, 'b'))
+
+    # Stage 6 Index
+    logger.info ('Preparing BAM indexing')
+    cmd6 = [cmdsamtools, 'index', sorted_fn]
     cmds.append((cmd6, 'b'))
 
-    # Stage 7 Index
-    logger.info ('Preparing BAM indexing')
-    cmd7 = [cmdsamtools, 'index', sorted_fn]
-    cmds.append((cmd7, 'b'))
-
-    # May need dedup from tovcf pipeline in here ...
-    # Stage 8 rmdup
-    #dedup_fn = sorted_fn.split('.')[0] + '_dedup.bam'
-    #cmd8 = [cmdsamtools, 'rmdup', '-s', sorted_fn, dedup_fn]
-
-    # Stage 9 Index
-    #cmd9 = [cmdsamtools, 'index', dedup_fn]
-
-    # Stage 10 LobSTR
+    # Stage 7 LobSTR
     logger.info ('Preparing LobSTR allelotyping')
     str_fn = bn + '_lobstr'
 
-    min_bp_before_indel = itrfce['LobSTR']['min-bp-before-indel']
-    maximal_end_match   = itrfce['LobSTR']['maximal-end-match']
-    min_read_end_match  = itrfce['LobSTR']['min-read-end-match']
-    min_border          = itrfce['LobSTR']['min-border']
-
-    cmd10 = [loc['allelotype'],
+    cmd7 = [loc['allelotype'],
             '--index-prefix', LOBINDEX, '--strinfo', LOBINFO,
-            '--command', 'classify', '--noise_model', LOBNOISE, '--bam',
-            sorted_fn, '--min-border', min_border,
-            '--min-bp-before-indel', min_bp_before_indel,
-            '--maximal-end-match', maximal_end_match,
-            '--min-read-end-match', min_read_end_match,
-            '--haploid', 'chrX,chrY',
-            '--no-rmdup',
-            '--max-diff-ref', '500',
+            '--command', 'classify', '--noise_model', LOBNOISE, 
+            '--bam', sorted_fn,
+            '--haploid', 'chrX,chrY', 
             '--out', str_fn]
-    cmds.append((cmd10, 'bsh'))
+    add_args(itrfce['allelotype'], cmd7)
+    cmds.append((cmd7, 'bsh'))
 
-    # Stage 11 Restrict by Y-chrom and CODIS loci
+    # Stage 8 Restrict by Y-chrom and CODIS loci
     logger.info ('Preparing to filter loci')
     vcf_fn = str_fn + '.vcf'
     ystr_fn = str_fn + '.ystr.txt'
     codis_fn = str_fn + '.codis.txt'
-    cmd11 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn]
-    cmds.append((cmd11, 'b'))
+    cmd8 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn]
+    cmds.append((cmd8, 'b'))
 
     # Upload results to DB
-    cmd12 = [loc['load_results.sh']]
-    cmds.append((cmd12, 'b'))
+    cmd9 = [loc['load_results.sh']]
+    cmds.append((cmd9, 'b'))
 
     logger.info ('Launching pipeline')
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
