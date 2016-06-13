@@ -126,7 +126,7 @@ fi
 
 # set paths in application
 cd "$MPSFOR"
-./locator.sh
+./locater.sh
 
 # create application links
 if [ ! -f "$HOME/Desktop/MPSforensics.sh" ]; then
