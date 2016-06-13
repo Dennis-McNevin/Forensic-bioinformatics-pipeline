@@ -109,6 +109,7 @@ class ivar(ifrow):
         w1.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
         return
+        
 class gvar(ifrow):
     """Float input in interface
     The constaint option has a 3rd value - the number of digits after the decimal point"""
@@ -123,8 +124,7 @@ class gvar(ifrow):
         w1.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
         return
-    
-    
+       
 class tvar(ifrow):
     """Text input in interface"""
     def __init__(self, master, cfgline):
