@@ -43,7 +43,7 @@ cd "$MPSFOR/viewer"
 if [ ! -d "$MPSFOR/viewer/.meteor" ]; then
   meteor create .
 fi
-#./install_meteor.sh
+./install_meteor.sh
 
 cd "$MPSFOR"
 
