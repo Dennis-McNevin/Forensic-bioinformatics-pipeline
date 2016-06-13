@@ -334,8 +334,8 @@ function builtLobstr(collection) {
 //			}else {
 //				graphOptions.title.text = null;
 //			}
-			new Highcharts.Chart(graphOptions);
 			Session.set('viz','lobstr');
+			new Highcharts.Chart(graphOptions);
 		}
 	}else {
 		sample=Str.findOne({_id:sampleName});
