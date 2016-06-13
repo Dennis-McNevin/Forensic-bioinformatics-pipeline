@@ -100,7 +100,11 @@ class ivar(ifrow):
         self.var = tk.StringVar()
         ifrow.__init__(self, master, cfgline)   # init superclass
         self.var.set(self.default)
-        f,t = cfgline.constraint.split('-',1)
+        try:
+            f,t = cfgline.constraint.rsplit('-',1) # rsplit allow initial negative number
+        except ValueError:
+            print("Ugh, bad config line:", cfgline)
+            raise ValueError
         w1 = tk.Spinbox(master, textvariable=self.var, from_=f, to=t)
         w1.grid(row=master.rows, column=1, sticky='w')
         master.rows += 1
@@ -112,7 +116,8 @@ class gvar(ifrow):
         self.var = tk.StringVar()
         ifrow.__init__(self, master, cfgline)   # init superclass
         self.var.set(self.default)
-        f,t,d = cfgline.constraint.split('-',1)
+        f,t,d = cfgline.constraint.split('-')
+        d=int(d)
         w1 = tk.Spinbox(master, textvariable=self.var, from_=float(f), to=float(t),
                         format='%%.%df'%d, increment=float('.'+'0'*(d-1)+'1'))
         w1.grid(row=master.rows, column=1, sticky='w')
@@ -284,7 +289,12 @@ class Page(ttk.Frame):
                         print("type =", cx.type, cx)
 
                     assert cx.type in wfunc
-                    wfunc[cx.type](popts, cx)      # generate the parameter line in the GUI
+                    try:
+                        wfunc[cx.type](popts, cx)      # generate the parameter line in the GUI
+                    except:
+                        print("Bad option config:", cx)
+                        progbar.status("Configuration error. :(")
+                        raise
                     fldprev = fld
         
             progbar.status("done reading config file:", fn)
