@@ -33,7 +33,7 @@ native = [
     'perl', 'python',
 ]
 
-cmd = "find -L ~/mpsforensics/bin ~/mpsforensics /var/share ~ -name %s -type f 2>/dev/null"
+cmd = "find -L ~/mpsforensics/viewer ~/mpsforensics/bin ~/mpsforensics /var/share ~ -name %s -type f 2>/dev/null"
 npath = [x for x in os.getenv('PATH').split(':') if not x.endswith('games')]
 ncmd ="find -L "+' '.join(npath)+" -name %s -type f 2>/dev/null"
 

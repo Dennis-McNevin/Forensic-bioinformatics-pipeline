@@ -120,15 +120,8 @@ def lobstr(itrfce, progress=None):
     cmds.append((cmd11, 'b'))
 
     # Upload results to DB
-    # this might be better using python's json converter
-    resultdir, fn = os.path.split(trim_fq[0])
-    cmd12 = ['cd', resultdir, ';'] if resultdir else []
-    cmd12 += [ loc['str2json.pl'],
-             # '*lobstr*/*.txt', 
-             '*.txt', '>', 'all.json', '&&', loc['mongoimport'], '-h',
-             'localhost:3001', '--db', 'meteor', '--collection', 'str', '--type',
-             'json', '--drop', '--file', 'all.json', '--jsonArray']
-    cmds.append((cmd12, 'bsh'))
+    cmd12 = [loc['load_results.sh']]
+    cmds.append((cmd12, 'b'))
 
     logger.info ('Launching pipeline')
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
