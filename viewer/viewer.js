@@ -330,8 +330,10 @@ function builtLobstr(collection) {
 		}
 	}else {
 		sample=Str.findOne({_id:sampleName});
-		Session.set('snps',sample.snpsArray);
-//		console.log(JSON.stringify(sample.snpsArray));
+		if(sample!=null) {
+			Session.set('snps',sample.snpsArray);
+//			console.log(JSON.stringify(sample.snpsArray));
+		}
 	}
 }
 
