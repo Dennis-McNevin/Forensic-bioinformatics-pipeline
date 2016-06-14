@@ -57,7 +57,7 @@ def run_cmd(cmd_list, shell=False, logger=None):
     """ Launch a task, suitable to independent processes """
     cmds = map(str, cmd_list)
     if shell:
-        cmds = ' '.join(cmd_list)
+        cmds = ' '.join(cmds)
     try:
         # print "running:", cmds if shell else ' '.join(cmds)
         proc = subprocess.Popen(cmds, shell=shell, stdout=subprocess.PIPE,
