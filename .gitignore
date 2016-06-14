@@ -3,6 +3,9 @@
 *-old
 forensicsapp/xxx.py
 forensicsapp/location.py
+results/*
+bin/*
+lib/*
 xpix/*
 test/*
 .Rproj.user
