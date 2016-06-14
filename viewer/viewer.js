@@ -19,7 +19,6 @@ Schemas.CurrentView=new SimpleSchema({
 		max:300,
 		autoform: {
 			type: "selectize",
-			autoValue: "R701-A506 | snp | freebayes | 20160606205604;R701-A506_S5_L001_R1_001_freebayes_20160606205604/R701-A506_S5_L001_R1_001.snp.txt",
 			options: function() {
 				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
 			}
@@ -30,7 +29,6 @@ Schemas.CurrentView=new SimpleSchema({
 		max: 50,
 		autoform: {
 			type: "selectize",
-			autoValue: "GlobalFiler",
 			options: function() {
 				return _.map(["GlobalFiler","Y-Filer 17","Y-Filer Plus","PowerPlex Fusion","PowerPlex 21","PowerPlex Y-23","Qiagen Argus X12","Qiagen HDplex","Promega CS7"],function(c) {return {label:c,value:c};});
 			}
