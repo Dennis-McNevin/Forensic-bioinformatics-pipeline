@@ -195,7 +195,7 @@ class fvar(ifrow):
         if self.required and not s:
             tkMessageBox.showerror("Missing filename", "Please select a filename for\n%s." % self.label)
             raise Exception, "Missing filename."
-        return self.flg, s        
+        return (self.flg, s) if s else None # None if no file
 
 class pipesect(ttk.Frame):
     """extend the ttk.LabelFrame for a pileline section in the user interface"""
@@ -213,7 +213,8 @@ class pipesect(ttk.Frame):
     
     def getflags(self):
         "get the label and a Python dictionary of flags and their values"
-        return self.label, dict(a.myflags() for a in self.vars)
+        # We need to check if x is not None (no file was given)
+        return self.label, dict(x for a in self.vars for x in (a.myflags(),) if x)
         
 class Page(ttk.Frame):
     """

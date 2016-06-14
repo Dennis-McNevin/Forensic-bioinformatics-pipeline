@@ -36,6 +36,25 @@ loc = location.location
 # freebayes=os.path.join(home, 'bin', "freebayes")
 # default_reference = os.path.join(home, 'lib', 'ref', 'human.fa')
 
+def add_args(arg_dict, cmd):
+    """
+        Go through args dict and add arguments to command line
+    """
+    for key in arg_dict.keys():
+        if not isinstance(arg_dict[key], bool):
+            if len(key) == 1:
+                cmd.append('-' + key)
+                cmd.append(arg_dict[key])
+            else:
+                cmd.append('--' + key)
+                cmd.append(arg_dict[key])
+        elif arg_dict[key]: # include if true
+            if len(key) == 1:
+                cmd.append('-' + key)
+            else:
+                cmd.append('--' + key)
+
+
 def tovcf(itrfce, progress=None):
     """
         Pipeline for running mpileup (or freebayes)
@@ -66,18 +85,20 @@ def tovcf(itrfce, progress=None):
 
     trim_fq, bn, cmds, pipedir, logger = com.prepare(itrfce, tovcfprog, progress)
     threads = itrfce['Shared']['threads']
+    if 'R' not in itrfce['Shared']:
+        itrfce['Shared']['R'] = loc['human.fa']
     ref = itrfce['Shared']['R']
-    if not ref:
-        ref = loc['human.fa']
-    assert ref
 
     # Stage 4 BWA
     logger.info ('Preparing BWA alignment')
     sam_fn = bn + '.sam'
-    cmds.append((
-                 [loc['bwa'], 'mem', '-t', threads, ref] + trim_fq + [ '>', sam_fn],
-                 'bsh'
-               ))
+    cmd4 = [loc['bwa'], 'mem', '-t', threads]
+    add_args(itrfce['BWA'], cmd4)
+    cmd4.append(ref)
+    cmd4 += trim_fq # trim_fq is a list so it adds
+    cmd4.append('>')
+    cmd4.append(sam_fn)
+    cmds.append((cmd4, 'bsh'))
 
     # Stage 5 SAM to BAM
     logger.info ('Preparing SAM to BAM conversion')
@@ -112,7 +133,11 @@ def tovcf(itrfce, progress=None):
         # Stage 10 mpileup
         logger.info ('Preparing Mpileup')
         bcf_fn = bn + '.bcf'
-        cmds.append(([loc['samtools'], 'mpileup', '-uf', ref, final_fn, '>', bcf_fn], 'bsh'))
+        cmd10 = [loc['samtools'], 'mpileup']
+        add_args(itrfce['mpileup'],cmd10)
+        cmd10 += ['-uf', ref, final_fn, '>', bcf_fn]
+        cmds.append((cmd10, 'bsh'))
+        #cmds.append(([loc['samtools'], 'mpileup', '-uf', ref, final_fn, '>', bcf_fn], 'bsh'))
 
         # Stage 11 convert to VCF
         logger.info ('Preparing conversion to VCF')
@@ -124,7 +149,11 @@ def tovcf(itrfce, progress=None):
         logger.info ('Running freebayes')
         vcf_fn = bn + '.vcf'
         # cmd10 = [ freebayes, '-f', ref, final_fn, '|', 'vcffilter', '-f', '"QUAL > 20"', '>', vcf_fn ]
-        cmds.append(([loc["freebayes"], '-f', ref, final_fn, '>', vcf_fn ], 'bsh'))
+        cmd10 = [loc['freebayes']]
+        add_args(itrfce['freebayes'], cmd10)
+        cmd10 += ['-f', ref, final_fn, '>', vcf_fn]
+        cmds.append((cmd10, 'bsh'))
+        #cmds.append(([loc["freebayes"], '-f', ref, final_fn, '>', vcf_fn ], 'bsh'))
 
     # Stage 12 Restrict by snp panels
     logger.info('Preparing to filter loci')
