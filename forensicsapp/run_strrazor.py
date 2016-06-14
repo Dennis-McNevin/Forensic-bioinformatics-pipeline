@@ -55,7 +55,7 @@ def strrazor(itrfce, progress=None):
     cmd = [ 'cd', srdir, ';', 
              loc['perl'], srscript, '-dir', wkdir,
           ] + [ x for f in fqs for x in [ '-fastq', f ]] + [
-             '-sampleNum', itrfce['strrazor']['workdir'],
+             '-sampleNum', 'STRaitRazor',
              '-typeselection', itrfce['strrazor']['opt'],
           ]
     cmds.append((cmd, 'bsh'))
