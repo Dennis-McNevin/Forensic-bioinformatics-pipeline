@@ -98,6 +98,7 @@ if [ ! -d "$MPSFOR/STRaitRazorv2.5" ] ; then
   mkdir -p "$MPSFOR/STRaitRazorv2.5" 
   mv STRaitRazorv2.5/Newest_STRait_Razor/* "$MPSFOR/STRaitRazorv2.5/."
   cd "$MPSFOR/STRaitRazorv2.5"
+  patch < $MPSFOR/forensicsapp/STRaitRazor.patch
   chmod +x ppss
   tar -xzf tre-0.8.0.tar.gz
   cd tre-0.8.0
