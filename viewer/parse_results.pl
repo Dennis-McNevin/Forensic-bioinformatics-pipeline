@@ -93,13 +93,11 @@ my @files=glob "*/*.txt";
 my $filename;
 for my $origname(@files) {
 	$filename=$origname;
-	$filename=~s/\.txt$//;
-	$filename=~s/_trimmed_sorted//;
-	$filename=~s/_lobstr//;
-	$filename=~ s/(_S\d+)?_L\d{3}_R\d_\d{3}//;
-	print STDERR $filename;
+	$filename=~s/\.txt$//g;
+	$filename=~s/_trimmed_sorted//g;
+	$filename=~s/_lobstr//g;
+	$filename=~s/(_S\d+)?_L\d{3}_R\d_\d{3}//g;
 	my($sample,$type)=split/\./,$filename,2;
-	print STDERR "\t$sample\n";
 	if($type eq 'snp') {
 		$layout=$type;
 		$json='';
@@ -115,7 +113,7 @@ for my $origname(@files) {
 			my($geno,$dp,$dpr,$rO,$qr,$aO)=split/:/,$genotype;
 			my @geno=map{$ref[$_]} split/\//,$geno;
 			my $id=$rsid;
-			$id=~s/^rs//;
+			$id=~s/^rs//g;
 			($dp4)=$info2=~/\bDP4=([\d,]+)\b/;
 			my @dp=map{$_?$_:0} split/,/,$dp4;
 			unless(defined $dp4) {
