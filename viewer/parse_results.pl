@@ -2,16 +2,6 @@
 use Data::Dumper;
 use List::Util qw(sum);
 
-my %primaryThresh=();
-my %stutterThresh=();
-
-open IN,"threshold.csv" or die "unable to open threshold.csv file in results directory";
-while(<IN>) {
-	chomp;
-	my($locus,$type,$t,$s)=split/,/; #comma-delimited!
-	$primaryThresh{$locus}=$t;
-	$stutterThresh{$locus}=$s;
-}
 my %templAll=(
 	'GlobalFiler'=>
 		[['D3S1358','VWA','D16S539','CSF1PO','TPOX'],
@@ -87,9 +77,59 @@ my %dyeMap=(
 );
 
 my %json=();
+my(%analyticThresh,%stochasticThresh,%stutterThresh)=();
 
-
-for my $origname(@ARGV) {
+open IN,"$ENV{HOME}/mpsforensics/standard.pnl" or die "unable to open standard.pnl panel in mpsforensics directory";
+while(<IN>) {
+	chomp;
+#chrY	21717207	21717208	rs3848982	ii	5	10	5	;
+	my($chr,$start,$stop,$locus,$type,$analytic,$stochastic,$stutter,$size_repeat)=split/\t/;
+	$analyticThresh{$locus}=$analytic;
+	$stochasticThresh{$locus}=$stochastic;
+	$stutterThresh{$locus}=$stutter;
+}
+chdir("$ENV{HOME}/mpsforensics/results");
+my @files=glob "*/*.txt";
+for my $origname(@files) {
+	$filename=$origname;
+	$filename=~s/\.txt$//;
+	$filename=~s/_trimmed_sorted_lobstr//;
+	$filename=~s/(_S\d+)?_L\d{3}_R\d_\d{3}\b//;
+	my($sample,$type)=split/\./,$filename,2;
+	if($type eq 'snp') {
+		$layout=$type;
+		$json='';
+		@snps=();
+		%unlisted=();
+		open IN,$origname or die;
+		while(<IN>) {
+#chr1	12608177	12608178	rs6541030	ai	5	10	5	;	chr1	12608178	.	A	G	222	.	DP=7890;VDB=9.341664e-17;RPB=1.584304e+00;AF1=1;AC1=2;DP4=5,2,5955,1916;MQ=60;FQ=-282;PV4=0.68,0.13,0.46,1	GT:PL:GQ	1/1:255,255,0:99
+			chomp;
+			my @l=split/\t/;
+			($chr,$start,$stop,$rsid,$panel,$thresh1,$thresh2,$thresh3,$info,$chr2,$start2,$stop2,$ref,$alt,$qual,$filter,$info2,$format,$genotype)=@l;
+			my @ref=($ref,split/,/,$alt);
+			my($geno,$dp,$dpr,$rO,$qr,$aO)=split/:/,$genotype;
+			my @geno=map{$ref[$_]} split/\//,$geno;
+			my $id=$rsid;
+			$id=~s/^rs//;
+			($dp4)=$info2=~/\bDP4=([\d,]+)\b/;
+			my @dp=map{$_?$_:0} split/,/,$dp4;
+			unless(defined $dp4) {
+				@dp=($rO,0,$aO,0);
+				$dp4=join',',@dp;
+			}
+			my $refC=$dp[0]+$dp[1];
+			my $altC=$dp[2]+$dp[3];
+			push @snps,[$id,"{rsid:'$rsid',ref:'$ref',alt:'$alt',geno1:'$geno[0]',geno2:'$geno[1]',panel:'$panel',depth:'$dp4',refCount:$refC,altCount:$altC}"] unless $panel eq 'str' or length($ref)>1 or length($alt)>1;
+		}
+		close IN;
+		$json.="{ _id: '$filename',\n  orig: '$origname',\n  file: '$filename',\n  sample: '$sample',\n  type: '$type',\n  layout: '$layout',\n";
+		my($prefix,$suffix)=split/\./,$filename,2;
+		$json.="  title: '".uc($suffix)." markers for $prefix',\n";
+		$json.="  snpsArray: [\n";
+		$json.=join(",\n",map{$_->[1]} sort{$a->[0]<=>$b->[0]} @snps)." ]\n}";
+		$json{"$filename"}=$json;
+	}else {
 	for my $layout(keys %templAll) {
 		$json='';
 		%a=();
@@ -101,10 +141,6 @@ for my $origname(@ARGV) {
 		for my $dye(0..$#templ) {
 			$templ{$_}=$dye for @{$templ[$dye]};
 		}
-#		print STDERR $layout,Dumper \%templ;
-		$filename=$origname;
-		$filename=~s/\.(codis|ystr)\.txt$/.\1/;
-		my($sample,$type)=split/\./,$filename;
 		@dyeMap=@{$dyeAll{$type}};
 		open IN,$origname or die;
 		while(<IN>) {
@@ -112,10 +148,8 @@ for my $origname(@ARGV) {
 			my @l=split/\t/;
 			if($#l>7) {
 				($chr,$pos,$alleles,$major1,$major2,$unit,$ref,$locus,$allele1,$allele2)=@l;
-				$type="CODIS";
 			}else {
 				($chr,$pos,$alleles,$offset,$unit,$ref,$locus,$allele1)=@l;
-				$type="YSTR";
 			}
 			$ref{$locus}=$ref;
 			my %al=();
@@ -132,34 +166,19 @@ for my $origname(@ARGV) {
 			$a{$locus}=\%al;
 		}
 		close IN;
-#		if($type eq "YSTR") {
-#			@templ=();
-#			my @loci=sort keys %unlisted;
-#			push @templ,[splice @loci,0,6] while @loci;
-#			for my $dye(0..5) {
-#				for my $locus(@{$templ[$dye]}) {
-#					$templ{$_}=$dye;
-#					$nums[$dye]{$_}++ for keys %{$a{$locus}};
-#				}
-#			}
-#		}else {
-			my @loci=sort keys %unlisted;
-#			print STDERR "unlisted: @loci\n";
-			push @templ,[splice @loci,0,6] while @loci;
-			for my $dye(0..7) {
-				for my $locus(@{$templ[$dye]}) {
-					if(defined $unlisted{$locus}) {
-						$templ{$_}=$dye;
-						$nums[$dye]{$_}++ for keys %{$a{$locus}};
-					}
+		my @loci=sort keys %unlisted;
+		push @templ,[splice @loci,0,6] while @loci;
+		for my $dye(0..7) {
+			for my $locus(@{$templ[$dye]}) {
+				if(defined $unlisted{$locus}) {
+					$templ{$_}=$dye;
+					$nums[$dye]{$_}++ for keys %{$a{$locus}};
 				}
 			}
-#			print STDERR Dumper(\@templ),"\n\n";
-#		}
-#		print STDERR $layout,Dumper \@templ;
-		#open OUT,">$filename.json" or die;
-		$json.="{ _id: '$filename|$layout',\n  file: '$filename',\n  sample: '$sample',\n  type: '$type',\n  layout: '$layout',\n";
-		$json.="  title: '$type markers for $filename',\n";
+		}
+		$json.="{ _id: '$filename|$layout',\n  orig: '$origname',\n  file: '$filename',\n  sample: '$sample',\n  type: '$type',\n  layout: '$layout',\n";
+		my($prefix,$suffix)=split/\./,$filename,2;
+		$json.="  title: '".uc($suffix)." markers for $prefix',\n";
 		$json.="  categoriesArray: [\n";
 		my @categories=();
 		for my $dye(0..$#templ) {
@@ -180,7 +199,7 @@ for my $origname(@ARGV) {
 			my @subseries=();
 			for my $n(@n) {
 				my $subseries="\t{ name: '$n', color: '".$dyeMap[$dye]."', data: [";
-		        	$subseries.=join(",",map{defined $a{$_}{$n}?"{y:$a{$_}{$n},l:$n,p:".sprintf("%.2f",$a{$_}{$n}/$aSum{$_}*100).",pt:$primaryThresh{$_},st:$stutterThresh{$_},r:$ref{$_}}":0} @loci)."] }";
+				$subseries.=join(",",map{defined $a{$_}{$n}?"{y:$a{$_}{$n},l:$n,p:".sprintf("%.2f",$a{$_}{$n}/$aSum{$_}*100).",at:$analyticThresh{$_},st:$stochasticThresh{$_},tt:$stutterThresh{$_},r:$ref{$_}}":0} @loci)."] }";
 				push @subseries,$subseries;
 			}
 			$series.=join(",\n",@subseries)." ]";
@@ -189,5 +208,6 @@ for my $origname(@ARGV) {
 		$json.=join(",\n",@series)." ]\n}";
 		$json{"$filename|$layout"}=$json;
 	}
+	}
 }
-print "[ ",join(",\n",values %json)," ]\n";
+print "[ ",join(",\n",map{$json{$_}} sort keys %json)," ]\n";

@@ -123,7 +123,7 @@ if __name__ == "__main__":
     r.lift()
     r.wm_attributes("-topmost", 1)   # put at the front    
     
-    tm = "ForensiX by ANU Bioinformatics Consultancy"
+    tm = "Forensics Pipeline by ANU Bioinformatics Consultancy"
     SplashScreen( imageFilename='my.gif', text=tm, minSplashTime=5, progbar=True, start=ssbg )
          
     r.geometry(geocentre(r, 600, 400))

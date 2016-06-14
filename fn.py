@@ -276,7 +276,7 @@ class Page(ttk.Frame):
                             break
                         fld[i] = fldprev[i]
                     # fld = [fx if fx else prev for fx, prev in zip(fld, fldprev)]
-                    assert len(fld)==cfglen
+                    assert len(fld)==cfglen, "fld is %r" % fld
                     cx = Cfgline(*tuple(fld))  # make named tuple from config line
                     if not (popts and popts.label==cx.group): # column 0? Start a new pipe-section ... 
                         popts = pipesect(myf, cx.group, cx.grouplab)  # start a new pipe section
@@ -363,8 +363,8 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
         f1 = ttk.Frame(self)
         f1.pack(padx=30)
-        ttk.Button(f1, text="About", command=lambda : browseOpen("file://"+cwd+"/about.html")).pack(side=tk.LEFT, pady=20, padx=50)
-        helpname = os.path.join(cwd, "help.html")
+        ttk.Button(f1, text="About", command=lambda : browseOpen("file://"+cwd+"/help/about.html")).pack(side=tk.LEFT, pady=20, padx=50)
+        helpname = os.path.join(cwd, "help/help.html")
         if os.path.isfile(helpname): # no button unless the help file exists
             ttk.Button(f1, text="Help", command=lambda : browseOpen("file://"+helpname)).pack(side=tk.LEFT, pady=20, padx=50)
         else:
@@ -447,7 +447,7 @@ def win(pages):
     root.wm_attributes("-topmost", 1)   # put at the front
     root.withdraw()
     
-    ss.SplashScreen(imageFilename=os.path.join(cwd, 'my.gif'), text="MPS Forensics Pipelines",
+    ss.SplashScreen(imageFilename=os.path.join(cwd, 'pix/my.gif'), text="MPS Forensics Pipelines",
                     progbar=True, minSplashTime=pages.sstime, start=pages.main)
     
     app = App(root, pages)

@@ -9,8 +9,8 @@ John Curtin School of Medical Research,
 Australian National University
 18/5/2016
 
-This code is part os the Forensics project.
-It uses mpileup or freebayes to get a VCF file ...
+This code is part of the Forensics project.
+It uses mpileup or freebayes to get a SNP VCF file ...
 """
 
 
@@ -128,25 +128,16 @@ def tovcf(itrfce, progress=None):
 
     # Stage 12 Restrict by snp panels
     logger.info('Preparing to filter loci')
-    ai_fn = bn + '_ai.vcf'
-    ii_fn = bn + '_ii.vcf'
-    cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
+    snp_fn = bn + '.snp.txt'
+    cmds.append(([loc["bedtools"], 'intersect', '-b', vcf_fn, '-a', loc["standard.pnl"], #$HOME/mpsforensics/standard.pnl,
+            '-wb', '>', snp_fn], 'bsh'))
+    #ai_fn = bn + '_ai.vcf'
+    #ii_fn = bn + '_ii.vcf'
+    #cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
 
-    #vcf_filt_pfx = vcf_fn.split('.')[0] + '_filt'
-    #cmd12 = ['vcftools', '--vcf', vcf_fn, '--out', vcf_filt_pfx, '--minDP', '50', '--recode', '--record-INFO-all']
-
-    # Stage ? Restrict by Y-chrom and CODIS loci
-    #logger.info('Preparing to filter loci')
-    #ystr_fn = vcf_fn.split('.')[0] + '.ystr.txt'
-    #codis_fn = vcf_fn.split('.')[0] + '.codis.txt'
-    #cmd12 = ['/home/ngsforensics/forensicsapp/lobstr_convert.sh', vcf_fn, ystr_fn, codis_fn]
-
-    # Upload results to DB
-    #cmd13 = ['cd', com.default_directory, '&&',
-    #         '/home/ngsforensics/forensicsapp/ngs_forensics/data/str2json.pl',
-    #         '*lobstr*/*.txt', '>', 'all.json', '&&', 'mongoimport', '-h',
-    #         'localhost:3001', '--db', 'meteor', '--collection', 'str', '--type',
-    #         'json', '--drop', '--file', 'all.json', '--jsonArray']
+    # Stage 13 upload to DB
+    logger.info('Uploading to DB')
+    cmds.append(([loc['load_results.sh']], 'b'))
 
     logger.info('Launching ToVCF pipeline using '+tovcfprog)
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
