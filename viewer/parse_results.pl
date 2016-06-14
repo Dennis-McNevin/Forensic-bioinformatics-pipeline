@@ -155,7 +155,8 @@ for my $origname(@files) {
 			my %al=();
 			for my $al(split /;/,$alleles) {
 				my($allele,$count)=split /\|/,$al;
-				my $numAl=$ref+$allele/$unit;
+				my $modulo=$allele % $unit;
+				my $numAl=$modulo?int($ref+$allele/$unit).'.'.$modulo:$ref+$allele/$unit;
 				$al{$numAl}=$count;
 				if(!defined $templ{$locus}) {
 					$unlisted{$locus}++;
