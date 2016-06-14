@@ -21,6 +21,11 @@ srcdir = "forensicsapp"
 
 pages = [
         ('to VCF', os.path.join(srcdir, 'tovcf.cfg'), run_tovcf.tovcf, None),
+        ('Find SNPs', os.path.join(srcdir, 'findsnp.cfg'), run_tovcf.tovcf, [
+          ('Trimmomatic', 'forensicsapp/trimmo.cfg'),
+          ('BWA', 'forensicsapp/bwa.cfg'),
+          ('Mpileup', 'forensicsapp/mpileup.cfg'),
+        ]),
         ('LobSTR', os.path.join(srcdir, 'lobstr.cfg'), run_lobstr.lobstr, None),
         ('STRait Razor', os.path.join(srcdir, 'strrazor.cfg'), run_strrazor.strrazor, None),
         ('BAM To FASTQ', os.path.join(srcdir, 'bamToFQ.cfg'), run_bamToFQ.bamToFQ, None),
