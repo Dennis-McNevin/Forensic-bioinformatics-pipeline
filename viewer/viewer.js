@@ -391,13 +391,14 @@ var GraphOptions = {
 			point: {
 				events: {
 					click: function(e) {
-//						console.log("Clicked on "+p(this.category)+'. Opening '+coord[this.category]);
+						var region=coord[this.category];
+						console.log("Clicked on "+p(this.category)+'. Opening '+region);
 						var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
 						var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
 						Meteor.call("getResultsDir", function(err, res) {
 							var resultsDir=res;
 							console.log('resultsDir='+resultsDir);
-							window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+coord[this.category]+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+							window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
 						});
 					}
 				}

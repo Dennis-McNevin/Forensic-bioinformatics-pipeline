@@ -136,6 +136,15 @@ if [ ! -f "$HOME/Desktop/MPSforensics.sh" ]; then
   chmod +x "$HOME/Desktop/MPSforensics.sh"
 fi
 
+if [ ! -f "$HOME/Desktop/MPSforensics_update.sh" ]; then
+  echo '#!/bin/bash' > "$HOME/Desktop/MPSforensics_update.sh"
+  echo "cd $HOME/mpsforensics" >> "$HOME/Desktop/MPSforensics_update.sh"
+  echo "git pull" >> "$HOME/Desktop/MPSforensics_update.sh"
+  echo "./locater.sh" >> "$HOME/Desktop/MPSforensics_update.sh"
+  echo 'read -p "Update complete. Press any key to close."' >> "$HOME/Desktop/MPSforensics_update.sh"
+  chmod +x "$HOME/Desktop/MPSforensics_update.sh"
+fi
+
 if [ ! -L "$HOME/Desktop/MPS_results" ]; then
   ln -s "$MPSFOR/results" "$HOME/Desktop/MPS_results"
 fi
