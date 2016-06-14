@@ -90,12 +90,16 @@ while(<IN>) {
 }
 chdir("$ENV{HOME}/mpsforensics/results");
 my @files=glob "*/*.txt";
+my $filename;
 for my $origname(@files) {
 	$filename=$origname;
 	$filename=~s/\.txt$//;
-	$filename=~s/_trimmed_sorted_lobstr//;
-	$filename=~s/(_S\d+)?_L\d{3}_R\d_\d{3}\b//;
+	$filename=~s/_trimmed_sorted//;
+	$filename=~s/_lobstr//;
+	$filename=~ s/(_S\d+)?_L\d{3}_R\d_\d{3}//;
+	print STDERR $filename;
 	my($sample,$type)=split/\./,$filename,2;
+	print STDERR "\t$sample\n";
 	if($type eq 'snp') {
 		$layout=$type;
 		$json='';
@@ -155,14 +159,17 @@ for my $origname(@files) {
 			my %al=();
 			for my $al(split /;/,$alleles) {
 				my($allele,$count)=split /\|/,$al;
+				my $fpAllele=$ref+$allele/$unit;
 				my $modulo=$allele % $unit;
-				my $numAl=$modulo?int($ref+$allele/$unit).'.'.$modulo:$ref+$allele/$unit;
-				$al{$numAl}=$count;
-				if(!defined $templ{$locus}) {
-					$unlisted{$locus}++;
-					$templ{$locus}=$#templ+1;
+				my $numAl=$modulo?int($fpAllele).'.'.$modulo:$fpAllele;
+				if(int($fpAllele)>0) {
+					$al{$numAl}=$count;
+					if(!defined $templ{$locus}) {
+						$unlisted{$locus}++;
+						$templ{$locus}=$#templ+1;
+					}
+					$nums[$templ{$locus}]{$numAl}++;
 				}
-				$nums[$templ{$locus}]{$numAl}++;
 			}
 			$a{$locus}=\%al;
 		}
