@@ -1,5 +1,6 @@
 .spyderworkspace
 *.pyc
+*.zip
 *-old
 forensicsapp/xxx.py
 forensicsapp/location.py
