@@ -4,6 +4,7 @@ Threshold=new Meteor.Collection('threshold');
 Notes=new Meteor.Collection('notes');
 CurrentView=new Meteor.Collection('currentview');
 var sampleName;
+var sampleFile;
 var sample;
 var samples;
 var snps;
@@ -18,7 +19,7 @@ Schemas.CurrentView=new SimpleSchema({
 		autoform: {
 			type: "select",
 			options: function() {
-				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file}});
+				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
 			}
 		}
 	},
@@ -151,8 +152,10 @@ Template._loginButtonsLoggedInDropdown.events({
 
 Template.currentView.events({
 	'change select': function(e){
-//		console.log('Selected sample '+e.target.value);
-		sampleName=e.target.value;
+		console.log('Selected sample '+e.target.value);
+		var values=e.target.value.split(';');
+		sampleName=values[0];
+		sampleFile=values[1];
 		layout=document.getElementById('layout').value;
 		builtLobstr();
 	}
@@ -389,9 +392,15 @@ var GraphOptions = {
 				events: {
 					click: function(e) {
 //						console.log("Clicked on "+p(this.category)+'. Opening '+coord[this.category]);
-						var vcf=sampleName.replace(".codis","").replace(".ystr","")+".vcf";
-						var bam=vcf.replace("_lobstr.vcf",".bam");
-						window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+coord[this.category]+'&file=file:///home/forensics/mpsforensics/results/'+vcf+',file:///home/ngsforensics/results/'+bam+',file:///home/forensics/mpsforensics/data/lobSTR_hg19.gff3');
+						var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
+						var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
+						Meteor.call("getResultsDir", function(err, res) {
+							var resultsDir=res;
+							
+							console.log('resultsDir='+resultsDir);
+							window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+coord[this.category]+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+
+						});
 //						hs.htmlExpand(null, {
 //                                    pageOrigin: {
 //                                        x: e.pageX || e.clientX,
@@ -443,6 +452,12 @@ if (Meteor.isServer) {
 	});
 	Meteor.publish('samples',function() {
 		return Threshold.find({});
+	});
+	Meteor.methods({
+		getResultsDir: function() {
+			var path=Npm.require('path');
+			return path.resolve('../../../../../../results');
+		}
 	});
 }
 
