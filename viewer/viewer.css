@@ -1,9 +1,8 @@
 /* CSS declarations go here */
-.select {
-	margin-bottom:10px; 
-}
-.inner {
-    margin-left:15px;
-}
 #SNPtable  {display: block; }
 #SNPtable  td {display: inline-block; background:#FFFAF8; width:90px}
+.navbar-brand{
+	background-image: url("/welcome_image_sm.gif"); /* assuming img folder is one step back from css*/
+	background-size: 152px 60px;
+	color: #ffffff;
+}

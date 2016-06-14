@@ -1,42 +1,44 @@
 Str=new Meteor.Collection('str');
 Samples=new Meteor.Collection('samples');
 Threshold=new Meteor.Collection('threshold');
-Notes=new Meteor.Collection('notes');
 CurrentView=new Meteor.Collection('currentview');
 var sampleName;
 var sampleFile;
 var sample;
 var samples;
 var snps;
-var layout='GlobalFiler';;
+var layout='GlobalFiler';
 var Schemas={};
+
 Meteor.startup(function() {
 })
 
 Schemas.CurrentView=new SimpleSchema({
 	sample: {
 		type: String,
+		max:300,
 		autoform: {
-			type: "select",
+			type: "selectize",
+			autoValue: "R701-A506 | snp | freebayes | 20160606205604;R701-A506_S5_L001_R1_001_freebayes_20160606205604/R701-A506_S5_L001_R1_001.snp.txt",
 			options: function() {
 				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
 			}
 		}
 	},
-//	layout: {
-//		type: String,
-//		autoform: {
-//			type: "select",
-//			options: function() {
-//				return _.map(["GlobalFiler","Y-Filer 17","Y-Filer Plus","PowerPlex Fusion","PowerPlex 21","PowerPlex Y-23","Qiagen Argus X12","Qiagen HDplex","Promega CS7"],function(c) {return {label:c,value:c};});
-//			}
-//		}
-//	}
+	layout: {
+		type: String,
+		max: 50,
+		autoform: {
+			type: "selectize",
+			autoValue: "GlobalFiler",
+			options: function() {
+				return _.map(["GlobalFiler","Y-Filer 17","Y-Filer Plus","PowerPlex Fusion","PowerPlex 21","PowerPlex Y-23","Qiagen Argus X12","Qiagen HDplex","Promega CS7"],function(c) {return {label:c,value:c};});
+			}
+		}
+	}
 });
-Schemas.Notes=new SimpleSchema({notes: {type: String}});
 
 CurrentView.attachSchema(Schemas.CurrentView);
-Notes.attachSchema(Schemas.Notes);
 
 var coord={'TH01': 'chr11:2192319-2192345',
 	'D13S317': 'chr13:82722161-82722203',
@@ -150,13 +152,17 @@ Template._loginButtonsLoggedInDropdown.events({
   }
 });
 
-Template.currentView.events({
-	'change select': function(e){
+Template.menu.events({
+	'change #sampleSelect': function(e){
 		console.log('Selected sample '+e.target.value);
 		var values=e.target.value.split(';');
 		sampleName=values[0];
 		sampleFile=values[1];
-		layout=document.getElementById('layout').value;
+		builtLobstr();
+	},
+	'change #layoutSelect': function(e){
+		console.log('Selected layout '+e.target.value);
+		layout=e.target.value;
 		builtLobstr();
 	}
 });
@@ -169,13 +175,7 @@ Template.body.helpers({
 	}
 })
 
-Template.menu.events({
-	'change form#menuForm #layout': function(e){
-//		console.log('Selected layout '+e.target.value);
-		layout=e.target.value;
-		builtLobstr();
-	}
-});
+
 
 Template.snptable.onCreated(function(){
 	Session.set('snps',[]);
@@ -425,7 +425,7 @@ $(function () {
 var chart_data = getChartData();
 //console.log(chart_data);
 	var chart = new Highcharts.Chart( chart_data );
-        $('#container').show();
+	$('#container').show();
 });
 });
 
