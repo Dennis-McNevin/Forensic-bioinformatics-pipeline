@@ -364,7 +364,7 @@ var GraphOptions = {
 			StochasticThresh="Stochastic T: "+this.point.st+"%";
 			StutterThresh="Stutter T: "+this.point.tt+"%";
 			if(this.point.p<this.point.at) {
-				AnalyticThresh='<font color="#0000ff"><b>'+PrimaryThresh+'</b></font>';
+				AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
 			}
 			if(this.point.p<this.point.st) {
 				StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
@@ -396,20 +396,9 @@ var GraphOptions = {
 						var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
 						Meteor.call("getResultsDir", function(err, res) {
 							var resultsDir=res;
-							
 							console.log('resultsDir='+resultsDir);
 							window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+coord[this.category]+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
-
 						});
-//						hs.htmlExpand(null, {
-//                                    pageOrigin: {
-//                                        x: e.pageX || e.clientX,
-//                                        y: e.pageY || e.clientY
-//                                    },
-//                                    headingText: e.target.category,
-//                                    maincontentText: 'blah blah',
-//                                    width: 200
-//                                });
 					}
 				}
 			}
