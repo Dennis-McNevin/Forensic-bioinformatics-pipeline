@@ -92,12 +92,15 @@ chdir("$ENV{HOME}/mpsforensics/results");
 my @files=glob "*/*.txt";
 my $filename;
 for my $origname(@files) {
-	$filename=$origname;
+	my($sample1,$filename)=split/_/,$origname,2;
 	$filename=~s/\.txt$//g;
 	$filename=~s/_trimmed_sorted//g;
+	$filename=~s/_?(S\d+)?_L\d{3}_R\d_\d{3}//g;
+	$filename=~s/^_//g;
 	$filename=~s/_lobstr//g;
-	$filename=~s/(_S\d+)?_L\d{3}_R\d_\d{3}//g;
-	my($sample,$type)=split/\./,$filename,2;
+	$filename=~s/[\/\._]/,/g;
+	my($prog,$date,$sample,$type)=split/,/,$filename;
+	$filename=join' | ',$sample,$type,$prog,$date;
 	if($type eq 'snp') {
 		$layout=$type;
 		$json='';
