@@ -30,7 +30,7 @@ Schemas.CurrentView=new SimpleSchema({
 		autoform: {
 			type: "selectize",
 			options: function() {
-				return _.map(["GlobalFiler","Y-Filer 17","Y-Filer Plus","PowerPlex Fusion","PowerPlex 21","PowerPlex Y-23","Qiagen Argus X12","Qiagen HDplex","Promega CS7"],function(c) {return {label:c,value:c};});
+				return _.map(["GlobalFiler","PowerPlex Fusion","PowerPlex 21","Promega CS7","Qiagen HDplex","Qiagen Argus X12","Y-Filer Plus","Y-Filer 17","PowerPlex Y-23"],function(c) {return {label:c,value:c};});
 			}
 		}
 	}
