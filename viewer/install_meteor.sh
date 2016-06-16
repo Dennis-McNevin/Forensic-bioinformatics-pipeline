@@ -12,16 +12,14 @@ meteor add standard-minifier-js
 meteor add http
 meteor add facts
 meteor add maazalik:highcharts@=0.4.0
-meteor add zimme:select2-bootstrap3-css@=1.4.6
 meteor add aldeed:autoform@=5.8.1
-meteor add aldeed:autoform-select2@=2.0.2
 meteor add aldeed:collection2@=2.9.1
 meteor add aldeed:simple-schema@=1.5.3
 meteor add aldeed:template-extension@=3.4.3
 meteor add materialize:materialize@=0.97.5
 meteor add gildaspk:autoform-materialize
 meteor add dburles:stringify-pretty
-meteor add natestrauser:select2@=3.5.1
+meteor add comerc:autoform-selectize
 meteor add momentjs:moment@=2.13.1
 meteor add check
 meteor add iron:router@=1.0.13
