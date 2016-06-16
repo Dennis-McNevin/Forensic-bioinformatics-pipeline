@@ -18,7 +18,7 @@ if [ ! -d human ] ; then
   wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
   mv download ../hg19.tgz
   cd $MPSFOR
-  rmdir human-tmp
+  rmdir human_tmp
   tar -xzf hg19.tgz
   rm hg19.tgz
   # wget https://www.dropbox.com/s/p47hqi8zde3qmqn/hg19.tgz
