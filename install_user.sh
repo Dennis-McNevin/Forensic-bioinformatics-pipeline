@@ -29,7 +29,7 @@ cd $MPSFOR
 if [ ! -d "$MPSFOR/lobstr_ref" ] ; then
   # Pull down LobSTR prebuilt
   [ -d lobstr_tmp ] || mkdir lobstr_tmp
-  cd lonstr_tmp
+  cd lobstr_tmp
   wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
   mv download ../lobstr_ref.tgz
   cd $MPSFOR
