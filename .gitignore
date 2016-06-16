@@ -1,4 +1,5 @@
 .spyderworkspace
+*/.~lock*
 *.pyc
 *.zip
 *-old

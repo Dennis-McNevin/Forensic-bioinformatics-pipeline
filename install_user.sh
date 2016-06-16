@@ -12,22 +12,34 @@ cd "$MPSFOR"
 mkdir -p results bin lib
 
 # Pull down BWA indexed human reference
-if [ ! -d "$MPSFOR/human" ] ; then
-  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
-  mv download hg19.tgz
+if [ ! -d human ] ; then
+  [ -d human_tmp ] || mkdir human_tmp
+  cd human_tmp
+  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
+  mv download ../hg19.tgz
+  cd $MPSFOR
+  rmdir human-tmp
   tar -xzf hg19.tgz
   rm hg19.tgz
   # wget https://www.dropbox.com/s/p47hqi8zde3qmqn/hg19.tgz
 fi
 
+cd $MPSFOR
+
 if [ ! -d "$MPSFOR/lobstr_ref" ] ; then
   # Pull down LobSTR prebuilt
-  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
-  mv download lobstr_ref.tgz
+  [ -d lobstr_tmp ] || mkdir lobstr_tmp
+  cd lonstr_tmp
+  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
+  mv download ../lobstr_ref.tgz
+  cd $MPSFOR
+  rmdir lobstr_tmp
   tar -xzf lobstr_ref.tgz
   rm lobstr_ref.tgz
   # wget https://www.dropbox.com/s/2asy40bx9agfjhk/lobstr.tgz
 fi
+
+cd $MPSFOR
 
 if [ ! -d "$HOME/.meteor" ] ; then
   # Pull down prebuilt meteor
@@ -110,7 +122,6 @@ if [ ! -d "$MPSFOR/STRaitRazorv2.5" ] ; then
   rm -rf tre-0.8.0
 fi 
 
-
 cd "$MPSFOR/mpsforensics_bin"
 
 # IGV
@@ -140,8 +151,6 @@ if [ ! -L "$HOME/Desktop/MPS_results" ]; then
   ln -s "$MPSFOR/results" "$HOME/Desktop/MPS_results"
 fi
 
-cd "$HOME"
-
-echo "Installation of MPS Forensics pipeline complete"
+echo "Installation of MPS Forensics pipeline completed"
 
 ### End of mpsforensics installer script ###
