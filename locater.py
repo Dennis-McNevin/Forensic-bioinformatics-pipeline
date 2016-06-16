@@ -43,7 +43,9 @@ location = {
     'meteor': "os.path.expanduser('~/mpsforensics/results/viewer/meteor')",
   }
 
-jv = subprocess.check_output('ls /usr/share/java/trimmomatic-*.jar | sort | tail -n 1', shell=True).rstrip()
+#jv = subprocess.check_output('ls /usr/share/java/trimmomatic-*.jar | sort | tail -n 1', shell=True).rstrip()
+# find our local trimmomatic
+jv = subprocess.check_output('find ~/mpsforensics -name trimmomatic-\\*.jar | sort | tail -n 1', shell=True).rstrip()
 if not jv:
     sys.exit(1)
     

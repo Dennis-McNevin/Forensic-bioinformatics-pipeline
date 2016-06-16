@@ -64,6 +64,7 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       # required on Ubuntu 14.04.14 LTS or 16.04 LTS
   #    sudo apt-get update -y
       sudo apt-get install -y git
+      sudo apt-get install -y firefox
       sudo apt-get install -y python-tk
       sudo apt-get install -y gcc
       sudo apt-get install -y g++
@@ -81,14 +82,13 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       sudo apt-get install -y mongodb
       sudo apt-get install -y libgsl2
       sudo apt-get install -y gsl-bin
-      sudo apt-get install -y firefox
       # we need Chrome to fully support meteor
-      if [ ! -f "$HOME/google-chrome-stable_current_amd64.deb" ] ; then 
-        cd "$HOME"
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
-        sudo dpkg -i google-chrome-stable_current_amd64.deb
-        sudo apt-get install -y -f
-      fi
+#      if [ ! -f "$HOME/google-chrome-stable_current_amd64.deb" ] ; then 
+#        cd "$HOME"
+#        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb  
+#        sudo dpkg -i google-chrome-stable_current_amd64.deb
+#        sudo apt-get install -y -f
+#      fi
   else
       # required on Fedora - this is not up to date and needs more testing
       yum install -y dnf
