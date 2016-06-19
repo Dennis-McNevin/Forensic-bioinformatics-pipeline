@@ -80,7 +80,14 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       sudo apt-get install -y bedtools
       sudo apt-get install -y curl
       sudo apt-get install -y mongodb
-      sudo apt-get install -y libgsl2
+      V=`lsb_release -a | head -n 3 | tail -n 1 | cut -f 2`
+      RES=`python -c "if float($V) < 16.04: print 'old'"`
+      if [ $RES == "old" ]; then
+          sudo apt-get install -y libgsl0-dev
+          sudo apt-get install -y libgsl0ldbl
+      else
+          sudo apt-get install -y libgsl2
+      fi
       sudo apt-get install -y gsl-bin
       # we need Chrome to fully support meteor
 #      if [ ! -f "$HOME/google-chrome-stable_current_amd64.deb" ] ; then 
