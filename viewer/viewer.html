@@ -8,22 +8,11 @@
 {{/if}}
 </body>
 
-<template name="lobstr">
-	<div id="containerChart0" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart1" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart2" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart3" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart4" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart5" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart6" style="min-width: 300px; height: 110px;"></div>
-	<div id="containerChart7" style="min-width: 300px; height: 110px;"></div>
-</template>
-
 <template name="menu">
 <div class="navbar navbar-default" role="navigation">
 	<form id="menuForm" class="form-inline" role="form">
 	<div class="navbar-header">
-	{{#autoForm id="currentViewForm" collection="CurrentView"}}
+		{{#autoForm id="currentViewForm" collection="CurrentView"}}
 		<div class="form-group">
 			<a class="navbar-brand" href="#">MPS Forensics</a>
 		</div>
@@ -51,6 +40,24 @@
 <template name="home">
 </template>
 
+<template name="notes">
+	{{#autoForm id="notesForm" collection="Notes"}}
+		{{> afQuickField name="notes"}}
+	{{/autoForm}}
+</template>
+
+<template name="lobstr">
+	<div id="containerChart0" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart1" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart2" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart3" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart4" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart5" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart6" style="min-width: 300px; height: 110px;"></div>
+	<div id="containerChart7" style="min-width: 300px; height: 110px;"></div>
+	{{>notes}}
+</template>
+
 <template name="snptable">
 	<div class="inner" style="width:80%">
 	<table class="table" id="SNPtable" align="center">
@@ -69,4 +76,10 @@
 	</tbody>
 	</table>
 	</div>
+	{{>notes}}
+</template>
+
+<template name="strchart">
+	<div class="containerChartStr" style="min-width: 400px; height: 400px;"></div>
+	{{>notes}}
 </template>

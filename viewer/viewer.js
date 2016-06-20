@@ -1,6 +1,7 @@
 Str=new Meteor.Collection('str');
 Samples=new Meteor.Collection('samples');
 Threshold=new Meteor.Collection('threshold');
+Notes=new Meteor.Collection('notes');
 CurrentView=new Meteor.Collection('currentview');
 var sampleName;
 var sampleFile;
@@ -35,8 +36,10 @@ Schemas.CurrentView=new SimpleSchema({
 		}
 	}
 });
-
 CurrentView.attachSchema(Schemas.CurrentView);
+
+Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
+Notes.attachSchema(Schemas.Notes);
 
 var coord={'TH01': 'chr11:2192319-2192345',
 	'D13S317': 'chr13:82722161-82722203',
@@ -140,297 +143,293 @@ var coord={'TH01': 'chr11:2192319-2192345',
 
 if (Meteor.isClient) {
 
-Meteor.subscribe("str");
-Template.registerHelper("Schemas",Schemas);
-AutoForm.setDefaultTemplate('materialize');
-
-Template._loginButtonsLoggedInDropdown.events({
-  'click #login-buttons-edit-profile': function(event) {
-    Router.go('profileEdit');
-  }
-});
-
-Template.menu.events({
-	'change #sampleSelect': function(e){
-		console.log('Selected sample '+e.target.value);
-		var values=e.target.value.split(';');
-		sampleName=values[0];
-		sampleFile=values[1];
-		builtLobstr();
-	},
-	'change #layoutSelect': function(e){
-		console.log('Selected layout '+e.target.value);
-		layout=e.target.value;
-		builtLobstr();
-	}
-});
-
-Session.setDefault('viz','lobstr');
-
-Template.body.helpers({
-	currentViz: function(){
-		return Session.get('viz');
-	}
-})
-
-
-
-Template.snptable.onCreated(function(){
-	Session.set('snps',[]);
-});
-
-Template.snptable.helpers({
-	snps: function() {
-		return Session.get('snps');
-	}
-});
-
-Template.snptable.events({
-	'mouseover [data-toggle="popover"]': function(e){
-		var p = $(e.currentTarget).popover({
-			html:true
-		});
-	var cTarget=e.currentTarget;
-	var chart = new Highcharts.Chart({
-        chart: {
-            renderTo: cTarget.id+'con',
-            type: 'column'
-        },
-        plotOptions: {
-            column: {
-                dataLabels: { enabled: true }
-            }
-        },
-        title:{text:null},
-        legend:{enabled:false},
-        credits:{enabled:false},
-        xAxis: {
-        	categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")]	
-        },
-        yAxis: {
-            title: {
-                text: 'reads',
-                useHTML: true,
-                style: {
-                    "-webkit-transform": "rotate(90deg)",
-                    "-moz-transform": "rotate(90deg)", 
-                    "-o-transform": "rotate(90deg)"
-                }
-            }
-        },
-        series: [{ name:'reads', data: [+cTarget.getAttribute("refC"),+cTarget.getAttribute("altC")] }]
-    });
-	}
-});
-
-Accounts.ui.config({
-    requestPermissions: {},
-    extraSignupFields: [{
-        fieldName: 'first-name',
-        fieldLabel: 'First name',
-        inputType: 'text',
-        visible: true,
-        validate: function(value, errorFunction) {
-          if (!value) {
-            errorFunction("Please write your first name");
-            return false;
-          } else {
-            return true;
-          }
-        }
-    }, {
-        fieldName: 'last-name',
-        fieldLabel: 'Last name',
-        inputType: 'text',
-        visible: true,
-    }, {
-        fieldName: 'gender',
-        showFieldLabel: false,      // If true, fieldLabel will be shown before radio group
-        fieldLabel: 'Gender',
-        inputType: 'radio',
-        radioLayout: 'vertical',    // It can be 'inline' or 'vertical'
-        data: [{                    // Array of radio options, all properties are required
-            id: 1,                  // id suffix of the radio element
-            label: 'Male',          // label for the radio element
-            value: 'm'              // value of the radio element, this will be saved.
-          }, {
-            id: 2,
-            label: 'Female',
-            value: 'f',
-            checked: 'checked'
-        }],
-        visible: true
-    }, {
-        fieldName: 'country',
-        fieldLabel: 'Country',
-        inputType: 'select',
-        showFieldLabel: true,
-        empty: 'Please select your country of residence',
-        data: [{
-            id: 1,
-            label: 'Australia',
-            value: 'au'
-          }, {
-            id: 2,
-            label: 'New Zealand',
-            value: 'nz',
-          }, {
-            id: 3,
-            label: 'United Kingdom',
-            value: 'uk',
-          }, {
-            id: 4,
-            label: 'United States',
-            value: 'us',
-        }],
-        visible: true
-    }, {
-        fieldName: 'terms',
-        fieldLabel: 'I accept the terms and conditions',
-        inputType: 'checkbox',
-        visible: true,
-        saveToProfile: false,
-        validate: function(value, errorFunction) {
-            if (value) {
-                return true;
-            } else {
-                errorFunction('You must accept the terms and conditions.');
-                return false;
-            }
-        }
-    }]
-});
-
-
-function builtLobstr(collection) {
-//	samples=Str.find({},{ sort:{_id:1}}).map(function (doc){return doc['sample']});
-//	samples=_.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file});
-//	console.log('samples: '+p(samples)); fields:{_id:1,type:1},
-//	console.log('sampleName: '+p(sampleName));
-	sample=Str.findOne({_id:sampleName+'|'+layout});
-	sampleType=typeof sample;
-//	console.log('sample('+p(sampleType)+'): '+p(sample));
-	if(sampleType!='undefined') {
-		for(x = 0; x < 8; x++) {
-			if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
-				$('#containerChart'+x).hide();
-			}else {
-				$('#containerChart'+x).show();
-			}
-			var graphSeries = eval("GraphSeries");
-			graphSeries.data = [];
-			graphSeries.name = "GraphSeries" + x;
-			graphSeries.point.events.click = function() {
-				Meteor.call('runCode', function (err, response) {
-					console.log('cmd: '+response);
-					alert ('Category: '+ this.category +'<br/>'+response);
-				});
-			}
-			var graphOptions = eval("GraphOptions");
-			graphOptions.series = sample.seriesArray[x];
-			graphOptions.xAxis.categories = sample.categoriesArray[x];
-			graphOptions.chart.renderTo = 'containerChart'+x;
-//			if(x==0) {
-//				graphOptions.title.text = sample.title;
-//			}else {
-//				graphOptions.title.text = null;
-//			}
-			Session.set('viz','lobstr');
-			new Highcharts.Chart(graphOptions);
-		}
-	}else {
-		sample=Str.findOne({_id:sampleName});
-		if(sample!=null) {
-			Session.set('snps',sample.snpsArray);
-			Session.set('viz','snptable');
-//			console.log(JSON.stringify(sample.snpsArray));
-		}
-	}
-}
-
-
-var GraphOptions = {
-    chart: { type: 'column', renderTo: 'containerChart0' },
-	title:{ text:null },
-	subtitle:{ text:null },
-	credits: { enabled: false },
-    legend: { enabled: false },
-    exporting:{enabled: false},
-	tooltip: { formatter: function () {
-		if(this.y>0) {
-			AnalyticThresh="Analytic T: "+this.point.at+"%";
-			StochasticThresh="Stochastic T: "+this.point.st+"%";
-			StutterThresh="Stutter T: "+this.point.tt+"%";
-			if(this.point.p<this.point.at) {
-				AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
-			}
-			if(this.point.p<this.point.st) {
-				StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
-			}
-			if(this.point.p<this.point.tt) {
-				StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
-			}
-			return '<b>'+this.x+'</b> allele <b>'+this.series.name+'</b><br/>'+this.y+' read'+((this.y==1)?'':'s')+' <i>('+this.point.p+"%)</i><br/>Ref allele: "+this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
-		}
-	} },
-	plotOptions: {
-		column: {
-			dataLabels: {
-				enabled: true,
-				formatter: function(){ return this.point.l; },
-				style:{ fontSize:'8pt', color:'#101010', },
-				x:0,
-				y:0,
-				align:'center'
-			},
+	Meteor.subscribe("str");
+	Template.registerHelper("Schemas",Schemas);
+	AutoForm.setDefaultTemplate('materialize');
+	
+	Template._loginButtonsLoggedInDropdown.events({
+	  'click #login-buttons-edit-profile': function(event) {
+	    Router.go('profileEdit');
+	  }
+	});
+	
+	Template.menu.events({
+		'change #sampleSelect': function(e){
+			console.log('Selected sample '+e.target.value);
+			var values=e.target.value.split(';');
+			sampleName=values[0];
+			sampleFile=values[1];
+			builtLobstr();
 		},
-		series: { 
-			maxPointWidth: 30,
-			point: {
-				events: {
-					click: function(e) {
-						var region=coord[this.category];
-						console.log("Clicked on "+p(this.category)+'. Opening '+region);
-						var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
-						var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
-						Meteor.call("getResultsDir", function(err, res) {
-							var resultsDir=res;
-							console.log('resultsDir='+resultsDir);
-							window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
-						});
+		'change #layoutSelect': function(e){
+			console.log('Selected layout '+e.target.value);
+			layout=e.target.value;
+			builtLobstr();
+		}
+	});
+	
+	Session.setDefault('viz','home');
+	
+	Template.body.helpers({
+		currentViz: function(){
+			return Session.get('viz');
+		}
+	})
+	
+	Template.snptable.onCreated(function(){
+		Session.set('snps',[]);
+	});
+	
+	Template.snptable.helpers({
+		snps: function() {
+			return Session.get('snps');
+		}
+	});
+	
+	Template.snptable.events({
+//		'mouseover [data-toggle="popover"]': function(e){
+		'click': function(e){
+			var p = $(e.currentTarget).popover({
+				html:true
+			});
+			var cTarget=e.currentTarget;
+			$(cTarget.id+'con').show();
+			var refC=parseInt(cTarget.getAttribute("refC"));
+			var altC=parseInt(cTarget.getAttribute("altC"));
+			new Highcharts.Chart({
+				chart: {
+					renderTo: cTarget.id+'con',
+					type: 'column'
+				},
+				exporting:{enabled: true},
+				tooltip: { formatter: function () {
+					return '<b>'+this.x+'</b>: '+this.y+' read'+((this.y==1)?'':'s')+'<br/><i>('+this.point.p+"%)</i>";
+				} },
+		        plotOptions: {
+		            column: {
+		                dataLabels: { enabled: true }
+		            }
+		        },
+		        title:{text:null},
+		        legend:{enabled:false},
+		        credits:{enabled:false},
+		        xAxis: {
+		        	categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")]	
+		        },
+		        yAxis: {
+		            title: {
+		                text: 'reads',
+		                useHTML: true,
+		                style: {
+		                    "-webkit-transform": "rotate(90deg)",
+		                    "-moz-transform": "rotate(90deg)", 
+		                    "-o-transform": "rotate(90deg)"
+		                }
+		            }
+		        },
+		        series: [{ name:'reads', data: [{y:refC,p:(100*refC/(refC+altC)).toFixed(2)},{y:altC,p:(100*altC/(refC+altC)).toFixed(2)}] }]
+		    });
+		}
+	});
+	
+	Accounts.ui.config({
+	    requestPermissions: {},
+	    extraSignupFields: [{
+	        fieldName: 'first-name',
+	        fieldLabel: 'First name',
+	        inputType: 'text',
+	        visible: true,
+	        validate: function(value, errorFunction) {
+	          if (!value) {
+	            errorFunction("Please write your first name");
+	            return false;
+	          } else {
+	            return true;
+	          }
+	        }
+	    }, {
+	        fieldName: 'last-name',
+	        fieldLabel: 'Last name',
+	        inputType: 'text',
+	        visible: true,
+	    }, {
+	        fieldName: 'gender',
+	        showFieldLabel: false,      // If true, fieldLabel will be shown before radio group
+	        fieldLabel: 'Gender',
+	        inputType: 'radio',
+	        radioLayout: 'vertical',    // It can be 'inline' or 'vertical'
+	        data: [{                    // Array of radio options, all properties are required
+	            id: 1,                  // id suffix of the radio element
+	            label: 'Male',          // label for the radio element
+	            value: 'm'              // value of the radio element, this will be saved.
+	          }, {
+	            id: 2,
+	            label: 'Female',
+	            value: 'f',
+	            checked: 'checked'
+	        }],
+	        visible: true
+	    }, {
+	        fieldName: 'country',
+	        fieldLabel: 'Country',
+	        inputType: 'select',
+	        showFieldLabel: true,
+	        empty: 'Please select your country of residence',
+	        data: [{
+	            id: 1,
+	            label: 'Australia',
+	            value: 'au'
+	          }, {
+	            id: 2,
+	            label: 'New Zealand',
+	            value: 'nz',
+	          }, {
+	            id: 3,
+	            label: 'United Kingdom',
+	            value: 'uk',
+	          }, {
+	            id: 4,
+	            label: 'United States',
+	            value: 'us',
+	        }],
+	        visible: true
+	    }, {
+	        fieldName: 'terms',
+	        fieldLabel: 'I accept the terms and conditions',
+	        inputType: 'checkbox',
+	        visible: true,
+	        saveToProfile: false,
+	        validate: function(value, errorFunction) {
+	            if (value) {
+	                return true;
+	            } else {
+	                errorFunction('You must accept the terms and conditions.');
+	                return false;
+	            }
+	        }
+	    }]
+	});
+	
+	function builtLobstr(collection) {
+	//	samples=Str.find({},{ sort:{_id:1}}).map(function (doc){return doc['sample']});
+	//	samples=_.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file});
+	//	console.log('samples: '+p(samples)); fields:{_id:1,type:1},
+	//	console.log('sampleName: '+p(sampleName));
+		sample=Str.findOne({_id:sampleName+'|'+layout});
+		sampleType=typeof sample;
+	//	console.log('sample('+p(sampleType)+'): '+p(sample));
+		if(sampleType!='undefined') {
+			for(x = 0; x < 8; x++) {
+				if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
+					$('#containerChart'+x).hide();
+				}else {
+					$('#containerChart'+x).show();
+				}
+				var graphSeries = eval("GraphSeries");
+				graphSeries.data = [];
+				graphSeries.name = "GraphSeries" + x;
+				graphSeries.point.events.click = function() {
+					Meteor.call('runCode', function (err, response) {
+						console.log('cmd: '+response);
+						alert ('Category: '+ this.category +'<br/>'+response);
+					});
+				}
+				var graphOptions = eval("GraphOptions");
+				graphOptions.series = sample.seriesArray[x];
+				graphOptions.xAxis.categories = sample.categoriesArray[x];
+				graphOptions.chart.renderTo = 'containerChart'+x;
+	//			if(x==0) {
+	//				graphOptions.title.text = sample.title;
+	//			}else {
+	//				graphOptions.title.text = null;
+	//			}
+				Session.set('viz','lobstr');
+				new Highcharts.Chart(graphOptions);
+			}
+		}else {
+			sample=Str.findOne({_id:sampleName});
+			if(sample!=null) {
+				Session.set('snps',sample.snpsArray);
+				Session.set('viz','snptable');
+	//			console.log(JSON.stringify(sample.snpsArray));
+			}
+		}
+	}
+	
+	
+	var GraphOptions = {
+	    chart: { type: 'column', renderTo: 'containerChart0' },
+		title:{ text:null },
+		subtitle:{ text:null },
+		credits: { enabled: false },
+	    legend: { enabled: false },
+	    exporting:{enabled: false},
+		tooltip: { formatter: function () {
+			if(this.y>0) {
+				AnalyticThresh="Analytic T: "+this.point.at+"%";
+				StochasticThresh="Stochastic T: "+this.point.st+"%";
+				StutterThresh="Stutter T: "+this.point.tt+"%";
+				if(this.point.p<this.point.at) {
+					AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
+				}
+				if(this.point.p<this.point.st) {
+					StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
+				}
+				if(this.point.p<this.point.tt) {
+					StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
+				}
+				return '<b>'+this.x+'</b> allele <b>'+this.series.name+'</b><br/>'+this.y+' read'+((this.y==1)?'':'s')+' <i>('+this.point.p+"%)</i><br/>Ref allele: "+this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+			}
+		} },
+		plotOptions: {
+			column: {
+				dataLabels: {
+					enabled: true,
+					formatter: function(){ return this.point.l; },
+					style:{ fontSize:'8pt', color:'#101010', },
+					x:0,
+					y:0,
+					align:'center'
+				},
+			},
+			series: { 
+				maxPointWidth: 30,
+				point: {
+					events: {
+						click: function(e) {
+							var region=coord[this.category];
+							console.log("Clicked on "+p(this.category)+'. Opening '+region);
+							var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
+							var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
+							Meteor.call("getResultsDir", function(err, res) {
+								var resultsDir=res;
+								console.log('resultsDir='+resultsDir);
+								window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+							});
+//							Session.set("viz","strchart"); #new method not plugged in yet
+						}
 					}
 				}
 			}
-		}
-	},
-	yAxis: { min:0, title:{text:'Read Counts'}, labels:{overflow:'justify'} },
-	xAxis: { categories: [] },
-	series: []	
-};
-
-var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
-
-$(function () {
-	var chart;
-	$(document).ready(function() {
-//		samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
-//		builtLobstr();
-    });
-    $('[data-toggle="popover"]').popover({
-    content: "<div id='container' style='min-width: 400px;display:none; height: 400px; margin: 0'></div>",
-    html: true
-}).click(function() {
-var chart_data = getChartData();
-//console.log(chart_data);
-	var chart = new Highcharts.Chart( chart_data );
-	$('#container').show();
-});
-});
-
-Template.lobstr.onRendered(function() {
-	builtLobstr();
-});
-
+		},
+		yAxis: { min:0, title:{text:'Read Counts'}, labels:{overflow:'justify'} },
+		xAxis: { categories: [] },
+		series: []	
+	};
+	
+	var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
+	
+	$(function () {
+		var chart;
+		$(document).ready(function() {
+	//		samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
+	//		builtLobstr();
+		});
+	});
+	
+	Template.lobstr.onRendered(function() {
+		builtLobstr();
+	});
 
 }
 
@@ -440,6 +439,9 @@ if (Meteor.isServer) {
 	});
 	Meteor.publish('samples',function() {
 		return Threshold.find({});
+	});
+	Meteor.publish('notes',function() {
+		return Notes.find({});
 	});
 	Meteor.methods({
 		getResultsDir: function() {
