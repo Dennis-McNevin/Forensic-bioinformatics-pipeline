@@ -27,7 +27,7 @@ if [ "$HOME" != / -a ! -f ./MPSforensicsSetup.sh ] ; then
 	MPSFOR="\$HOME/mpsforensics"
 
 	cd
-	[ -d \$MPSFOR ] || git clone https://cameronjack@bitbucket.org/gdu_jcsmr/mpsforensics.git
+	[ -d \$MPSFOR ] || git clone https://bitbucket.org/gdu_jcsmr/mpsforensics.git
 
 	cd  \$MPSFOR
 	. install_user.sh
@@ -35,22 +35,29 @@ EOM
   chmod a+x MPSforensicsSetup.sh
 fi
 
-if [ -f /etc/mpsforensics.log ] ; then
-  echo "MPSforensics admin. install was started, but it did not finish."
-  read -p "Do you want to resume the admin. install [Y/n]? " ans
-  if [ ans == Y ] ; then
-    # make sure we can write to the log file
-    sudo touch /etc/mpsforensics.log
-    sudo chown $USER /etc/mpsforensics.log
-    sudo chmod u+w /etc/mpsforensics.log
-    echo resuming ...
-  else
-    echo "Please email the /etc/mpsforensics.log file to the system developers."
-    exit 1
-  fi
-fi
-
 if [ ! -f /etc/mpsforensics-done.log ] ; then
+  if [ -s /etc/mpsforensics.log ] ; then
+    echo "MPSforensics admin. install was started, but it did not finish."
+    read -p "Do you want to resume the admin. install [Y/n]? " ans
+    if [ ans == Y ] ; then
+      # make sure we can write to the log file
+      sudo touch /etc/mpsforensics.log
+      sudo chown $USER /etc/mpsforensics.log
+      sudo chmod u+w /etc/mpsforensics.log
+      echo resuming ...
+      set -x
+    else
+      echo "Please email the /etc/mpsforensics.log file to the system developers."
+      exit 1
+    fi
+  else
+      # ensure there is a log file to append to ...
+      sudo touch /etc/mpsforensics.log
+      sudo chown $USER /etc/mpsforensics.log
+      sudo chmod u+w /etc/mpsforensics.log
+  fi
+
+  if true ; then
   # Admin. install not yet complete; start/resume admin. install
 
   echo; date
@@ -80,14 +87,17 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       sudo apt-get install -y bedtools
       sudo apt-get install -y curl
       sudo apt-get install -y mongodb
-      V=`lsb_release -a | head -n 3 | tail -n 1 | cut -f 2`
-      RES=`python -c "if float($V) < 16.04: print 'old'"`
-      if [ $RES == "old" ]; then
+
+      case "$(lsb_release -r)"
+      in
+        *1[45].*)
           sudo apt-get install -y libgsl0-dev
           sudo apt-get install -y libgsl0ldbl
-      else
+          ;;
+        *16.*)
           sudo apt-get install -y libgsl2
-      fi
+          ;;
+      esac
       sudo apt-get install -y gsl-bin
       # we need Chrome to fully support meteor
 #      if [ ! -f "$HOME/google-chrome-stable_current_amd64.deb" ] ; then 
@@ -113,8 +123,9 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       dnf install -y gsl-devel
       #dnf install -y firefox
   fi
+  fi | tee -a /etc/mpsforensics.log
   sudo mv /etc/mpsforensics.log /etc/mpsforensics-done.log
-fi | tee -a /etc/mpsforensics.log
+fi
 
 [ $HOME != / ] && {
   . ./MPSforensicsSetup.sh | tee ~/.mpsforensics.log 
