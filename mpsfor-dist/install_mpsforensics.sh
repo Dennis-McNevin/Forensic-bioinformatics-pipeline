@@ -69,7 +69,7 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
   if python -mplatform | grep -qi ubuntu
   then
       # required on Ubuntu 14.04.14 LTS or 16.04 LTS
-  #    sudo apt-get update -y
+      sudo apt-get update -y
       sudo apt-get install -y git
       sudo apt-get install -y firefox
       sudo apt-get install -y python-tk
@@ -80,6 +80,7 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       sudo apt-get install -y cmake
       sudo apt-get install -y zlib1g-dev
       sudo add-apt-repository -y ppa:openjdk-r/ppa
+      sudo apt-get update -y
       sudo apt-get install -y openjdk-8-jdk
       sudo apt-get install -y samtools
       sudo apt-get install -y bwa
