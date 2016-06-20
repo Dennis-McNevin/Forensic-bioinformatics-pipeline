@@ -123,7 +123,7 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
       dnf install -y gsl-devel
       #dnf install -y firefox
   fi
-  fi | tee -a /etc/mpsforensics.log
+  fi 2>&1 | tee -a /etc/mpsforensics.log
   sudo mv /etc/mpsforensics.log /etc/mpsforensics-done.log
 fi
 
