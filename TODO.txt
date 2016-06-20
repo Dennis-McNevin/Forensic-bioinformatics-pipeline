@@ -1,8 +1,8 @@
 A To Do list
 
-The install stuff for our MPS Forensics app should be in its own subdirectory.
+create a mpsfor.desktop file for ~/Desktop with an icon file ... and add the icon to the documentation.
 
-The Splash Screen and the Forensics Home page belong in the forensics app, not in the main driver page.
+The install stuff for our MPS Forensics app should be in its own subdirectory.  The Splash Screen and the Forensics Home page belong in the forensics app, not in the main driver page.
 
 The pipelines could make much better use of format strings to configure scripts. For example, in modcommon.py where it calls Trimmomatic, code like:
   "SLIDINGWINDOW:%{w}:%{q}"%itrfce['Trimmomatic']
@@ -14,4 +14,23 @@ Document the auto-configure locator.py code.
 
 Maybe a comprehensive test suit?
 
+Lots of stuff for this specific application has been bundled into this top level directory. The files needs to be better organised.
 
+The install_user.sh script should do a better job of making sure stuff is properly installed. Rather than:
+   if [ ! -d xxx ] ; then
+     mkdir xxx
+     ... install xxx stuff ... 
+   fi
+it would be better to do:
+   if [ ! -f .xxx-done ] ; then
+     [ -d xxx ] && rm -rf xxx
+     mkdir xxx
+     ... install xxx stuff ..
+     touch .xxx-done
+   fi
+
+Maybe, let Python start the user's preferred browser ... don't insist on Firefox.
+
+Can meteor be installed to run as a true Unix/Linux service?
+
+The README file should be somewhere on the internet ... so it doesn't need to be downloaded and opened as a file.
