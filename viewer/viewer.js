@@ -20,6 +20,7 @@ Schemas.CurrentView=new SimpleSchema({
 		max:300,
 		autoform: {
 			type: "selectize",
+			firstOption: false,
 			options: function() {
 				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
 			}
@@ -30,6 +31,7 @@ Schemas.CurrentView=new SimpleSchema({
 		max: 50,
 		autoform: {
 			type: "selectize",
+			firstOption: false,
 			options: function() {
 				return _.map(["GlobalFiler","PowerPlex Fusion","PowerPlex 21","Promega CS7","Qiagen HDplex","Qiagen Argus X12","Y-Filer Plus","Y-Filer 17","PowerPlex Y-23"],function(c) {return {label:c,value:c};});
 			}
@@ -422,8 +424,8 @@ if (Meteor.isClient) {
 	$(function () {
 		var chart;
 		$(document).ready(function() {
-	//		samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
-	//		builtLobstr();
+			samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
+			builtLobstr();
 		});
 	});
 	
