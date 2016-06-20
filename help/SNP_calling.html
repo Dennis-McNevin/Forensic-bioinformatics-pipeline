@@ -5,51 +5,38 @@
   </style>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>MPS Forensics Pipeline Installation</title>
+    <title>SNP calling pipeline (Mpileup/Freebayes)</title>
   </head>
   <body>
 <a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
-<h2>MPS Forensics Pipeline Installation</h2>
-<p>
-Here is the link to the installer for the MPS Forensics Pipeline system: 
-<a href="https://www.dropbox.com/s/wpvz8thrao0q8sw/install_mpsforensics.sh">
-  https://www.dropbox.com/s/wpvz8thrao0q8sw/install_mpsforensics.sh</a>
+<h2>SNP calling pipeline (Mpileup/Freebayes)</h2>
+
+<p>SNP calling can be performed within the MPS Forensics application by 
+clicking on the "SNP calling" tab, next to the "Home" tab. This should 
+show you a set of options and sub-tabs like this:
 </p>
-<p>To install it on your own Ubuntu 14.04.4 LTS or Ubuntu 16.04 LTS installation:</p>
+<p><img src="?"></img></p>
+<p>From here it is possible to choose the data set you wish to use. By 
+default the pipelines will search for matching paired-end data and use 
+this if found, you can override this behaviour and force single or 
+paired-end operation. Reads are first QC'd and low quality bases/reads 
+removed with <a href="http://www.usadellab.org/cms/?page=trimmomatic">
+Trimmomatic</a>, before a second round of QC results are generated.</p>
 
-<ol>
-<li>You can either download it directly on the Ubuntu computer using a web browser, or copy it using a memory stick from another machine.</li>
-<li>Place the install_mpsforensics.sh file on the Desktop.</li>
-<p>You will need to use the command line to install it, but this isn't too hard to do...</p>
+<p>All standard tools for SNP finding use the same 
+method of aligning reads to a reference genome - hg19 is the default, 
+but another, indexed by BWA may be chosen as a "custom reference" - 
+and then calling the differences that have been found using a dedicated 
+tool. The pipeline installed here uses the 
+<a href="https://arxiv.org/abs/1303.3997">BWA mem algorithm</a> to 
+perform the alignment step. Users can chose from 
+<a href="http://samtools.sourceforge.net/mpileup.shtml">Samtools 
+Mpileup</a> or <a href="https://github.com/ekg/freebayes">Freebayes</a> 
+for calling SNPs.</p>
 
-<li>On the left hand side of the screen is the Task Bar. At the top of the Task Bar is a purple and white icon, which when you move mouse over it, says "Search your computer". Click on this icon.</li>
+<p>Note: depending on the options chosen for each of these tools, it 
+is possible to call indels in addition to SNPs.</p>
 
-<li>A window will appear next to the button. At the top of this is an empty text box. Click in this, and type (without the quotes) "terminal".</li>
-
-<li>Now a header will appear directly under the text box that reads "Applications", and under this is a black and white icon and the words underneath read "Terminal". Click on this icon.</li>
-
-<li>A command-line terminal should appear and present you with a prompt that looks like:</li>
-<p>username@computername"~$</p>
-<p>The ~ symbol means you are in your home folder.</p>
-
-<li>At the $ prompt type the following and press the Enter key (don't type the $ sign):</li>
-<p>$ bash Desktop/install_mpsforensics.sh</p>
-
-<li>6 lines of text will appear, the last one reads:</li>
-<p>[sudo] password for username:</p>
-<p>The username shown will be your username, not the actual word. Here you need to type the password for your account and press the Enter key when you are done. This lets the installer set up system-wide software libraries. When you type the password the characters will not appear on the screen. This is to protect you from people watching over your shoulder, but it also means it's easy to mistype it. Don't worry if you get it wrong, just try again. If you get it wrong three times the installation will fail, but you can simply repeat instruction (7) to try again.</p>
-
-<li>The installation should run to completion. Depending on the speed of your internet connection the installation should take between 5 and 20 minutes. If the a download breaks then just repeat from step (7) to try again. The installer only downloads what it doesn't already have.</li>
-<p>If it completes successfully you see one the last messages "Installation of MPS Forensics pipeline complete".</p>
-
-<li>There will now be two new links on your Desktop.</li>
-  <ol type="a">
-    <li>The first is an icon with the name "MPSforensics.sh" - double clicking this icon will start the MPS Forensics software, as well as the Meteor web engine and the IGV genome browser.</li>
-    <li>The second is link with the name "MPS_results" - double clicking this will open the /home/username/mpsforensics/results folder, which is where all the pipeline runs are placed by default.</li>
-  </ol>
-</ol>
-</p>
 <a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
-
   </body>
 </html>
