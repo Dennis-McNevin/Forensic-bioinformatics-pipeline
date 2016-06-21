@@ -157,7 +157,7 @@ if [ ! -f $HOME/Desktop/MPSfor.desktop ] ; then
 	# Exec=bash -c "python $HOME/mpsforensics/forensics.py ; read -p 'Done? ' ans"
 	Exec=python $MPSFOR/forensics.py
 	Icon=$MPSFOR/mpsfor-dist/MPSforIcon.png
-	Terminal=true
+	Terminal=false
 	Type=Application
 	Categories=Application
 EOM
