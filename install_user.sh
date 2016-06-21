@@ -140,15 +140,6 @@ fi
 cd "$MPSFOR"
 ./locater.sh
 
-# create application links
-if [ ! -f $HOME/Desktop/MPSforensics.sh ]; then
-  cat >$HOME/Desktop/MPSforensics.sh <<-EOM
-	#!/bin/bash
-	python $MPSFOR/forensics.py
-EOM
-  chmod ug+x "$HOME/Desktop/MPSforensics.sh"
-fi
-
 if [ ! -f $HOME/Desktop/MPSfor.desktop ] ; then
   cat >$HOME/Desktop/MPSfor.desktop <<-EOM
 	[Desktop Entry]
