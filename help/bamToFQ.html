@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>BAM to FASTQ pipeline</title>
+</head>
+
+<body>
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
+
+<h2>Pipeline synopsis</h2>
+<p>All pipelines available in this system are capable of taking FASTQ, FASTQ.GZ or BAM files as input, but if the 
+user desires, they can use this simple pipeline to convert BAM files to FASTQ.GZ format for their convenience.<p>
+<p>The pipeline relies on Picard Tools, which is also required if GATK is ever implemented as an alternative 
+SNP caller.</p>
+<p>The user options are outlined below</p>
+<table cellspacing="0" border="0">
+	<colgroup width="170"></colgroup>
+	<colgroup width="81"></colgroup>
+	<colgroup width="47"></colgroup>
+	<colgroup width="142"></colgroup>
+	<colgroup width="124"></colgroup>
+	<colgroup width="209"></colgroup>
+	<colgroup width="79"></colgroup>
+	<colgroup width="467"></colgroup>
+	<tr>
+		<td height="17" align="left">#tool_group</td>
+		<td align="left">argument</td>
+		<td align="left">label</td>
+		<td align="left">type</td>
+		<td align="left">editing_constraints</td>
+		<td align="left">default</td>
+		<td align="left">mouse_over</td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td height="17" align="left">Shared</td>
+		<td align="left">Parameters</td>
+		<td align="left">b</td>
+		<td align="left">Source BAM input file</td>
+		<td align="left">file</td>
+		<td align="left">required</td>
+		<td align="left">.bam;.ubam</td>
+		<td align="left">Extract FASTQ data from BAM file, convert to gzipped FASTQ format.</td>
+	</tr>
+	<tr>
+		<td height="17" align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left">d</td>
+		<td align="left">Destination directory</td>
+		<td align="left">directory</td>
+		<td align="left">optional</td>
+		<td align="left"><br></td>
+		<td align="left">target directory for extracted FASTQ file(s) - default is same as the BAM file</td>
+	</tr>
+	<tr>
+		<td height="17" align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left">single</td>
+		<td align="left">Read data</td>
+		<td align="left">choice</td>
+		<td align="left">auto-detect;single-end;paired-end</td>
+		<td align="left">auto-detect</td>
+		<td align="left">Single-end or paired-end reads file(s)</td>
+	</tr>
+</table>
+<!-- ************************************************************************** -->
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
+</body>
+
+</html>

@@ -5,49 +5,27 @@
   </style>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>MPS Forensics Pipeline Installation</title>
+    <title>Using the STR viewer</title>
   </head>
   <body>
 <a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
-<h2>MPS Forensics Pipeline Installation</h2>
+<h2>Using the STR viewer</h2>
 <p>
-Here is the link to the installer for the MPS Forensics Pipeline system: 
-<a href="https://www.dropbox.com/s/wpvz8thrao0q8sw/install_mpsforensics.sh">
-  https://www.dropbox.com/s/wpvz8thrao0q8sw/install_mpsforensics.sh</a>
+Once logged in to the SNP/STR Viewer, if you have completed STR pipeline 
+runs with LobSTR or STRait Razor, you can view the results by clicking 
+on the box directly to the right of the MPS Forensics graphic and 
+choosing your data set from the drop down. To make the data show, 
+you will likely need to change the panel to one of the Y-chromosome 
+panels, such as Y-Filer Plus, and then back again if you wish to one of 
+the global panel options.
 </p>
-<p>To install it on your own Ubuntu 14.04.4 LTS or Ubuntu 16.04 LTS installation:</p>
-
-<ol>
-<li>You can either download it directly on the Ubuntu computer using a web browser, or copy it using a memory stick from another machine.</li>
-<li>Place the install_mpsforensics.sh file on the Desktop.</li>
-<p>You will need to use the command line to install it, but this isn't too hard to do...</p>
-
-<li>On the left hand side of the screen is the Task Bar. At the top of the Task Bar is a purple and white icon, which when you move mouse over it, says "Search your computer". Click on this icon.</li>
-
-<li>A window will appear next to the button. At the top of this is an empty text box. Click in this, and type (without the quotes) "terminal".</li>
-
-<li>Now a header will appear directly under the text box that reads "Applications", and under this is a black and white icon and the words underneath read "Terminal". Click on this icon.</li>
-
-<li>A command-line terminal should appear and present you with a prompt that looks like:</li>
-<p>username@computername"~$</p>
-<p>The ~ symbol means you are in your home folder.</p>
-
-<li>At the $ prompt type the following and press the Enter key (don't type the $ sign):</li>
-<p>$ bash Desktop/install_mpsforensics.sh</p>
-
-<li>6 lines of text will appear, the last one reads:</li>
-<p>[sudo] password for username:</p>
-<p>The username shown will be your username, not the actual word. Here you need to type the password for your account and press the Enter key when you are done. This lets the installer set up system-wide software libraries. When you type the password the characters will not appear on the screen. This is to protect you from people watching over your shoulder, but it also means it's easy to mistype it. Don't worry if you get it wrong, just try again. If you get it wrong three times the installation will fail, but you can simply repeat instruction (7) to try again.</p>
-
-<li>The installation should run to completion. Depending on the speed of your internet connection the installation should take between 5 and 20 minutes. If the a download breaks then just repeat from step (7) to try again. The installer only downloads what it doesn't already have.</li>
-<p>If it completes successfully you see one the last messages "Installation of MPS Forensics pipeline complete".</p>
-
-<li>There will now be two new links on your Desktop.</li>
-  <ol type="a">
-    <li>The first is an icon with the name "MPSforensics.sh" - double clicking this icon will start the MPS Forensics software, as well as the Meteor web engine and the IGV genome browser.</li>
-    <li>The second is link with the name "MPS_results" - double clicking this will open the /home/username/mpsforensics/results folder, which is where all the pipeline runs are placed by default.</li>
-  </ol>
-</ol>
+<img src="images/viewer_codis.png"></img>
+<p>Hovering the mouse over any allele bar will show a range of details 
+of the STR, the read coverage and the thresholds for the locus. Clicking 
+on the allele number will open the locus and all reads from the BAM file 
+in IGV. IGV will likely pop up a message asking for permission to clear 
+old results - answer yes to this to display the selected locus.</p>
+<img src="images/igv_pentaE.png"></img>
 </p>
 <a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
 

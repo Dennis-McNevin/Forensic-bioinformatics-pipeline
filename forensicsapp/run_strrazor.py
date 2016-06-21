@@ -60,6 +60,22 @@ def strrazor(itrfce, progress=None):
           ]
     cmds.append((cmd, 'bsh'))
 
+    # Stage 8 Restrict by Y-chrom and CODIS loci
+    logger.info('Preparing to filter loci')
+    # python razor_convert.py --yBED lobSTR_ystr_hg19.bed --codisBED lobSTR_codis_hg19.bed
+    # --razor ~/mpsforensics/results/R701-A506_2225/STRaitRazor/rawSTRcallsR1.txt --trimmedFQ
+    trimmedFQ = fqs[0]
+    codisBED = loc['lobSTR_codis_hg19.bed']
+    yBED = loc['lobSTR_ystr_hg19.bed']
+    razor = '/'.join(trimmedFQ.split('/')[:-1]) + '/STRaitRazor/rawSTRcallsR1.txt'
+    cmd2 = [loc['razor_convert.py'], '--trimmedFQ', trimmedFQ, '--codisBED', codisBED,
+            '--yBED', yBED, '--razor', razor]
+    cmds.append((cmd2, 'b'))
+
+    # Upload results to DB
+    cmd3 = [loc['load_results.sh']]
+    cmds.append((cmd3, 'b'))
+
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
 
     return success

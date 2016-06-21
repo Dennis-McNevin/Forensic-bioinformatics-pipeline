@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title>Adding custom SNP/STR panel files</title>
+	<meta name="generator" content="LibreOffice 4.4.3.2 (MacOSX)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Bob Buckley"/>
+	<meta name="changed" content="2016-04-13T12:01:53.073720000"/>
+</head>
+<body lang="en-AU" dir="ltr">
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;
+Return to help page</img></a>
+<h1>Adding custom SNP/STR panel files</h1>
+<p>The process of filtering SNP/STR calls by locus is usually done 
+within the pipeline by intersecting the calls with BED files 
+listing the separate "panels" of chosen loci. An attempt has been
+made to provide a single standardised file format with all the 
+information that is required for this step, to include both SNP 
+and STR loci. This file format has been named .pnl (panel) and 
+an example is shown below:</p>
+<img src="images/panel_file.png"></img>
+<p>The panel file format is closely modelled on the standard BED 
+file format in that the first three columns are the same, allowing 
+for standard tools such as BEDtools to work with these files, 
+e.g. to intersect results with a panel file.</p>
+<p>The columns that define a panel file are as follows:
+<ol>
+<li>Chromosome: any prefix to the chromosomes, e.g. chr in chr16, 
+should match the prefix (if any) used in the genomic reference.</li>
+<li>Start: The first base in a chromosome is at position 0.</li>
+<li>End: This position is 1-more than the final position. E.g. 
+a single base SNP at the 50th base in a chromosome would have 
+start=49 end=50</li>
+<li>rsID/LocusID: the standard identifier for the locus</li>
+<li>str/ai/ii/pi: the type of panel this feature belongs to. 
+Namely, a Short Tandem Repeat (STR), Ancestry Informative SNP, 
+Identity Informative SNP, Phenotypic Informative SNP</li>
+<li>Analytic threshold: percentage value</li>
+<li>Stochastic threshold: percentage value</li>
+<li>Stutter threshold: percentage value</li>
+<li>Length;Repeats: ";"-separated values of the repeat motif 
+length and the number of expected repeats. Simply use ";" with 
+no values for SNP entries.</li>
+</ol>
+</p>
+<p>
+Note: currently only VCF files produced by Mpileup and  
+Freebayes are filtered by the "standard.pnl" panel file as 
+LobSTR and STRait Razor require some extra work to accommodate 
+the extra information present in their VCF files. To provide 
+custom STR loci, the lobSTR_codis_hg19.bed and lobSTR_ystr_hg19.bed 
+files need to be replace or modified with the new loci.
+</p>
+
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;
+Return to help page</img></a>
+</body>
+</html>

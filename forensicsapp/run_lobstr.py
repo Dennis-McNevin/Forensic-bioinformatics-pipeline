@@ -22,14 +22,14 @@ def add_args(arg_dict, cmd):
         Go through args dict and add arguments to command line
     """
     for key in arg_dict.keys():
-        if not isinstance(arg_dict[key], bool):
+        if isinstance(arg_dict[key], str):
             if len(key) == 1:
                 cmd.append('-' + key)
                 cmd.append(arg_dict[key])
             else:
                 cmd.append('--' + key)
                 cmd.append(arg_dict[key])
-        elif arg_dict[key]: # include if true
+        elif arg_dict[key] != 0: # include if true
             if len(key) == 1:
                 cmd.append('-' + key)
                 #cmd.append(arg_dict[key])
