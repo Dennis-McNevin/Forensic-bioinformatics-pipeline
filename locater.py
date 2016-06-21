@@ -15,7 +15,8 @@ import re
 import subprocess
 
 if len(sys.argv)<2:
-    sys.exit(0)
+    print "usage: python locater.py <files> ..."
+    sys.exit(1)
 
 # the following are expected to be present ... or installed with apt-get
 native = [
@@ -47,6 +48,7 @@ location = {
 # find our local trimmomatic
 jv = subprocess.check_output('find ~/mpsforensics -name trimmomatic-\\*.jar | sort | tail -n 1', shell=True).rstrip()
 if not jv:
+    print "Trimmomatic jar file not found."
     sys.exit(1)
     
 location['java-version'] = "'"+jv+"'"

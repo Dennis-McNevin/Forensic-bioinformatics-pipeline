@@ -142,10 +142,26 @@ cd "$MPSFOR"
 
 # create application links
 if [ ! -f "$HOME/Desktop/MPSforensics.sh" ]; then
-  echo '#!/bin/bash' > "$HOME/Desktop/MPSforensics.sh"
-  echo "python $MPSFOR/forensics.py" >> "$HOME/Desktop/MPSforensics.sh"
-  chmod +x "$HOME/Desktop/MPSforensics.sh"
+  cat "$HOME/Desktop/MPSforensics.sh" <<-EOM
+	#!/bin/bash
+	python $MPSFOR/forensics.py
+EOM
+  chmod ug+x "$HOME/Desktop/MPSforensics.sh"
 fi
+
+if [ ! $HOME/Desktop/MPSfor.desktop ] ; then
+  cat >$HOME/Desktop/MPSfor.desktop <<-EOM
+	[Desktop Entry]
+	Name=MPS Forensics
+	Comment=Start the MPS Forensic GUI
+	\# Exec=bash -c "python $HOME/mpsforensics/forensics.py ; read -p 'Done? ' ans"
+	Exec=python $HOME/mpsforensics/forensics.py
+	Icon=$HOME/mpsforensics/mpsfor-dist/MPSforIcon.png
+	Terminal=true
+	Type=Application
+	Categories=Applcation
+EOM
+  chmod ug+x $HOME/Desktop/MPSfor.desktop
 
 if [ ! -L "$HOME/Desktop/MPS_results" ]; then
   ln -s "$MPSFOR/results" "$HOME/Desktop/MPS_results"
