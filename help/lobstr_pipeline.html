@@ -8,7 +8,8 @@
     <title>LobSTR STR calling pipeline</title>
   </head>
   <body>
-<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;Return to help page</img></a>
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;
+Return to help page</img></a>
 <h2>LobSTR STR calling pipeline</h2>
 <p>LobSTR is a two-part bioinformatic tool for calling Short Tandem 
 Repeats (STRs), that works by first aligning reads against a reference 
@@ -21,9 +22,8 @@ though, the pipeline should be run in single-end mode to avoid loss of
 data from poorly mapped read pairs. The official LobSTR site is here: 
 <a href="http://lobstr.teamerlich.org/index.html">
 http://lobstr.teamerlich.org/index.html</a></p>
-<p>This STR calling pipeline has several pipeline components in common 
-with the SNP calling pipeline. A pipeline overview can be found here: 
-<a href="XXX">XXX</a><br/></p>
+<p>This STR calling pipeline shares components in common 
+with the SNP calling pipeline - namely Trimmomatic and FASTQC.
 <p>
 Reads are first checked for quality, trimmed/cleaned as requested by 
 the user (we recommend minimal quality trimming and instead removing 
@@ -40,7 +40,8 @@ read by our visualisation tool.
 </p>
 <p>To use the LobSTR pipeline, make sure the MPS Forensics application 
 is running, and click on the "LobSTR" tab at the top of the application 
-screen. You should see the following screen:<img src="?"></img>
+screen. You should see the following screen:
+<img src="images/lobstr_pipeline.png"></img>
 </p>
 <p>After setting all appropriate values, click the "Run" button. 
 This button with turn red and the pipeline software will become 
@@ -49,7 +50,7 @@ of the screen, which will continue to show updates until the pipeline
 completes, and the screen once again will respond to user input.</p>
 <p>Once the user has finished running the analysis pipelines they 
 are free to launch the data viewer tool, by clicking on the "Home" 
-tab and then clicking the "XXX" button. This will open the Firefox 
+tab and then clicking the "SNP/STR Viewer" button. This will open the Firefox 
 web browser and load our data viewer tool that is running on the 
 user's machine. If the user has accidentally closed IGV, it is a 
 good idea to restart IGV first. For more information on IGV, 

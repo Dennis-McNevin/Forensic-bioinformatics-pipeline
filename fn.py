@@ -370,7 +370,7 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
             ttk.Button(f1, text="Help", command=lambda : browseOpen("file://"+helpname)).pack(side=tk.LEFT, pady=20, padx=50)
         else:
             print("No file:", helpname)
-        ttk.Button(f1, text="STR Browser", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
+        ttk.Button(f1, text="SNP/STR Viewer", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
         f2 = ttk.Frame(self)
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
         ttk.Label(f2, image=self.img3, style="HP.TLabel").pack(side=tk.LEFT, padx=10)       

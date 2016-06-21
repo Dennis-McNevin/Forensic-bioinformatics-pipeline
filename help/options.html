@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title>Customing pipeline options</title>
+	<meta name="generator" content="LibreOffice 4.4.3.2 (MacOSX)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changedby" content="Bob Buckley"/>
+	<meta name="changed" content="2016-04-13T12:01:53.073720000"/>
+</head>
+<body lang="en-AU" dir="ltr">
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;
+Return to help page</img></a>
+
+<h1>Customising pipeline options</h1>
+<p>Pipeline tool arguments/options, their types, ranges and defaults 
+are defined in the mpsforensics/forensicsapp folder, in .cfg files. 
+These files are just tab-separated files that can be created or 
+modified in Excel, Libre Office Calc or any plain text editor.</p>
+<img src="images/options.png"></img>
+<p>The columns are as follows:
+<ol>
+<li>pipeline section name</li>
+<li>Name as appears in the graphical interface</li>
+<li>argument, without any leading dashes</li>
+<li>Argument text that appears in the graphical interface</li>
+<li>input type</li>
+<li>input range. Tickboxes have no range, so this column disappears</li>
+<li>default value</li>
+<li>Mouse-over help. Should be kept short if possible</li>
+</ol>
+</p>
+<p>Note: The pipeline expects tools to have single dashes leading 
+single character arguments and double dashes leading multi-character 
+arguments. Other input types will need to be hard-coded in Python</p>
+<a href="help.html"><img src="images/back.png">&nbsp;&nbsp;
+Return to help page</img></a>
+</body>
+</html>
