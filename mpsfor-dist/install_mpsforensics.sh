@@ -21,20 +21,6 @@
 
 set -e
 
-# create the setup script if its isn't already present
-if [ "$HOME" != / -a ! -f ./MPSforensicsSetup.sh ] ; then
-  cat >./MPSforensicsSetup.sh <<-EOM
-	MPSFOR="\$HOME/mpsforensics"
-
-	cd
-	[ -d \$MPSFOR ] || git clone https://bitbucket.org/gdu_jcsmr/mpsforensics.git
-
-	cd  \$MPSFOR
-	. install_user.sh
-EOM
-  chmod a+x MPSforensicsSetup.sh
-fi
-
 if [ ! -f /etc/mpsforensics-done.log ] ; then
   if [ -s /etc/mpsforensics.log ] ; then
     echo "MPSforensics admin. install was started, but it did not finish."
@@ -128,6 +114,21 @@ if [ ! -f /etc/mpsforensics-done.log ] ; then
   sudo mv /etc/mpsforensics.log /etc/mpsforensics-done.log
 fi
 
+# create the setup script if its isn't already present
+if [ "$HOME" != / -a ! -f ./MPSforensicsSetup.sh ] ; then
+  cat >./MPSforensicsSetup.sh <<-EOM
+	MPSFOR="\$HOME/mpsforensics"
+
+	cd
+	[ -d \$MPSFOR ] || git clone https://bitbucket.org/gdu_jcsmr/mpsforensics.git
+
+	cd  \$MPSFOR
+	. install_user.sh
+EOM
+  chmod a+x MPSforensicsSetup.sh
+fi
+
+# don't run as "root" ... $HOME == /
 [ $HOME != / ] && {
   . ./MPSforensicsSetup.sh | tee ~/.mpsforensics.log 
   mv ~/.mpsforensics.log ~/mpsforensics/.mpsforensics.log
