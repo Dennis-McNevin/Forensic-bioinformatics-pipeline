@@ -141,6 +141,7 @@ cd "$MPSFOR"
 ./locater.sh
 
 if [ ! -f $HOME/Desktop/MPSfor.desktop ] ; then
+  [ -d $HOME/Desktop ] || mkdir $HOME/Desktop
   cat >$HOME/Desktop/MPSfor.desktop <<-EOM
 	[Desktop Entry]
 	Name=MPS Forensics
