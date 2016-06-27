@@ -15,14 +15,15 @@ def read_bed(path):
             start = int(lps[1])
             motif = int(lps[3])
             repeats = int(lps[4])
-            name = lps[5].upper()
-            bed_entries[name] = (chrom, start, motif, repeats)
+            name = lps[5] # don't change the case
+            # use upper case for name matching
+            bed_entries[name.upper()] = (chrom, start, motif, repeats, name)
     return bed_entries
 
 
 def write_strs(out_path, bed_entries, name, alleles_reads):
     with open(out_path, 'a') as outf:
-        chrom, start, motif, repeats = bed_entries[name]
+        chrom, start, motif, repeats, true_name = bed_entries[name]
         ref_bases = motif * repeats
 
         calls = []
@@ -37,7 +38,8 @@ def write_strs(out_path, bed_entries, name, alleles_reads):
                 w = int(allele)
                 f = 0
             num_bases = (w*motif) - f
-            bases_diff = ref_bases - num_bases
+            # bases_diff = ref_bases - num_bases  # this line is giving the opposite allele polarity
+            bases_diff = num_bases - ref_bases
             calls.append(str(bases_diff) + '|' + cov)
             coverage = int(cov)
             if coverage > g1[0]:
@@ -46,13 +48,26 @@ def write_strs(out_path, bed_entries, name, alleles_reads):
             elif coverage > g2[0]:
                 g2 = (coverage, bases_diff, w)
 
+        # let's get sorted calls, just to be on the safe side
+        temp_calls = []
+        for c in calls:
+            call = c.split('|')
+            temp_calls.append((int(call[0]), int(call[1])))
+        calls = sorted(temp_calls)
+
+        temp_calls = []
+        for c in calls:
+            call = str(c[0]) + '|' + str(c[1])
+            temp_calls.append(call)
+        calls = temp_calls
+
         c = ';'.join(calls)
         if "ystr" in out_path:
             outline = '\t'.join([chrom, str(start), c, str(g1[1]), str(g2[1]), str(motif),
-                str(repeats), name, str(g1[2])])  # no 2nd genotype in y chroms!
+                str(repeats), true_name, str(g1[2])])  # no 2nd genotype in y chroms!
         else:
             outline = '\t'.join([chrom, str(start), c, str(g1[1]), str(g2[1]), str(motif),
-                str(repeats), name, str(g1[2]), str(g2[2])])
+                str(repeats), true_name, str(g1[2]), str(g2[2])])
         
         outf.write(outline + '\n')
 

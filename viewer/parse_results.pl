@@ -105,7 +105,8 @@ for my $origname(@files) {
 	$sample=~s/\.txt$//;
 	$sample=~s/\.([^\.]+)$//;
 	my $type=$1;
-	$sample=~s/_lobstr$//;
+	$sample=~s/_lobstr|_STRaitRazor$//;
+# Cam's edit
 	my $filename="$sample.$type";
 	print STDERR "$type\t$sample\n";
 	if($type eq 'snp') {
