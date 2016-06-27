@@ -47,8 +47,13 @@ def write_strs(out_path, bed_entries, name, alleles_reads):
                 g2 = (coverage, bases_diff, w)
 
         c = ';'.join(calls)
-        outline = '\t'.join([chrom, str(start), c, str(g1[1]), str(g2[1]), str(motif),
+        if "ystr" in out_path:
+            outline = '\t'.join([chrom, str(start), c, str(g1[1]), str(g2[1]), str(motif),
+                str(repeats), name, str(g1[2])])  # no 2nd genotype in y chroms!
+        else:
+            outline = '\t'.join([chrom, str(start), c, str(g1[1]), str(g2[1]), str(motif),
                 str(repeats), name, str(g1[2]), str(g2[2])])
+        
         outf.write(outline + '\n')
 
 
