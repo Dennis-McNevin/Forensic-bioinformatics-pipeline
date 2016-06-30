@@ -43,7 +43,7 @@ import subprocess
 
 import SplashScreen as ss
 import StatusProgress as sp 
-
+from forensicsapp.location import location as loc
 
 def Display(event):
     "<Enter> callback to display popup/tooltip"
@@ -371,7 +371,7 @@ class HomePage(ttk.Frame):
         else:
             print("No file:", helpname)
         ttk.Button(f1, text="SNP/STR Viewer", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
-        ttk.Button(f1, text="Launch IGV", command=self.startIGV)
+        ttk.Button(f1, text="Launch IGV", command=self.startIGV).pack(side=tk.LEFT, pady=20, padx=50)
         f2 = ttk.Frame(self)
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
         ttk.Label(f2, image=self.img3, style="HP.TLabel").pack(side=tk.LEFT, padx=10)       
@@ -380,7 +380,9 @@ class HomePage(ttk.Frame):
         return
 
     def startIGV(self):
-        subprocess.Popen([loc["igv.sh"], '&', ], shell=True)
+        global progbar
+        progbar.status('Loading IGV, may take 10 seconds')
+        p = subprocess.Popen([loc["igv.sh"], '&', ], shell=True)
 
                 
 Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline", "subtabs"])

@@ -119,10 +119,12 @@ def lobstr(itrfce, progress=None):
     cmds.append((cmd8, 'b'))
 
     # Stage 9 create Excel-friendly CSV file
+    logger.info ('Preparing to create Excel output from LobSTR VCF/BED')
     cmd9 = [loc['VCFtoExcel.py'], vcf_fn]
-    cmds.append(cmd9, 'b')
+    cmds.append((cmd9, 'b'))
 
     # Upload results to DB
+    logger.info ('Preparing results push to DB')
     cmd10 = [loc['load_results.sh']]
     cmds.append((cmd10, 'b'))
 
