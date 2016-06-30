@@ -118,9 +118,13 @@ def lobstr(itrfce, progress=None):
     cmd8 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn]
     cmds.append((cmd8, 'b'))
 
+    # Stage 9 create Excel-friendly CSV file
+    cmd9 = [loc['VCFtoExcel.py'], vcf_fn]
+    cmds.append(cmd9, 'b')
+
     # Upload results to DB
-    cmd9 = [loc['load_results.sh']]
-    cmds.append((cmd9, 'b'))
+    cmd10 = [loc['load_results.sh']]
+    cmds.append((cmd10, 'b'))
 
     logger.info ('Launching pipeline')
     success = px.run_pipeline(cmds, logger=logger, progress=progress)
