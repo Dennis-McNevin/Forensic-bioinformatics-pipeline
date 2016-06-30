@@ -351,17 +351,17 @@ class HomePage(ttk.Frame):
         ttk.Frame.__init__(self, nb, border=2)
         nb.add(self, text="Home")
         
-        tm = """This forensics bioinfomatics pipeline was jointly funded by the US Defence Forensics Science Centre and the Department of Army Research,
-Development and Engineering Command (ITC-PAC). It was developed by the National Centre for Forensic Studies at the University of Canberra in
-collaboration with: Australian National University, Bioinformatics Consultancy; Victoria Police Forensic Services Department (Office of the
-Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australian Federal Police (Forensics)"""
+        #tm = """This forensics bioinfomatics pipeline was jointly funded by the US Defence Forensics Science Centre and the Department of Army Research,
+#Development and Engineering Command (ITC-PAC). It was developed by the National Centre for Forensic Studies at the University of Canberra in
+#collaboration with: Australian National University, Bioinformatics Consultancy; Victoria Police Forensic Services Department (Office of the
+#Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australian Federal Police (Forensics)"""
         
         self.img1 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_image_sm.gif") )
         self.img2 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_ncfs_sm.gif") )
         self.img3 = tk.PhotoImage( master=self, file=os.path.join(cwd, "pix", "welcome_uc_sm.gif") )
         
         ttk.Label(self, image=self.img1, style="HP.TLabel").pack(pady=5)
-        ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
+        # ttk.Label(self, text=tm, style="HP.TLabel").pack(ipady=10, ipadx=5)
         f1 = ttk.Frame(self)
         f1.pack(padx=30)
         ttk.Button(f1, text="About", command=lambda : browseOpen("file://"+cwd+"/help/about.html")).pack(side=tk.LEFT, pady=20, padx=50)
@@ -371,13 +371,17 @@ Chief Forensic Scientist); NSW Forensic and Analytical Science Service; Australi
         else:
             print("No file:", helpname)
         ttk.Button(f1, text="SNP/STR Viewer", command=lambda : browseOpen("http://localhost:3000/")).pack(side=tk.LEFT, pady=20, padx=50)
+        ttk.Button(f1, text="Launch IGV", command=self.startIGV)
         f2 = ttk.Frame(self)
         ttk.Label(f2, image=self.img2, style="HP.TLabel").pack(side=tk.LEFT, padx=10)
         ttk.Label(f2, image=self.img3, style="HP.TLabel").pack(side=tk.LEFT, padx=10)       
         f2.pack(pady=5)
         
         return
-    
+
+    def startIGV(self):
+        subprocess.Popen([loc["igv.sh"], '&', ], shell=True)
+
                 
 Cfgs = collections.namedtuple('Cfgline', ["tabname", "filename", "run_pipeline", "subtabs"])
 
