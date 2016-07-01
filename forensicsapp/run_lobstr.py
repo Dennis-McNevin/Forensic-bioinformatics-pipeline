@@ -115,7 +115,9 @@ def lobstr(itrfce, progress=None):
     vcf_fn = str_fn + '.vcf'
     ystr_fn = str_fn + '.ystr.txt'
     codis_fn = str_fn + '.codis.txt'
-    cmd8 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn]
+    ybed = loc['lobSTR_ystr_hg19.bed']
+    cbed = loc['lobSTR_codis_hg19.bed']
+    cmd8 = [loc['lobstr_convert.sh'], vcf_fn, ystr_fn, codis_fn, ybed, cbed]
     cmds.append((cmd8, 'b'))
 
     # Stage 9 create Excel-friendly CSV file

@@ -162,9 +162,6 @@ def tovcf(itrfce, progress=None):
     snp_fn = bn + '.snp.txt'
     cmds.append(([loc["bedtools"], 'intersect', '-b', vcf_fn, '-a', loc["standard.pnl"], #$HOME/mpsforensics/standard.pnl,
             '-wb', '>', snp_fn], 'bsh'))
-    #ai_fn = bn + '_ai.vcf'
-    #ii_fn = bn + '_ii.vcf'
-    #cmds.append(([loc['snp_convert.sh'], vcf_fn, ai_fn, ii_fn], 'b'))
 
     # Stage 13 upload to DB
     logger.info('Uploading to DB')
