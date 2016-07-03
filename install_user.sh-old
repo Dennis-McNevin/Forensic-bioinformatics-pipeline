@@ -12,17 +12,31 @@ cd "$MPSFOR"
 mkdir -p results bin lib
 
 # Pull down BWA indexed human reference
-if [ ! -f .human-done ] ; then
-  curl c https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download | tar -xzf -
-  touch .human-done
+if [ ! -d human ] ; then
+  [ -d human_tmp ] || mkdir human_tmp
+  cd human_tmp
+  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
+  mv download ../hg19.tgz
+  cd $MPSFOR
+  rmdir human_tmp
+  tar -xzf hg19.tgz
+  rm hg19.tgz
+  # wget https://www.dropbox.com/s/p47hqi8zde3qmqn/hg19.tgz
 fi
 
 cd $MPSFOR
 
-# Pull down LobSTR prebuilt
-if [ ! -f .lobstr_ref-done ] ; then
-  curl https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download | tar -xzf -
-  touch .lobstr_ref-done
+if [ ! -d "$MPSFOR/lobstr_ref" ] ; then
+  # Pull down LobSTR prebuilt
+  [ -d lobstr_tmp ] || mkdir lobstr_tmp
+  cd lobstr_tmp
+  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
+  mv download ../lobstr_ref.tgz
+  cd $MPSFOR
+  rmdir lobstr_tmp
+  tar -xzf lobstr_ref.tgz
+  rm lobstr_ref.tgz
+  # wget https://www.dropbox.com/s/2asy40bx9agfjhk/lobstr.tgz
 fi
 
 cd $MPSFOR
@@ -41,20 +55,19 @@ cd "$MPSFOR/viewer"
 if [ ! -d "$MPSFOR/viewer/.meteor" ]; then
   meteor create .
 fi
-if [ ! -f .meteor-done ] ; then
-  ./install_meteor.sh
-  touch .meteor-done
-fi
+./install_meteor.sh
 
 cd "$MPSFOR"
 
 # Pull down mpsforensics_bin supporting binaries
-if [ ! -f .bin-done ] ; then
-  curl https://cloudstor.aarnet.edu.au/plus/index.php/s/SI91o90UGCkkGFN/download | tar -xzf -
-  touch .bin-done
+if [ ! -d "$HOME/mpsforensics/mpsforensics_bin" ] ; then
+  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/SI91o90UGCkkGFN/download
+  mv download mpsforensics_bin.tgz
+  tar -xzf mpsforensics_bin.tgz
+  rm mpsforensics_bin.tgz
 fi
 
-# install binaries: FASTQC, Trimmomatic, LobSTR, STRaitRazor, Freebayes
+# install binaries as needed: FASTQC, Trimmomatic, LobSTR, STRaitRazor, Freebayes
 cd "$MPSFOR/mpsforensics_bin"
 
 # FASTQC

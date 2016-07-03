@@ -120,8 +120,10 @@ if [ "$HOME" != / -a ! -f ./MPSforensicsSetup.sh ] ; then
 	MPSFOR="\$HOME/mpsforensics"
 
 	cd
-	[ -d \$MPSFOR ] || git clone https://bitbucket.org/gdu_jcsmr/mpsforensics.git
-
+        # Dev repo
+	# [ -d \$MPSFOR ] || git clone https://bitbucket.org/gdu_jcsmr/mpsforensics.git
+	# Production repo
+	[ -d \$MPSFOR ] || git clone https://github.com/Dennis-McNevin/Forensic-bioinformatics-pipeline.git
 	cd  \$MPSFOR
 	. install_user.sh
 EOM

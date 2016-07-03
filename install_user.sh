@@ -6,68 +6,53 @@ MPSFOR="$HOME/mpsforensics"
 cd
 
 # Pull down application
-[ -d "$MPSFOR" ] || git clone https://cameronjack@bitbucket.org/gdu_jcsmr/mpsforensics.git
+# Dev repo held by ANU Bioinformatics Consultancy
+#[ -d "$MPSFOR" ] || git clone https://cameronjack@bitbucket.org/gdu_jcsmr/mpsforensics.git
+# Production repo held by UC CFFS
+[ -d "$MPSFOR" ] || git clone https://github.com/Dennis-McNevin/Forensic-bioinformatics-pipeline.git
 
 cd "$MPSFOR"
 mkdir -p results bin lib
 
 # Pull down BWA indexed human reference
-if [ ! -d human ] ; then
-  [ -d human_tmp ] || mkdir human_tmp
-  cd human_tmp
-  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/nLGwa9lBuiQCARc/download
-  mv download ../hg19.tgz
-  cd $MPSFOR
-  rmdir human_tmp
-  tar -xzf hg19.tgz
-  rm hg19.tgz
-  # wget https://www.dropbox.com/s/p47hqi8zde3qmqn/hg19.tgz
+if [ ! -f .human-done ] ; then
+  curl https://cloudstor.aarnet.edu.au/plus/index.php/s/7i9TqFBIKZCtrPL/download | tar -xzf -
+  touch .human-done
 fi
 
 cd $MPSFOR
 
-if [ ! -d "$MPSFOR/lobstr_ref" ] ; then
-  # Pull down LobSTR prebuilt
-  [ -d lobstr_tmp ] || mkdir lobstr_tmp
-  cd lobstr_tmp
-  wget -c https://cloudstor.aarnet.edu.au/plus/index.php/s/NsZYhN2m7WS2RoA/download
-  mv download ../lobstr_ref.tgz
-  cd $MPSFOR
-  rmdir lobstr_tmp
-  tar -xzf lobstr_ref.tgz
-  rm lobstr_ref.tgz
-  # wget https://www.dropbox.com/s/2asy40bx9agfjhk/lobstr.tgz
+# Pull down LobSTR prebuilt
+if [ ! -f .lobstr_ref-done ] ; then
+  curl https://cloudstor.aarnet.edu.au/plus/index.php/s/hsEux0bosXjtcnB/download | tar -xzf -
+  touch .lobstr_ref-done
 fi
 
 cd $MPSFOR
 
 if [ ! -d "$HOME/.meteor" ] ; then
-  # Pull down prebuilt meteor
-  #wget https://cloudstor.aarnet.edu.au/plus/index.php/s/cF63EohzFRcjD22/download
-  #mv download meteor.tgz
-  #tar -xzf meteor.tgz
-  #rm meteor.tgz
-  #mv meteor "$HOME/.meteor"
-  #cp "$MPSFOR/meteor" /usr/local/bin/meteor
   curl https://install.meteor.com/ | sh
 fi
 cd "$MPSFOR/viewer"
 if [ ! -d "$MPSFOR/viewer/.meteor" ]; then
   meteor create .
 fi
-./install_meteor.sh
+if [ ! -f .meteor-done ] ; then
+  ./install_meteor.sh
+  touch .meteor-done
+fi
 
 cd "$MPSFOR"
 
 # Pull down mpsforensics_bin supporting binaries
-if [ ! -d "$HOME/mpsforensics/mpsforensics_bin" ] ; then
-  wget https://cloudstor.aarnet.edu.au/plus/index.php/s/SI91o90UGCkkGFN/download
-  mv download mpsforensics_bin.tgz
-  tar -xzf mpsforensics_bin.tgz
-  rm mpsforensics_bin.tgz
+if [ ! -f .bin-done ] ; then
+  # dev repo
+  # curl https://cloudstor.aarnet.edu.au/plus/index.php/s/SI91o90UGCkkGFN/download | tar -xzf -
+  curl https://cloudstor.aarnet.edu.au/plus/index.php/s/b7DLXSR3uINHPVY/download | tar -xzf -
+  touch .bin-done
 fi
 
-# install binaries as needed: FASTQC, Trimmomatic, LobSTR, STRaitRazor, Freebayes
+# install binaries: FASTQC, Trimmomatic, LobSTR, STRaitRazor, Freebayes
 cd "$MPSFOR/mpsforensics_bin"
 
 # FASTQC
