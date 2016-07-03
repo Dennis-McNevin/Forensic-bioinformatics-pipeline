@@ -9,7 +9,7 @@ cd
 # Dev repo held by ANU Bioinformatics Consultancy
 #[ -d "$MPSFOR" ] || git clone https://cameronjack@bitbucket.org/gdu_jcsmr/mpsforensics.git
 # Production repo held by UC CFFS
-[ -d "$MPSFOR" ] || git clone https://github.com/Dennis-McNevin/Forensic-bioinformatics-pipeline.git
+[ -d "$MPSFOR" ] || git clone https://github.com/Dennis-McNevin/mpsforensics.git
 
 cd "$MPSFOR"
 mkdir -p results bin lib
