@@ -17,9 +17,9 @@ of working with paired-end read data, though the reads must be long
 enough to sequence through the entire repeat region.</p>
 <p>STRait Razor is capable of identifying STRs from almost every 
 legimate STR-amplicon read, but it has no allelotype (genotype) caller 
-available with it, which makes the output from Razor hard to transition 
-into our allele viewer and no genotype is called, so we cannot further 
-summarise the outputs.</p>
+available with it, and it produces no equivalent to a VCF file, so we 
+cannot create a summary Excel file like we do with LobSTR results.
+</p>
 <img src="images/straitrazor_pipeline.png"></img>
 <p>STRait Razor is poorly written and offers no control of the number 
 of threads it uses - always maxing out the host CPU. We have also had 

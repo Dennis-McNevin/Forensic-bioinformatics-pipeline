@@ -9,6 +9,8 @@ CBED=$5
 echo "Input VCF ${INPUT}"
 echo "Y-chrom STR loci file ${YSTR}"
 echo "CODIS loci file ${CODIS}"
+echo "Y-chrom BED file ${YBED}"
+echo "CODIS BED file ${CBED}"
 
 CMD="intersectBed -a ${INPUT} -b ${YBED} -wa -wb | cut -f 1,2,10,14- | sed 's/:/\t/g' | cut -f 1,2,4,8,13- | sed 's/\//\t/' | cut -f 4 --complement | awk '{print \$0 \"\t\" \$6+\$4/\$5}' > ${YSTR}"
 

@@ -6,7 +6,7 @@ my %templAll=(
 	'GlobalFiler'=>
 		[['D3S1358','VWA','D16S539','CSF1PO','TPOX'],
 		['Y Indel','Amelogenin','D8S1179','D21S11','D18S51','DYS391'],
-		['D22S1045','S5S818','D13S317','D7S820','SE33'],
+		['D22S1045','D5S818','D13S317','D7S820','SE33'],
 		['D2S441','D19S433','TH01','FGA'],
 		['D10S1248','D1S1656','D12S391','D2S1338']],
 	'PowerPlex Fusion'=>
