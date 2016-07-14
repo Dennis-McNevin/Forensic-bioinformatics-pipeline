@@ -95,7 +95,7 @@ def prepare(itrfce, pipename, progress=None, trim=True):
         files, sflag = bam2fq(r1, proj_dn, sflag)
         cmds.append((None, 'b'))	# progress is shown for first step
         for fn in files:
-            cmds.append((['gzip', '-f', fn], 'nb')), 
+            cmds.append((['gzip', '-f', fn], 'b')), 
         files = [fn+'.gz' for fn in files]
         r1 =files[0]
     elif any(sflag.startswith(x) for x in ['auto', 'paired']):
