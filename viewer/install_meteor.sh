@@ -1,3 +1,4 @@
+meteor add stylus
 meteor add accounts-base
 meteor add accounts-password
 meteor remove accounts-ui

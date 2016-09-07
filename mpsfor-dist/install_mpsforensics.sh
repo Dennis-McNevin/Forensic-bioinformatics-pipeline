@@ -132,8 +132,8 @@ fi
 
 # don't run as "root" ... $HOME == /
 [ $HOME != / ] && {
-  . ./MPSforensicsSetup.sh | tee ~/.mpsforensics.log 
-  mv ~/.mpsforensics.log ~/mpsforensics/.mpsforensics.log
+  . ./MPSforensicsSetup.sh | tee ~/mpsforensics.log 
+  mv ~/mpsforensics.log ~/mpsforensics/mpsforensics.log
 }
 
 read -p "Done! Press ENTER/RETURN when you are ready." ans
