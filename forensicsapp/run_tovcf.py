@@ -143,8 +143,10 @@ def tovcf(itrfce, progress=None):
 
         # Stage 11 convert to VCF
         logger.info ('Preparing conversion to VCF')
+        vcf_loci_fn = bn + '_loci.vcf'
+        cmds.append(([loc['bcftools'], 'view', '-cgl', loc['snp_loci.txt'], bcf_fn, '>', vcf_loci_fn], 'bsh'))
         vcf_fn = bn + '.vcf'
-        cmds.append(([loc['bcftools'], 'view', '-cvg', bcf_fn, '>', vcf_fn], 'bsh'))
+        cmds.append((['python', loc['fix_genotypes.py'], vcf_loci_fn, '>', vcf_fn], 'bsh'))
     else:	# assert tovcfprog=='freebayes'
 
         # Stage 10 Freebayes

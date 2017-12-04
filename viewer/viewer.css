@@ -1,8 +1,53 @@
 /* CSS declarations go here */
 #SNPtable  {display: block; }
-#SNPtable  td {display: inline-block; background:#FFFAF8; width:90px}
+#SNPtable  td {display: inline-block; background:#FFFAF8; width:90px} /* beige colour (#FFFAF8) for each SNP table cell (td) */
 .navbar-brand{
 	background-image: url("/welcome_image_sm.gif"); /* assuming img folder is one step back from css*/
 	background-size: 152px 60px;
 	color: #ffffff;
 }
+
+/* 1. Restyle the popover to put the SNP allele coverage graph inside the pop-up box.*/
+.popover { /* Adjust the size of the pop-up box. */
+	max-height: 450px;
+	max-width: 400px;
+}
+
+.popover-title{ /* A center-aligned header text of the popover */
+	text-align:center;
+}
+
+/* 2. To shove everything in the browser down a little bit as the navbar is now taking up top section of the page and the layouts going behind it */
+/*.table{
+	padding-top: 60px;
+}*/
+
+/*5. Use the block-level element <div> inside the body to shove both SNP and STR result down a little bit */
+.SNP_STR_viewer{
+	padding-top: 60px;
+	
+}
+
+/* 6. Adjust the alignment and height of the data cells of the SNP table  */
+td {    
+	text-align: center;
+	height:80px;
+}
+
+/* 8. 
+
+.C{
+	fill: #000000;
+	stroke: #000000;
+}
+
+.highcharts-axis.C .highCharts-axis-line{
+	stroke: #000000;
+}
+
+.highcharts-axis.C text{
+	fill: #000000;
+}
+.highcharts-yaxis .highcharts-axis-line{
+	stroke-width: 2px;
+} */

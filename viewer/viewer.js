@@ -1,28 +1,35 @@
-Str=new Meteor.Collection('str');
-Samples=new Meteor.Collection('samples');
-Threshold=new Meteor.Collection('threshold');
-Notes=new Meteor.Collection('notes');
-CurrentView=new Meteor.Collection('currentview');
+Str=new Meteor.Collection('str'); // Create a new MongoDB collection named Str
+Samples=new Meteor.Collection('samples');  // Create a new MongoDB collection named Samples
+Threshold=new Meteor.Collection('threshold'); // Create a new MongoDB collection named Threshold
+Notes=new Meteor.Collection('notes'); // Create a new MongoDB collection named Notes
+CurrentView=new Meteor.Collection('currentview'); // Create a new MongoDB collection named CurrentView
 var sampleName;
 var sampleFile;
 var sample;
 var samples;
 var snps;
 var layout='GlobalFiler';
-var Schemas={};
+var Schemas={}; 
 
+// Create some code to run on the server if there is no data yet only when the application starts up
 Meteor.startup(function () {
    fs = Npm.require('fs');
 });
 
+// Using a simple-schema package to attach a schema to the "CurrentView" collection
 Schemas.CurrentView=new SimpleSchema({
+        // To provide a single custom input type using comerc:autofrom-selectize
+        // comerc:autofrom-selectize is an add-on package for aldeed:autoform 
 	sample: {
 		type: String,
 		max:300,
 		autoform: {
-			type: "selectize",
+			type: "selectize", 
 			firstOption: false,
 			options: function() {
+					// Pull some str out to the collection by Str.find({})
+					// Sort str by _id, with the lowest id numbers appear first
+					// Access an id on somethings from a Monogo collection by _id
 				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
 			}
 		}
@@ -39,11 +46,15 @@ Schemas.CurrentView=new SimpleSchema({
 		}
 	}
 });
-CurrentView.attachSchema(Schemas.CurrentView);
 
+// Once the simpleSchema is defined, attach it to the collection
+CurrentView.attachSchema(Schemas.CurrentView); 
+
+// Attach a schema to the "Notes" collection
 Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
 Notes.attachSchema(Schemas.Notes);
 
+// An object contains loci and corresponding chromosome coordinates
 var coord={'D1S1656': 'chr1:230905363-230905429',
 	'TH01': 'chr11:2192319-2192345',
 	'VWA': 'chr12:6903103-6093254',
@@ -152,22 +163,48 @@ var coord={'D1S1656': 'chr1:230905363-230905429',
 	'DYS487': 'chrY:8914175-8914212',
 	'DYS19/DYS394': 'chrY:9521990-9522052'};
 
-if (Meteor.isClient) {
+// 4. Generate another var to format SNP data for IGV
+var coordSNP={'rs798443': 'chr2:7968224-7968325',
+		'rs11652805': 'chr17:62987100-62987201',
+		'rs10497191': 'chr2:158667166-158667267',
+		'rs16891982': 'chr5:33951642-33951743',
+		'rs12439433': 'chr15:36219984-36220085'};
+// rs798443': 'chr2:7968274-7968275',
+// 'rs11652805': 'chr17:62987150-62987151',
+// 'rs10497191': 'chr2:158667216-158667217',
+// 'rs16891982': 'chr5:33951692-33951693'
+// 'rs12439433': 'chr15:36220034-36220035'
 
-	Meteor.subscribe("str");
-	Template.registerHelper("Schemas",Schemas);
+if (Meteor.isClient) {  // code here will be running on the web browser only
+
+	Meteor.subscribe("str"); 
+	// Subscribe to a record set, tell the server to send records to the client
+	// The client stores these records in local Minimongo collections
+	// with the same name of the server's publish() call
+
+
+	Template.registerHelper("Schemas",Schemas); 
+	// Add all SimpleSchema instances to a Schemas object and register that object as a helper
+
+
 	AutoForm.setDefaultTemplate('materialize');
+	// Add materialize templates for autoform
+
 	
 	Template._loginButtonsLoggedInDropdown.events({
 	  'click #login-buttons-edit-profile': function(event) {
 	    Router.go('profileEdit');
 	  }
 	});
+	// Add an additional markup to the logged in dropdown
+	// To edit the user's account or profile
+	// Using package accounts-ui-bootstrap-3 
 	
+
 	Template.menu.events({
 		'change #sampleSelect': function(e){
 			console.log('Selected sample '+e.target.value);
-			var values=e.target.value.split(';');
+			var values=e.target.value.split(';'); // Return a new string with ; being replaced by ,
 			sampleName=values[0];
 			sampleFile=values[1];
 			builtLobstr();
@@ -179,9 +216,10 @@ if (Meteor.isClient) {
 		}
 	});
 	
-	Session.setDefault('viz','home');
+	Session.setDefault('viz','home'); // Set viz in the session if viz is hasn't been set before
+					  // home is the new value for viz
 	
-	Template.body.helpers({
+	Template.body.helpers({ // Template helpers send functions to the "body" templates
 		currentViz: function(){
 			return Session.get('viz');
 		}
@@ -191,74 +229,107 @@ if (Meteor.isClient) {
 		Session.set('snps',[]);
 	});
 	
-	Template.snptable.helpers({
+	Template.snptable.helpers({ // Template helpers send functions to the "snptable" templates.
 		snps: function() {
 			return Session.get('snps');
 		}
 	});
 	
-	Template.snptable.events({
+	Template.snptable.events({ // Add click events to the "snptable" template
+		// 4. Allow linkage to IGV
+		'click .linkage-to-igv':function(e){
+			var region=coordSNP[this.category];
+			console.log("Clicked on "+p(this.category)+'. Opening '+region);
+			var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
+			var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
+			Meteor.call("getResultsDir", function(err, res) {
+				var resultsDir=res;
+					console.log('resultsDir='+resultsDir);
+					window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+			});
+		},
 //		'mouseover [data-toggle="popover"]': function(e){
 		'click': function(e){
-			var p = $(e.currentTarget).popover({
-				html:true
+			var p = $(e.currentTarget).popover({ // Popovers are not CSS-only plugins, and must therefore be initialized with jQuery:
+				// Pulling off the specified element of the event called currentTarget
+				// The current target of the event is the SNP that they clicked on
+				html:true // Use HTML to render the labels
 			});
-			var cTarget=e.currentTarget;
-			$(cTarget.id+'con').show();
-			var refC=parseInt(cTarget.getAttribute("refC"));
-			var altC=parseInt(cTarget.getAttribute("altC"));
+			var cTarget = e.currentTarget;
+			$(cTarget.id+'con').show();  // what is 'con'?
+
+			var refC = parseInt(cTarget.getAttribute("refC")); 
+			var altC = parseInt(cTarget.getAttribute("altC")); 
+			// The name of the attribute (refC) in which we want to get the value from, and then parses the string value and returns an integer
+			// eg. "2" returns 2
 			new Highcharts.Chart({
 				chart: {
-					renderTo: cTarget.id+'con',
-					type: 'column'
+					renderTo: cTarget.id+'con', 
+					// The HTML element where the chart will be rendered. 
+					type: 'column' // Draw the column chart
 				},
 				exporting:{enabled: true},
-				tooltip: { formatter: function () {
-					return '<b>'+this.x+'</b>: '+this.y+' read'+((this.y==1)?'':'s')+'<br/><i>('+this.point.p+"%)</i>";
+				tooltip: { formatter: function () { // tooltip shows extra info when user moves the mouse pointer over an element
+					return '<b>' + this.x + '</b>: '+ this.y +' read'+((this.y==1)?'':'s') + '<br/><i>('+this.point.p+"%)</i>";
+							// this.x is the allele
+							// The <b> tag specifies bold text
+									// this.y is the read for that allele
+														// percentage in italic
 				} },
 		        plotOptions: {
+			    series: {
+				pointWidth: 50, // 3. Adjust the width for each column
+			    animation: false // 3. Remove animation
+			    },
 		            column: {
-		                dataLabels: { enabled: true }
+		                dataLabels: { enabled: true, crop: false, overflow: 'none'} // 3. To display data labels outside the plot area, not align them inside the plot area
 		            }
 		        },
 		        title:{text:null},
 		        legend:{enabled:false},
 		        credits:{enabled:false},
 		        xAxis: {
-		        	categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")]	
+		       		 categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")] // get the value (allele) from the attributes ref and alt
 		        },
 		        yAxis: {
+				minorGridLineDashStyle: 'longdash', // 3. Make the dash of the minor grid lines
+				minorTickInterval: 'auto', // 3. Set the minor tick interval as a fifth of the tickInterval (auto)
+				minorTickWidth: 0, // 3. The pixel width pf the minor tick mark
 		            title: {
 		                text: 'reads',
 		                useHTML: true,
-		                style: {
-		                    "-webkit-transform": "rotate(90deg)",
+		                style: { // Rotates an element clockwise
+		                    "-webkit-transform": "rotate(90deg)", // Safari
 		                    "-moz-transform": "rotate(90deg)", 
 		                    "-o-transform": "rotate(90deg)"
 		                }
 		            }
 		        },
-		        series: [{ name:'reads', data: [{y:refC,p:(100*refC/(refC+altC)).toFixed(2)},{y:altC,p:(100*altC/(refC+altC)).toFixed(2)}] }]
+			// A series is a set of datas. All data plotted on a chart comes from the series object.
+		        series: [{ name:'reads', data: [{y: refC, p: (100*refC/(refC+altC)).toFixed(2)}, // Convert a number into a string, keeping only two decimals
+							{y: altC, p: (100*altC/(refC+altC)).toFixed(2)}] 
+				}]
 		    });
 		}
 	});
 	
 	Accounts.ui.config({
-		passwordSignupFields: 'USERNAME_AND_EMAIL'
+		passwordSignupFields: 'USERNAME_AND_EMAIL' // Display the email, username and password fields
 	});
 	
+
 	function builtLobstr(collection) {
 	//	samples=Str.find({},{ sort:{_id:1}}).map(function (doc){return doc['sample']});
 	//	samples=_.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file});
 	//	console.log('samples: '+p(samples)); fields:{_id:1,type:1},
 	//	console.log('sampleName: '+p(sampleName));
-		sample=Str.findOne({_id:sampleName+'|'+layout});
-		sampleType=typeof sample;
+		sample=Str.findOne({_id:sampleName+'|'+layout}); // Pull str out of a MongoDB. Not pull out sort of a whole bunch of things but only one entry by using findOne
+		sampleType=typeof sample; //typeof operator can return either string, number, boolean and undefined
 	//	console.log('sample('+p(sampleType)+'): '+p(sample));
-		if(sampleType!='undefined') {
-			for(x = 0; x < 8; x++) {
+		if(sampleType!='undefined') { // If sampleType is NOT undefined, do the for loop
+			for(x = 0; x < 8; x++) {  
 				if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
-					$('#containerChart'+x).hide();
+					$('#containerChart'+x).hide(); // hides the element with id="containerChart"
 				}else {
 					$('#containerChart'+x).show();
 				}
@@ -280,11 +351,11 @@ if (Meteor.isClient) {
 	//			}else {
 	//				graphOptions.title.text = null;
 	//			}
-				Session.set('viz','lobstr');
-				new Highcharts.Chart(graphOptions);
+				Session.set('viz','lobstr'); // now lobstr is the new value for viz, given that viz has been set before
+				new Highcharts.Chart(graphOptions); // The graphOptions object is created below and added to the chart here by passing it to the chart constructor
 			}
 		}else {
-			sample=Str.findOne({_id:sampleName});
+			sample=Str.findOne({_id:sampleName}); // Pull one entry out of a MongoDB using findOne
 			if(sample!=null) {
 				Session.set('snps',sample.snpsArray);
 				Session.set('viz','snptable');
@@ -293,47 +364,64 @@ if (Meteor.isClient) {
 		}
 	}
 	
-	
+	// Use a JavaScript object structure provided by Highcharts to define the optionsof a chart
 	var GraphOptions = {
-	    chart: { type: 'column', renderTo: 'containerChart0' },
+	    chart: { type: 'column', plotBorderColor: '#000000', plotBorderWidth: 1}, // 8. Delete renderTo. Add plotBorderColor and plotBorderWidth
 		title:{ text:null },
 		subtitle:{ text:null },
 		credits: { enabled: false },
 	    legend: { enabled: false },
 	    exporting:{enabled: false},
-		tooltip: { formatter: function () {
-			if(this.y>0) {
-				AnalyticThresh="Analytic T: "+this.point.at+"%";
-				StochasticThresh="Stochastic T: "+this.point.st+"%";
-				StutterThresh="Stutter T: "+this.point.tt+"%";
-				if(this.point.p<this.point.at) {
-					AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
-				}
-				if(this.point.p<this.point.st) {
-					StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
-				}
-				if(this.point.p<this.point.tt) {
-					StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
-				}
-				return '<b>'+this.x+'</b> allele <b>'+this.series.name+'</b><br/>'+this.y+' read'+((this.y==1)?'':'s')+' <i>('+this.point.p+"%)</i><br/>Ref allele: "+this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+		tooltip: { formatter: function () { // hovering event
+			if(this.y>0) { // when no. of reads > 0, show hovering event
+				AnalyticThresh="Analytic T: " + this.point.at+"%";
+				StochasticThresh="Stochastic T: " + this.point.st+"%";
+				StutterThresh="Stutter T: " + this.point.tt+"%";
+					// If allele read coverage % is smaller than the threshold %, threshold% is shown in bold
+					if(this.point.p < this.point.at) {
+						AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
+					}
+					if(this.point.p < this.point.st) {
+						StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
+					}
+					if(this.point.p < this.point.tt) {
+						StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
+					}
+				return '<b>'+this.x+'</b> allele <b>'+this.series.name + '</b><br/>'+ 
+					// this.x = locus
+					// this.series.name = allele
+					this.y+' read'+((this.y==1)?'':'s') +
+					// this.y = no. of reads
+					' <i>('+this.point.p+"%)</i><br/>Ref allele: " + 
+						// this.point.p = percentage reads
+					this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+					// this.point.r = reference allele
 			}
 		} },
 		plotOptions: {
 			column: {
 				dataLabels: {
 					enabled: true,
-					formatter: function(){ return this.point.l; },
-					style:{ fontSize:'8pt', color:'#101010', },
-					x:0,
-					y:0,
-					align:'center'
+					// Callback JS function to format the data label
+					formatter: function(){ return this.point.l; }, // Define the point object as this.point.l
+					style: { fontSize:'8pt', color:'#101010',  crop: false, overflow: 'none'}, // 7. To display data labels outside the plot area, not align them inside the plot area (not working at all)
+					// The x and y position offset of the label relative to the point:
+					x:0, // 7. Defaults to 0 (can be modified so that labels line up with the column)
+					y:0, // 7. (working)
+					align:'center', 
+					allowOverlap: false // 7. Add allowOverlap: false to hide overlapping data labels
 				},
 			},
 			series: { 
-				maxPointWidth: 30,
+				
+				// maxPointWidth: 20, // The maximum allowed pixel width for a column
+				pointWidth: 5, // 7. Set a fixed width for each column 
+				//pointPadding: 0.1, // 7. Padding betweeen each column in x axis units
+				//groupPadding: 0.2, // 7. Padding between each value groups in x axis units
 				point: {
 					events: {
 						click: function(e) {
+							// Open IGV
 							var region=coord[this.category];
 							console.log("Clicked on "+p(this.category)+'. Opening '+region);
 							var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
@@ -349,17 +437,53 @@ if (Meteor.isClient) {
 				}
 			}
 		},
-		yAxis: { min:0, title:{text:'Read Counts'}, labels:{overflow:'justify'} },
-		xAxis: { categories: [] },
+
+// yAxis: [{ className: 'STRchartyAxisColour', title: {text: 'Read Counts'} }], // 8. Addding 'className' is not working
+		yAxis: { // min:0, 
+			minTickInterval: 50, // 8. Add a minTickInterval
+			title:{text:'Read Counts', 
+				style:{fontSize: '10pt', color:'black'} // 8. Set font size and color
+			}, 
+			gridLineDashStyle: 'longdash', // 8. Grid line is set to longdash
+			lineColor: '#000000', // 8. Set y axis long colour
+			lineWidth: 1, // 8. Set y axis line width
+			labels: {
+				overflow:'justify', //  If "justify", labels will not render outside the legend area.
+				 style: { color: 'black', fontSize: '10pt'} //8. Make y axis label black in colour. Set font size to 12px
+				}
+		}, 
+										
+				
+		xAxis: { categories: [],
+			 lineColor: '#000000',
+			 labels: { style: { color: 'black', fontSize: '12pt'}, // 8. Make X axis label black in colour. Set font size to 12px.
+				   event: {
+					click: function () {
+						alert('<b>'+ this.series.name + '</b>');
+					}
+				   }
+
+				
+//				   formatter: function () {
+//					return '<a href"' + this.value + '</a>'
+//<a href="#" class="linkage-to-igv">{{rsid}}</a>
+//return '<a href="' + categoryLinks[this.value] + '">' +
+//                        this.value + '</a>';
+				 }
+		},
 		series: []	
-	};
+		};
 	
 	var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
+
+		        
 	
-	$(function () {
+	$(function () { // shorthand $() for $(document).ready()
 		var chart;
-		$(document).ready(function() {
+		$(document).ready(function() { // jQuery object
+					       // Run the code once the DOM is ready for JS code to execute
 			samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
+					     // Include _id field from the result object and sort the result by _id
 			builtLobstr();
 		});
 	});
@@ -371,22 +495,22 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-	Meteor.publish('str',function() {
+	Meteor.publish('str',function() { // Publish a record set str
 		return Str.find({});
 	});
-	Meteor.publish('samples',function() {
+	Meteor.publish('samples',function() { // Publish a record set samples
 		return Threshold.find({});
 	});
-	Meteor.publish('notes',function() {
+	Meteor.publish('notes',function() { // Publish a record set notes
 		return Notes.find({});
 	});
-	Meteor.methods({
+	Meteor.methods({ // Defines functions that can be invoked over the network by clients.
 		getResultsDir: function() {
 			var path=Npm.require('path');
 			return path.resolve('../../../../../../results');
 		}
 	});
-	Meteor.startup(function(){
+	Meteor.startup(function(){ // To run code on both the client and server whe the application starts up
 		Accounts.config({
     		sendVerificationEmail: false,
     		forbidClientAccountCreation: false
