@@ -482,17 +482,6 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 	AutoForm.setDefaultTemplate('materialize');
 	// Add materialize templates for autoform
 
-	
-	Template._loginButtonsLoggedInDropdown.events({
-	  'click #login-buttons-edit-profile': function(event) {
-	    Router.go('profileEdit');
-	  }
-	});
-	// Add an additional markup to the logged in dropdown
-	// To edit the user's account or profile
-	// Using package accounts-ui-bootstrap-3 
-	
-
 	Template.menu.events({
 		'change #sampleSelect': function(e){
 			console.log('Selected sample '+e.target.value);
@@ -603,10 +592,6 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				}]
 		    });
 		}
-	});
-	
-	Accounts.ui.config({
-		passwordSignupFields: 'USERNAME_AND_EMAIL' // Display the email, username and password fields
 	});
 	
 
@@ -802,12 +787,7 @@ if (Meteor.isServer) {
 			return path.resolve('../../../../../../results');
 		}
 	});
-	Meteor.startup(function(){ // To run code on both the client and server whe the application starts up
-		Accounts.config({
-    		sendVerificationEmail: false,
-    		forbidClientAccountCreation: false
-		});
-	});
+
 }
 
 Router.route('/', {

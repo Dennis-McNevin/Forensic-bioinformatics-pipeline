@@ -6,9 +6,7 @@
 	{{>menu}}
 	<div class ="SNP_STR_viewer"> <!-- 5. Put a block-level element <div> inside the body to take up the full width available-->
 			      <!-- Stretch the SNP snd STR result out to the either side as far as it can  -->
-	{{#if currentUser}} <!-- To check whether the user is logged in -->
 		{{> Template.dynamic template=currentViz}}
-	{{/if}}
 	</div>
 </body>
 
@@ -30,20 +28,8 @@
 		</div>
 		{{/autoForm}}
 	</div>
-	<!-- Insert a "Sign up" button to the right in the nav bar -->
-	<div class="navbar-collapse collapse">
-		<ul class="nav navbar-nav navbar-right"> 
-			{{> loginButtons}} <!-- user login template provided by accounts-ui -->
-		</ul>
-	</div>
 	</form>
 </div>
-</template>
-
-<!-- Additional markup to the login dropdown to edit the user's account and profile -->
-<template name="_loginButtonsAdditionalLoggedInDropdownActions">
-    <button class="btn btn-default btn-block" id="login-buttons-edit-profile">Edit profile</button>
-				   <!-- A block level button spans the entire width of the parent element-->
 </template>
 
 <template name="home">
