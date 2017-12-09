@@ -521,12 +521,16 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		'click .linkage-to-igv':function(e){
 			var region=coordSNP[this.rsid]; // 4. this.category replaces with this.rsid
 			console.log("Clicked on "+p(this.rsid)+'. Opening '+region); // 4. this.rsid
-			var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
-			var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
+			var vcf=sampleFile.replace(".txt","").replace(".snp","")+".vcf"; // 4. Remove.replace(".codis","").replace(".ystr","").
+			var bam=vcf.replace(".vcf","_final.bam"); //4. Remove replace("_lobstr.vcf","_sorted.bam")
 			Meteor.call("getResultsDir", function(err, res) {
 				var resultsDir=res;
 					console.log('resultsDir='+resultsDir);
-					window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+					window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+
+							'&file=file://'+resultsDir+'/'+vcf+
+							',file://'+resultsDir+'/'+bam+
+							',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+
 			});
 		},
 //		'mouseover [data-toggle="popover"]': function(e){
@@ -698,15 +702,19 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				point: {
 					events: {
 						click: function(e) {
-							// Open IGV
-							var region=coord[this.category];
-							console.log("Clicked on "+p(this.category)+'. Opening '+region);
+							// Open IGV for STR browser
+							var region=coord[this.category]; //this.category = the STR locus
+							console.log("Clicked on "+p(this.category)+'. Opening '+region); // region= chr_:_-_
 							var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
 							var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
 							Meteor.call("getResultsDir", function(err, res) {
 								var resultsDir=res;
 								console.log('resultsDir='+resultsDir);
-								window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+								window.open('http://localhost:60151/load?genome=hg19&merge=false&locus=' + 
+									    region + // region= chr_:_-_
+									    '&file=file://' + resultsDir + '/' + vcf + 
+									    ',file://' + resultsDir + '/' + bam + 
+									    ',file://' + resultsDir + '/../lobSTR_hg19.gff3');
 							});
 //							Session.set("viz","strchart"); #new method not plugged in yet
 						}
