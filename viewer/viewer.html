@@ -12,25 +12,26 @@
 
 <template name="menu">
 <!-- 2. navbar sits on top of the page as we scroll down -->
-<div class="navbar navbar-default navbar-fixed-top" role="navigation"> <!-- a navigation bar to the top of the page -->
-	<form id="menuForm" class="form-inline" role="form"> <!-- Create an inline form with three input fields -->
-	<div class="navbar-header"> 
-		<!-- custom insert form-->
-		{{#autoForm id="currentViewForm" collection="CurrentView"}}
-		<div class="form-group"> <!-- First input field is the logo-->
-			<a class="navbar-brand" href="#">MPS Forensics</a> <!-- Adding images by the class navbar-brand, see .css -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation"> <!-- a navigation bar to the top of the page -->
+    <div class="navbar-header">
+	<a class="navbar-brand" href="#">MPS Forensics</a> <!-- Adding images by the class navbar-brand, see .css -->
+    </div>
+    <div class="row" id="filter">
+	{{#autoForm id="currentViewForm" collection="CurrentView" schema=Schemas.CurrentView}}
+	<form>
+		<div class="form-group col-md-6 col-sm-6 col-xs-3">
+			{{> afQuickField id="sampleSelect" name="sample" template="bootstrap3-horizontal" type="selectize" label-class="sr-only"}}
 		</div>
-		<div class="form-group"> <!-- Second input field is the sample result-->
-			{{> afQuickField id="sampleSelect" name="sample" input-col-class="col-xs-9" label-class="sr-only"}} <!--comerc:autoform-selectize-->
+		<div class="form-group col-md-3 col-sm-3 col-xs-3">
+			{{> afQuickField id="layoutSelect" name="layout" template="bootstrap3-horizontal" type="selectize" label-class="sr-only"}}
 		</div>
-		<div class="form-group"> <!-- Third input field is the panel-->
-			{{> afQuickField id="layoutSelect" name="layout" input-col-class="col-xs-4" label-class="sr-only"}} <!--comerc:autoform-selectize-->
-		</div>
-		{{/autoForm}}
-	</div>
 	</form>
-</div>
+	{{/autoForm}}
+    </div>
+</nav>
 </template>
+	
+
 
 <template name="home">
 </template>
@@ -42,14 +43,14 @@
 </template>
 
 <template name="lobstr">
-	<div id="containerChart0" style="min-width: 300px; height: 250px;"></div> <!-- 7. working on STR charts, height:110px (original) -->
-	<div id="containerChart1" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart2" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart3" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart4" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart5" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart6" style="min-width: 300px; height: 250px;"></div>
-	<div id="containerChart7" style="min-width: 300px; height: 250px;"></div>
+	<div id="containerChart0" class="STRchart"></div> <!-- 7. working on STR charts, style="min-width: 300px; height: 250px;" (original) -->
+	<div id="containerChart1" class="STRchart"></div> <!-- 7. Build a class to control the style in css-->
+	<div id="containerChart2" class="STRchart"></div> 
+	<div id="containerChart3" class="STRchart"></div>
+	<div id="containerChart4" class="STRchart"></div>
+	<div id="containerChart5" class="STRchart"></div>
+	<div id="containerChart6" class="STRchart"></div>
+	<div id="containerChart7" class="STRchart"></div>
 	<div> {{>notes}} </div>
 </template>
 

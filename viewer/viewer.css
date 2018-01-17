@@ -4,8 +4,23 @@
 .navbar-brand{
 	background-image: url("/welcome_image_sm.gif"); /* assuming img folder is one step back from css*/
 	background-size: 152px 60px;
-	color: #ffffff;
 }
+
+.navbar-default {
+	padding-top: 5px;
+	height: 60px;
+}
+
+/* 10. Fixing navbar logo text */
+.navbar-default .navbar-brand {
+	color: #ffffff;
+	text-shadow: 1px 1px 2px #000000;
+}
+
+.row{	
+	padding-top: 5px;
+}
+
 
 /* 1. Restyle the popover to put the SNP allele coverage graph inside the pop-up box.*/
 .popover { /* Adjust the size of the pop-up box. */
@@ -33,6 +48,15 @@ td {
 	text-align: center;
 	height:80px;
 }
+
+/* 7. Styling STR container is moved to here by adding a class in html */
+.STRchart{
+	
+	height: 250px;
+	width:100%;
+}
+
+
 
 /* 8. 
 

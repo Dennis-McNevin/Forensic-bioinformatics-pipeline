@@ -8,7 +8,7 @@ var sampleFile;
 var sample;
 var samples;
 var snps;
-var layout='GlobalFiler';
+var layout=undefined; // 10. Force to select panels
 var Schemas={}; 
 
 // Create some code to run on the server if there is no data yet only when the application starts up
@@ -22,30 +22,63 @@ Schemas.CurrentView=new SimpleSchema({
         // comerc:autofrom-selectize is an add-on package for aldeed:autoform 
 	sample: {
 		type: String,
-		max:300,
+		max:300, 
 		autoform: {
 			type: "selectize", 
-			firstOption: false,
+			firstOption: "(Select a result file)", // 8. false to true
+			options: true,
 			options: function() {
 					// Pull some str out to the collection by Str.find({})
 					// Sort str by _id, with the lowest id numbers appear first
 					// Access an id on somethings from a Monogo collection by _id
-				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
+				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}}); 
 			}
 		}
 	},
 	layout: {
 		type: String,
-		max: 50,
+		max: 50, 
 		autoform: {
 			type: "selectize",
-			firstOption: false,
-			options: function() {
-				return _.map(["GlobalFiler","PowerPlex Fusion","PowerPlex 21","Promega CS7","Qiagen HDplex","Qiagen Argus X12","Y-Filer Plus","Y-Filer 17","PowerPlex Y-23"],function(c) {return {label:c,value:c};});
-			}
+			firstOption: "(Select a panel)", // 8. false to true
+			options: true,
+			options() { // 8. Categorize the panels (re-write) 
+					return [
+						{
+						 optgroup: "CODIS STR panels",
+						    options:[
+							 {label:"GlobalFiler",value:"GlobalFiler"},
+							 {label:"PowerPlex Fusion",value:"PowerPlex Fusion"},
+							 {label:"PowerPlex 21",value:"PowerPlex 21"},
+							 {label:"Promega CS7",value:"Promega CS7"},
+							 {label:"Qiagen HDplex",value:"Qiagen HDplex"}
+							   ]
+						},
+						{
+						 optgroup:  "ySTR panels",
+						    options:[
+							 {label:"Qiagen Argus X12",value:"Qiagen Argus X12"},
+							 {label:"Y-Filer Plus",value:"Y-Filer Plus"},
+							 {label:"PowerPlex Y-23",value:"PowerPlex Y-23"}
+							   ]
+						},
+						{
+						 optgroup: "SNP panels",
+						    options:[ 
+							      
+							{label:"Ancestry-informative", value:"ai"},
+							{label:"Identity-informative", value:"ii"}								
+							    ]
+						}
+					     ]; // end of return
+
+			} // end of options
 		}
 	}
 });
+
+
+
 
 // Once the simpleSchema is defined, attach it to the collection
 CurrentView.attachSchema(Schemas.CurrentView); 
@@ -167,7 +200,7 @@ var coord={'D1S1656': 'chr1:230905363-230905429',
 // 4. Add all aiSNPs from bed file
 var coordSNP={'rs798443': 'chr2:7968224-7968324',
 		'rs11652805': 'chr17:62987100-62987200',
-		'rs10497191': 'chr2:158667166-158667266',
+		'rs10497191': 'chr2:158667166-158667266',//
 		'rs16891982': 'chr5:33951642-33951742',
 		'rs12439433': 'chr15:36219984-36220084',
 		'rs2986742': 'chr1:6550325-6550425',
@@ -195,7 +228,6 @@ var coordSNP={'rs798443': 'chr2:7968224-7968324',
 		'rs260690': 'chr2:109579687-109579787',
 		'rs6754311': 'chr2:136707931-136708031',
 		'rs10496971': 'chr2:145769892-145769992',
-		'rs10497191': 'chr2:158667116-158667216', //
 		'rs2627037': 'chr2:179606487-179606587',
 		'rs1569175': 'chr2:201021903-201022003',
  		'rs4955316': 'chr3:30415561-30415661',
@@ -487,7 +519,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			console.log('Selected sample '+e.target.value);
 			var values=e.target.value.split(';'); // Return a new string with ; being replaced by ,
 			sampleName=values[0];
-			sampleFile=values[1];
+			sampleFile=values[1]; // .snp.txt / _lobstr.ystr.txt / _lobstr.codis.txt / _straitrazor.ystr.txt / _straitrazor.codis.txt
 			builtLobstr();
 		},
 		'change #layoutSelect': function(e){
@@ -515,6 +547,9 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			return Session.get('snps');
 		}
 	});
+
+	Session.set('viz','snptable'); // 11. To show SNP result without selecting STR panels
+
 	
 	Template.snptable.events({ // Add click events to the "snptable" template
 		// 4. Allow linkage to IGV
@@ -543,8 +578,8 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			var cTarget = e.currentTarget;
 			$(cTarget.id+'con').show();  // what is 'con'?
 
-			var refC = parseInt(cTarget.getAttribute("refC")); 
-			var altC = parseInt(cTarget.getAttribute("altC")); 
+			var refC = parseInt(cTarget.getAttribute("refC")); //refC = refCount
+			var altC = parseInt(cTarget.getAttribute("altC")); // altC = altCount
 			// The name of the attribute (refC) in which we want to get the value from, and then parses the string value and returns an integer
 			// eg. "2" returns 2
 			new Highcharts.Chart({
@@ -581,17 +616,17 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				minorTickInterval: 'auto', // 3. Set the minor tick interval as a fifth of the tickInterval (auto)
 				minorTickWidth: 0, // 3. The pixel width pf the minor tick mark
 		            title: {
-		                text: 'reads',
+		                text: 'Reads',
 		                useHTML: true,
 		                style: { // Rotates an element clockwise
 		                    "-webkit-transform": "rotate(90deg)", // Safari
-		                    "-moz-transform": "rotate(90deg)", 
+		                    "-moz-transform": "rotate(90deg)", // firefox
 		                    "-o-transform": "rotate(90deg)"
 		                }
 		            }
 		        },
 			// A series is a set of datas. All data plotted on a chart comes from the series object.
-		        series: [{ name:'reads', data: [{y: refC, p: (100*refC/(refC+altC)).toFixed(2)}, // Convert a number into a string, keeping only two decimals
+		        series: [{ name:'Reads', data: [{y: refC, p: (100*refC/(refC+altC)).toFixed(2)}, // Convert a number into a string, keeping only two decimals
 							{y: altC, p: (100*altC/(refC+altC)).toFixed(2)}] 
 				}]
 		    });
@@ -614,18 +649,20 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				}else {
 					$('#containerChart'+x).show();
 				}
-				var graphSeries = eval("GraphSeries");
-				graphSeries.data = [];
-				graphSeries.name = "GraphSeries" + x;
-				graphSeries.point.events.click = function() {
-					Meteor.call('runCode', function (err, response) {
-						console.log('cmd: '+response);
-						alert ('Category: '+ this.category +'<br/>'+response);
-					});
-				}
+				// Delete the following...No effect, give the same result
+				//var graphSeries = eval("GraphSeries");
+				//graphSeries.data = [];
+				//graphSeries.name = "GraphSeries" + x;
+				//graphSeries.point.events.click = function() {
+					//Meteor.call('runCode', function (err, response) {
+						//console.log('cmd: '+response);
+						//alert ('Category: '+ this.category +'<br/>'+response);
+					//});
+				//}
+
 				var graphOptions = eval("GraphOptions");
-				graphOptions.series = sample.seriesArray[x];
-				graphOptions.xAxis.categories = sample.categoriesArray[x];
+				graphOptions.series = sample.seriesArray[x]; // seriesArray = name, colour, data
+				graphOptions.xAxis.categories = sample.categoriesArray[x]; // categoriesArray = name of locus
 				graphOptions.chart.renderTo = 'containerChart'+x;
 	//			if(x==0) {
 	//				graphOptions.title.text = sample.title;
@@ -645,29 +682,44 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		}
 	}
 	
-	// Use a JavaScript object structure provided by Highcharts to define the optionsof a chart
+	// Use a JavaScript object structure provided by Highcharts to define the options of a chart
 	var GraphOptions = {
-	    chart: { type: 'column', plotBorderColor: '#000000', plotBorderWidth: 1}, // 8. Delete renderTo. Add plotBorderColor and plotBorderWidth
+		chart: { type: 'column', plotBorderColor: '#000000', plotBorderWidth: 1}, // 8. Delete renderTo. Add plotBorderColor and plotBorderWidth
 		title:{ text:null },
-		subtitle:{ text:null },
+		subtitle: { text:null },
 		credits: { enabled: false },
-	    legend: { enabled: false },
-	    exporting:{enabled: false},
+	    	legend: { enabled: false },
+	   	exporting: {enabled: false},
 		tooltip: { formatter: function () { // hovering event
-			if(this.y>0) { // when no. of reads > 0, show hovering event
-				AnalyticThresh="Analytic T: " + this.point.at+"%";
-				StochasticThresh="Stochastic T: " + this.point.st+"%";
-				StutterThresh="Stutter T: " + this.point.tt+"%";
-					// If allele read coverage % is smaller than the threshold %, threshold% is shown in bold
-					if(this.point.p < this.point.at) {
-						AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
-					}
-					if(this.point.p < this.point.st) {
-						StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
-					}
-					if(this.point.p < this.point.tt) {
-						StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
-					}
+				if(this.y>0) { // when no. of reads > 0, show hovering event
+
+			//for(var i = 0; i < allele.length; alleleNumber++){  // For any allele i
+ 			//var r1 = this.y[i]; //R1 = number of reads for allele i
+			//	if(i+1)// If there is another allele one repeat length later (i+1)
+ //                             R2 = number of reads for allele i+1
+ //                             If  R1 < 0.15*R2
+  //                                           Allele i is “stutter”
+   //                           Else
+    //                                         Allele i is not stutter
+      //                        End if
+        //       End if
+// Next allele
+			//if(this.series.point.y <  this.series.point[i+1].y*0.15){
+				//Stutter="Allele " + this.l + " is a stutter."
+				//}
+//				AnalyticThresh="Analytic T: " + this.point.at+"%";
+//				StochasticThresh="Stochastic T: " + this.point.st+"%";
+//				StutterThresh="Stutter T: " + this.point.tt+"%";
+//					// If allele read coverage % is smaller than the threshold %, threshold% is shown in bold
+//					if(this.point.p < this.point.at) {
+//						AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
+//					}
+//					if(this.point.p < this.point.st) {
+//						StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
+//					}
+//					if(this.point.p < this.point.tt) {
+//						StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
+//					}
 				return '<b>'+this.x+'</b> allele <b>'+this.series.name + '</b><br/>'+ 
 					// this.x = locus
 					// this.series.name = allele
@@ -675,30 +727,32 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 					// this.y = no. of reads
 					' <i>('+this.point.p+"%)</i><br/>Ref allele: " + 
 						// this.point.p = percentage reads
-					this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+					this.point.r; 
+					// AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
 					// this.point.r = reference allele
-			}
+					}
 		} },
 		plotOptions: {
 			column: {
 				dataLabels: {
 					enabled: true,
 					// Callback JS function to format the data label
-					formatter: function(){ return this.point.l; }, // Define the point object as this.point.l
-					style: { fontSize:'8pt', color:'#101010',  crop: false, overflow: 'none'}, // 7. To display data labels outside the plot area, not align them inside the plot area (not working at all)
+					formatter: function() {
+						return  this.point.l; }, // Define the point object as this.point.l
+					style: { fontSize:'8pt', color:'black', fontWeight: 'bold', crop: false, overflow: 'none'}, // 7. To display data labels outside the plot area, not align them inside the plot area (not working at all)
 					// The x and y position offset of the label relative to the point:
 					x:0, // 7. Defaults to 0 (can be modified so that labels line up with the column)
 					y:0, // 7. (working)
 					align:'center', 
-					allowOverlap: false // 7. Add allowOverlap: false to hide overlapping data labels
+					allowOverlap: true // 7. Add allowOverlap:
 				},
 			},
-			series: { 
-				
+			series: {
 				// maxPointWidth: 20, // The maximum allowed pixel width for a column
-				pointWidth: 5, // 7. Set a fixed width for each column 
+				pointWidth: 3, // 7. Set a fixed width for each column 
 				//pointPadding: 0.1, // 7. Padding betweeen each column in x axis units
-				//groupPadding: 0.2, // 7. Padding between each value groups in x axis units
+				//groupPadding: 0.2 (default), // 7. Padding between each value groups in x axis units
+				groupPadding: 0,
 				point: {
 					events: {
 						click: function(e) {
@@ -725,53 +779,47 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 
 // yAxis: [{ className: 'STRchartyAxisColour', title: {text: 'Read Counts'} }], // 8. Adding 'className' is not working
 		yAxis: { // min:0, 
-			minTickInterval: 50, // 8. Add a minTickInterval
+			minorGridLineDashStyle: 'longdash', // 8. Make the dash of the minor grid lines
+			minorTickInterval: 'auto', // 8. auto = Set the minor tick interval as a fifth of the tickInterval 
+			minorTickWidth: 0, // 8. = the pixel width pf the minor tick mark
 			title:{text:'Read Counts', 
 				style:{fontSize: '10pt', color:'black'} // 8. Set font size and color
 			}, 
-			gridLineDashStyle: 'longdash', // 8. Grid line is set to longdash
 			lineColor: '#000000', // 8. Set y axis long colour
 			lineWidth: 1, // 8. Set y axis line width
 			labels: {
 				overflow:'justify', //  If "justify", labels will not render outside the legend area.
 				 style: { color: 'black', fontSize: '10pt'} //8. Make y axis label black in colour. Set font size to 12px
-				}
+				},
 		}, 
 										
 				
-		xAxis: { categories: [],
-			 lineColor: '#000000', // 8.
-			 labels: { style: { color: 'black', fontSize: '12pt'}, // 8. Make X axis label black in colour. Set font size to 12px.
-				   event: {
-					click: function () {
-						alert('<b>'+ this.series.name + '</b>');
-					}
-				   }
-
-				
-//				   formatter: function () {
-//					return '<a href"' + this.value + '</a>'
-//<a href="#" class="linkage-to-igv">{{rsid}}</a>
-//return '<a href="' + categoryLinks[this.value] + '">' +
-//                        this.value + '</a>';
+		xAxis: { categories:[],
+			 lineColor: '#000000', // 8. Make axis black in colour
+			 labels: {style: { color: [], fontSize: '12pt'}, // 8. Make X axis label black in colour. Set font size to 12px.
 				 }
 		},
-		series: []	
+		series: []
 		};
-	
-	var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
 
-		        
+	$('.highcharts-xaxis-labels text').on('click', function () {
+		console.log($(this).text());
+	});
 	
-	$(function () { // shorthand $() for $(document).ready()
-		var chart;
+	//var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
+
+
+
+	//$(function () { // shorthand $() for $(document).ready()
+		//var chart;
 		$(document).ready(function() { // jQuery object
 					       // Run the code once the DOM is ready for JS code to execute
 			samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
 					     // Include _id field from the result object and sort the result by _id
 			builtLobstr();
 		});
-	});
+
+	//});
 	
 	Template.lobstr.onRendered(function() {
 		builtLobstr();
@@ -801,3 +849,22 @@ if (Meteor.isServer) {
 Router.route('/', {
     template: 'home'
 });
+
+//Router.route('/', function () {
+//  this.render('Home', {
+//    data: function () { return Items.findOne({_id: this.params._id}); }
+//  });
+//});
+
+//Router.route('/', function () {
+//  this.render('currentViz', {
+//  to:"main"
+//  });
+
+//Router.route('/SNP_browser', function () {
+//  this.render('currentViz', {
+  
+//   });
+//});
+
+//});
