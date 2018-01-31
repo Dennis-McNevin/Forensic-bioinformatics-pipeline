@@ -641,11 +641,16 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 	//	console.log('sampleName: '+p(sampleName));
 		sample=Str.findOne({_id:sampleName+'|'+layout}); // Pull str out of a MongoDB. Not pull out sort of a whole bunch of things but only one entry by using findOne
 		sampleType=typeof sample; //typeof operator can return either string, number, boolean and undefined
-	//	console.log('sample('+p(sampleType)+'): '+p(sample));
+			// try console.log the JSON data
+			console.log('sample('+p(sampleType)+'): '+p(sample)); 
+			// save the seriesArray data in a new variable called copy?
+			var copy = JSON.stringify(sample.seriesArray);
+			console.log(copy);
 		if(sampleType!='undefined') { // If sampleType is NOT undefined, do the for loop
 			for(x = 0; x < 8; x++) {  
 				if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
-					$('#containerChart'+x).hide(); // hides the element with id="containerChart"
+					$('#containerChart'+x).hide(); // hides the element with id="containerChart"	
+					
 				}else {
 					$('#containerChart'+x).show();
 				}
@@ -677,7 +682,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			if(sample!=null) {
 				Session.set('snps',sample.snpsArray);
 				Session.set('viz','snptable');
-	//			console.log(JSON.stringify(sample.snpsArray));
+				console.log(JSON.stringify(sample.snpsArray));
 			}
 		}
 	}
@@ -690,10 +695,37 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		credits: { enabled: false },
 	    	legend: { enabled: false },
 	   	exporting: {enabled: false},
-		tooltip: { formatter: function () { // hovering event
-				if(this.y>0) { // when no. of reads > 0, show hovering event
+		tooltip: { formatter: function () { 
+			// Shared tooltip (new)
+				console.log(this.x + this.l + this.y);
+					var s = '<strong>' + this.x + '</strong><br>';
+					
+						$.each(this.points, function () {
+							if(this.y>0){
+								allele = this.series.name;
+									if(this.point.l==this.point.r){ // show which one is ref allele
+										allele='<b>'+allele+' (Ref)</b>';
+									} else {
+										allele;
+								}
+								reads = '<b>' + this.y + '</b> read' + ((this.y==1)?'':'s');
 
-			//for(var i = 0; i < allele.length; alleleNumber++){  // For any allele i
+								s += 'Allele <b>' + allele + '</b>: '  +
+									reads +
+									' <i>(' + this.point.p + '%)</i><br>';
+
+
+							} // end of if
+						}); // end of each function
+					return s ;
+					
+			}, // end of formatter function
+			shared: true,
+			followPointer: true,
+			crosshairs: true
+			}, // end of tooltip
+
+			//for(var i = 0; i < allele.length; i++){  // For any allele i
  			//var r1 = this.y[i]; //R1 = number of reads for allele i
 			//	if(i+1)// If there is another allele one repeat length later (i+1)
  //                             R2 = number of reads for allele i+1
@@ -720,18 +752,18 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 //					if(this.point.p < this.point.tt) {
 //						StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
 //					}
-				return '<b>'+this.x+'</b> allele <b>'+this.series.name + '</b><br/>'+ 
-					// this.x = locus
-					// this.series.name = allele
-					this.y+' read'+((this.y==1)?'':'s') +
-					// this.y = no. of reads
-					' <i>('+this.point.p+"%)</i><br/>Ref allele: " + 
-						// this.point.p = percentage reads
-					this.point.r; 
-					// AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
-					// this.point.r = reference allele
-					}
-		} },
+//				return '<b>'+this.x+'</b> allele <b>'+this.series.name + '</b><br/>'+ 
+//					// this.x = locus
+//					// this.series.name = allele
+//					this.y+' read'+((this.y==1)?'':'s') +
+//					// this.y = no. of reads
+//					' <i>('+this.point.p+"%)</i><br/>Ref allele: " + 
+//						// this.point.p = percentage reads
+//					this.point.r; 
+//					// AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+//					// this.point.r = reference allele
+//					}
+//		} },
 		plotOptions: {
 			column: {
 				dataLabels: {
@@ -794,7 +826,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		}, 
 										
 				
-		xAxis: { categories:[],
+		xAxis: { categories:[], // Empty array for categories and series so push values to them later
 			 lineColor: '#000000', // 8. Make axis black in colour
 			 labels: {style: { color: [], fontSize: '12pt'}, // 8. Make X axis label black in colour. Set font size to 12px.
 				 }
