@@ -37,8 +37,7 @@ my %templAll=(
 		[['Amelogenin','DXS10103','DXS8378','DXS7132','DXS10134'],
 		['DXS10074','DXS10101','DXS10135'],
 		['DXS7423','DXS10146','DXS10079'],
-		['HPRTB','DXS10148'],
-		[]],
+		['HPRTB','DXS10148']],
 	'Y-Filer 17'=>
 		[['DYS456','DYS389I','DYS390','DYS389B.1'],
 		['DYS458','DYS19','DYS385a/b'],
@@ -61,7 +60,8 @@ my %templAll=(
 
 my %dyeAll=(
 	'codis'=>[qw/blue green red yellow purple cyan cyan cyan/],
-	'ystr' =>[qw/blue green yellow red purple cyan cyan cyan/]
+	'ystr' =>[qw/blue green yellow red purple cyan cyan cyan/],
+	'x12'=>[qw/blue green yellow red/]
 );
 
 my %dyeMap=(
@@ -70,7 +70,7 @@ my %dyeMap=(
 	'PowerPlex 21'=>'codis',
 	'Qiagen HDplex'=>'codis',
 	'Promega CS7'=>'codis',
-	'Qiagen Argus X12'=>'ystr',
+	'Qiagen Argus X12'=>'x12',
 	'Y-Filer 17'=>'ystr',
 	'Y-Filer Plus'=>'ystr',
 	'PowerPlex Y-23'=>'ystr'
@@ -184,8 +184,8 @@ for my $origname(@files) {
 		}
 		close IN;
 		my @loci=sort keys %unlisted;
-		push @templ,[splice @loci,0,6] while @loci;
-		for my $dye(0..7) {
+		push @templ,[splice @loci,0,$#templ] while @loci; # was @loci,0,6]
+ 		for my $dye(0..7) {  # was 0..7
 			for my $locus(@{$templ[$dye]}) {
 				if(defined $unlisted{$locus}) {
 					$templ{$_}=$dye;
@@ -208,7 +208,7 @@ for my $origname(@files) {
 		$json.=join(",\n",@categories)."  ],\n";
 		$json.="  seriesArray: [\n";
 		my @series=();
-		for my $dye(0..7) {
+		for my $dye(0..$#templ) { # was 0..7
 			my @loci=@{$templ[$dye]};
 			my @n=sort{$a<=>$b} keys %{$nums[$dye]};
 			my $series="    [";

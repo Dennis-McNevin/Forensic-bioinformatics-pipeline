@@ -1,20 +1,93 @@
-Str=new Meteor.Collection('str'); // Create a new MongoDB collection named Str
-Samples=new Meteor.Collection('samples');  // Create a new MongoDB collection named Samples
-Threshold=new Meteor.Collection('threshold'); // Create a new MongoDB collection named Threshold
-Notes=new Meteor.Collection('notes'); // Create a new MongoDB collection named Notes
-CurrentView=new Meteor.Collection('currentview'); // Create a new MongoDB collection named CurrentView
+Str = new Meteor.Collection('str'); // Create a new MongoDB collection named Str
+Samples = new Meteor.Collection('samples');  // Create a new MongoDB collection named Samples
+Threshold = new Meteor.Collection('threshold'); // Create a new MongoDB collection named Threshold
+//Notes=new Meteor.Collection('notes'); // Create a new MongoDB collection named Notes
+CurrentView = new Meteor.Collection('currentview'); // Create a new MongoDB collection named CurrentView
 var sampleName;
 var sampleFile;
 var sample;
 var samples;
 var snps;
-var layout=undefined; // 10. Force to select panels
-var Schemas={}; 
+var layout = undefined; // 10. Force to select panels
+var Schemas = {}; 
 
 // Create some code to run on the server if there is no data yet only when the application starts up
 Meteor.startup(function () {
    fs = Npm.require('fs');
 });
+
+
+	var panels = {"GlobalFiler":{ 
+			"r0":{"dye":"blue", "loci":["D3S1358","VWA","D16S539","CSF1PO","TPOX"]},
+			"r1":{"dye":"green", "loci":["Y Indel","Amelogenin","D8S1179","D21S11","D18S51","DYS391"]},
+			"r2":{"dye":"red", "loci":["D22S1045","D5S818","D13S317","D7S820","SE33"]},
+			"r3":{"dye":"yellow", "loci":["D2S441","D19S433","TH01","FGA"]},
+			"r4":{"dye":"purple", "loci":["D10S1248","D1S1656","D12S391","D2S1338"]}
+			},
+		"PowerPlex Fusion":{ 
+			"r0":{"dye":"blue", "loci":["Amelogenin","D3S1358","D1S1656","D2S441","D19S1248","D13S317"]},
+			"r1":{"dye":"green", "loci":["D16S539","D18S51","D2S1338","CSF1PO","PentaD"]},
+			"r2":{"dye":"red", "loci":["D8S1179","D12S391","D19S433","FGA","D22S1045"]},
+			"r3":{"dye":"yellow", "loci":["TH01","VWA","D21S11","D7S820","D5S818","TPOX","DYS391"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"PowerPlex 21":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","D3S1358","D1S1656","D6S1043","D13S317","PentaE"]},
+			"r1":{"dye":"green", "loci":["D16S539","D18S51","D2S1338","CSF1PO","PentaD"]},
+			"r2":{"dye":"red", "loci":["D8S1179","D12S391","D19S433","FGA"]},
+			"r3":{"dye":"yellow", "loci":["TH01","VWA","D21S11","D7S820","D5S818","TPOX"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Qiagen HDplex":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","D7S1517","D3S1744","D12S391","D2S1360","D6S474","D4S2366"]},
+			"r1":{"dye":"green", "loci":["D8S1132","D5S2500","D18S51","D21S2055"]},
+			"r2":{"dye":"", "loci":[]},
+			"r3":{"dye":"yellow", "loci":["D10S2325","SE33"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Promega CS7":{
+			"r0":{"dye":"blue", "loci":["LPL","F13B","FES/FPS","F13A01","PentaD"]},
+			"r1":{"dye":"green", "loci":["PentaC"]},
+			"r2":{"dye":"", "loci":[]},
+			"r3":{"dye":"yellow", "loci":["PentaE"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Qiagen Argus X12":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","DXS10103","DXS8378","DXS7132","DXS10134"]},
+			"r1":{"dye":"green", "loci":["DXS10074","DXS10101","DXS10135"]},
+			"r2":{"dye":"yellow", "loci":["DXS7423","DXS10146","DXS10079"]},
+			"r3":{"dye":"red", "loci":["HPRTB","DXS10148"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Y-Filer 17":{
+			"r0":{"dye":"blue", "loci":["DYS456","DYS389I","DYS390","DYS389B.1"]},
+			"r1":{"dye":"green", "loci":["DYS458","DYS19","DYS385a/b"]},
+			"r2":{"dye":"yellow", "loci":["DYS393","DYS391","DYS439","DYS635","DYS392"]},
+			"r3":{"dye":"red", "loci":["GATA-H4","DYS437","DYS438","DYS448.1","DYS448.2"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Y-Filer Plus":{
+			"r0":{"dye":"blue", "loci":["DYS627","DYS389B.1","DYS635","DYS389I","DYS576"]},
+			"r1":{"dye":"green", "loci":["DYS391","DYS448.1","DYS448.2","GATA-H4","DYS19","DYS458","DYS460"]},
+			"r2":{"dye":"yellow", "loci":["DYS518","DYS392","DYS438","DYS390","DYS456"]},
+			"r3":{"dye":"red", "loci":["DYS449","DYS385a/b","DYS437","DYS570"]},
+			"r4":{"dye":"purple", "loci":["DYS533","DYS387S1-ab","DYS481","DYS439","DYS393"]}
+			},
+		"PowerPlex Y-23":{
+			"r0":{"dye":"blue", "loci":["DYS576","DYS389I","DYS448.1","DYS448.2","DYS389B.1","DYS19"]},
+			"r1":{"dye":"green", "loci":["DYS391","DYS481","DYS549","DYS533","DYS438","DYS437"]},
+			"r2":{"dye":"yellow", "loci":["DYS570","DYS635","DYS390","DYS439","DYS392","DYS643"]},
+			"r3":{"dye":"red", "loci":["DYS393","DYS458","DYS385a/b","DYS456","GATA-H4"]},
+			"r4":{"dye":"", "loci":[]}
+			}
+	};
+
+	//JSON.stringify(panels);
+	
+
+
+
+
 
 // Using a simple-schema package to attach a schema to the "CurrentView" collection
 Schemas.CurrentView=new SimpleSchema({
@@ -37,15 +110,17 @@ Schemas.CurrentView=new SimpleSchema({
 	},
 	layout: {
 		type: String,
-		max: 50, 
+		max: 100, 
 		autoform: {
 			type: "selectize",
-			firstOption: "(Select a panel)", // 8. false to true
+			firstOption:"(Select a panel)",  // 8. false to true
 			options: true,
-			options() { // 8. Categorize the panels (re-write) 
-					return [
+			//options() { // 8. Categorize the panels (re-write) 
+			//		return [
+			options: function () {
+          				return [
 						{
-						 optgroup: "CODIS STR panels",
+						 optgroup: "Autosomal STR panels",
 						    options:[
 							 {label:"GlobalFiler",value:"GlobalFiler"},
 							 {label:"PowerPlex Fusion",value:"PowerPlex Fusion"},
@@ -55,40 +130,62 @@ Schemas.CurrentView=new SimpleSchema({
 							   ]
 						},
 						{
-						 optgroup:  "ySTR panels",
+						optgroup: "X STR panels",
 						    options:[
-							 {label:"Qiagen Argus X12",value:"Qiagen Argus X12"},
+							 {label:"Qiagen Argus X12",value:"Qiagen Argus X12"}
+							    ]
+						},
+						{
+						 optgroup:  "Y STR panels",
+						    options:[
 							 {label:"Y-Filer Plus",value:"Y-Filer Plus"},
 							 {label:"PowerPlex Y-23",value:"PowerPlex Y-23"}
 							   ]
 						},
 						{
-						 optgroup: "SNP panels",
+						 optgroup: "piSNP panels",
 						    options:[ 
-							      
-							{label:"Ancestry-informative", value:"ai"},
-							{label:"Identity-informative", value:"ii"}								
+							{label:"IrexPlex", value:"IrexPlex"},
+							{label:"HRis Plex", value:"HRis Plex"}								
+							    ]
+						},
+						{
+						 optgroup: "aiSNP panels",
+						    options:[ 
+							{label:"SNPforID 34plex", value:"SNPforID 34plex"},
+							{label:"Eurasiaplex", value:"Eurasiaplex"},
+							{label:"Pacifiplex", value:"Pacifiplex"},
+							{label:"Kidd lab ancestry", value:"Kidd lab ancestry"},
+							{label:"Seldin ancestry", value:"Seldin ancestry"},
+							{label:"Precision ID ancestry", value:"Precision ID ancestry"},	
+							{label:"ForenSeq Sig Prep kit", value:"ForenSeq Sig Prep kit"},
+							{label:"Asia Pacific", value:"Asia Pacific"}					
+							    ]
+						},
+						{
+						 optgroup: "iiSNP panels",
+						    options:[ 
+							{label:"SNPforID 52plex", value:"SNPforID 52plex"},
+							{label:"Kidd lab identity", value:"Kidd lab identity"},
+							{label:"HID-Ion AmpliSeq", value:"HID-Ion AmpliSeq"},
+							{label:"DNAseq", value:"DNAseq"}
 							    ]
 						}
 					     ]; // end of return
-
-			} // end of options
+			} // end of options function
 		}
 	}
 });
-
-
-
 
 // Once the simpleSchema is defined, attach it to the collection
 CurrentView.attachSchema(Schemas.CurrentView); 
 
 // Attach a schema to the "Notes" collection
-Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
-Notes.attachSchema(Schemas.Notes);
+//Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
+//Notes.attachSchema(Schemas.Notes);
 
 // An object contains loci and corresponding chromosome coordinates
-var coord={'D1S1656': 'chr1:230905363-230905429',
+var coordSTR={'D1S1656': 'chr1:230905363-230905429',
 	'TH01': 'chr11:2192319-2192345',
 	'VWA': 'chr12:6903103-6093254',
 	'D12S391': 'chr12:12449948-12450000',
@@ -506,10 +603,8 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 	// The client stores these records in local Minimongo collections
 	// with the same name of the server's publish() call
 
-
 	Template.registerHelper("Schemas",Schemas); 
 	// Add all SimpleSchema instances to a Schemas object and register that object as a helper
-
 
 	AutoForm.setDefaultTemplate('materialize');
 	// Add materialize templates for autoform
@@ -526,20 +621,25 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			console.log('Selected layout '+e.target.value);
 			layout=e.target.value;
 			builtLobstr();
+		},
+		'click .navbar-brand': function(){
+			//console.log("You clicked an element");
+			return Session.set('viz','home'); // Clicking the logo will return to the homepage
 		}
 	});
 	
 	Session.setDefault('viz','home'); // Set viz in the session if viz is hasn't been set before
-					  // home is the new value for viz
+					  // Home page is no longer a blank page
 	
 	Template.body.helpers({ // Template helpers send functions to the "body" templates
 		currentViz: function(){
 			return Session.get('viz');
 		}
-	})
-	
+	});
+		
 	Template.snptable.onCreated(function(){
-		Session.set('snps',[]);
+		Session.set('snps',sample.snpsArray); // Delete Session.set('snps',[]);
+		Session.set('viz','snptable');        // Add these two instead
 	});
 	
 	Template.snptable.helpers({ // Template helpers send functions to the "snptable" templates.
@@ -547,15 +647,14 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			return Session.get('snps');
 		}
 	});
-
-	Session.set('viz','snptable'); // 11. To show SNP result without selecting STR panels
-
+	
+	//Session.set('viz','snptable'); // 11. To show SNP result without selecting STR panels (move to onCreated now)
 	
 	Template.snptable.events({ // Add click events to the "snptable" template
 		// 4. Allow linkage to IGV
 		'click .linkage-to-igv':function(e){
 			var region=coordSNP[this.rsid]; // 4. this.category replaces with this.rsid
-			console.log("Clicked on "+p(this.rsid)+'. Opening '+region); // 4. this.rsid
+				console.log("Clicked on "+p(this.rsid)+'. Opening '+region); // 4. this.rsid
 			var vcf=sampleFile.replace(".txt","").replace(".snp","")+".vcf"; // 4. Remove.replace(".codis","").replace(".ystr","").
 			var bam=vcf.replace(".vcf","_final.bam"); //4. Remove replace("_lobstr.vcf","_sorted.bam")
 			Meteor.call("getResultsDir", function(err, res) {
@@ -568,7 +667,6 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 
 			});
 		},
-//		'mouseover [data-toggle="popover"]': function(e){
 		'click': function(e){
 			var p = $(e.currentTarget).popover({ // Popovers are not CSS-only plugins, and must therefore be initialized with jQuery:
 				// Pulling off the specified element of the event called currentTarget
@@ -576,7 +674,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				html:true // Use HTML to render the labels
 			});
 			var cTarget = e.currentTarget;
-			$(cTarget.id+'con').show();  // what is 'con'?
+				$(cTarget.id+'con').show();  // what is 'con'?
 
 			var refC = parseInt(cTarget.getAttribute("refC")); //refC = refCount
 			var altC = parseInt(cTarget.getAttribute("altC")); // altC = altCount
@@ -596,44 +694,43 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 									// this.y is the read for that allele
 														// percentage in italic
 				} },
-		        plotOptions: {
-			    series: {
-				pointWidth: 50, // 3. Adjust the width for each column
-			    animation: false // 3. Remove animation
-			    },
-		            column: {
-		                dataLabels: { enabled: true, crop: false, overflow: 'none'} // 3. To display data labels outside the plot area, not align them inside the plot area
-		            }
-		        },
-		        title:{text:null},
-		        legend:{enabled:false},
-		        credits:{enabled:false},
-		        xAxis: {
-		       		 categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")] // get the value (allele) from the attributes ref and alt
-		        },
-		        yAxis: {
-				minorGridLineDashStyle: 'longdash', // 3. Make the dash of the minor grid lines
-				minorTickInterval: 'auto', // 3. Set the minor tick interval as a fifth of the tickInterval (auto)
-				minorTickWidth: 0, // 3. The pixel width pf the minor tick mark
-		            title: {
-		                text: 'Reads',
-		                useHTML: true,
-		                style: { // Rotates an element clockwise
-		                    "-webkit-transform": "rotate(90deg)", // Safari
-		                    "-moz-transform": "rotate(90deg)", // firefox
-		                    "-o-transform": "rotate(90deg)"
-		                }
-		            }
-		        },
-			// A series is a set of datas. All data plotted on a chart comes from the series object.
-		        series: [{ name:'Reads', data: [{y: refC, p: (100*refC/(refC+altC)).toFixed(2)}, // Convert a number into a string, keeping only two decimals
-							{y: altC, p: (100*altC/(refC+altC)).toFixed(2)}] 
-				}]
-		    });
-		}
-	});
+		        	plotOptions: {
+			    		series: { pointWidth: 50, animation: false}, // 3. Adjust the width for each column & Remove animation 
+		            		column: {
+		                		dataLabels: { enabled: true, crop: false, overflow: 'none'} // 3. To display data labels outside the plot area, not align them inside the plot area
+		            		}
+		        	},
+		        	title:{text:null},
+		        	legend:{enabled:false},
+		       		credits:{enabled:false},
+		        	xAxis: {
+		       			categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")] // get the value (allele) from the attributes ref and alt
+		        	},
+		        	yAxis: {
+					minorGridLineDashStyle: 'longdash', // 3. Make the dash of the minor grid lines
+					minorTickInterval: 'auto', // 3. Set the minor tick interval as a fifth of the tickInterval (auto)
+					minorTickWidth: 0, // 3. The pixel width pf the minor tick mark
+		            		title: {
+		                		text: 'Reads',
+		                		useHTML: true,
+		                		style: { // Rotates an element clockwise
+						    "-webkit-transform": "rotate(90deg)", // Safari
+						    "-moz-transform": "rotate(90deg)", // firefox
+						    "-o-transform": "rotate(90deg)"
+		                		}
+		            		}
+		        	},
+				// A series is a set of datas. All data plotted on a chart comes from the series object.
+		        	series: [{ name:'Reads', 
+					   data: [
+						  {y: refC, p: (100*refC/(refC+altC)).toFixed(2)}, // Convert a number into a string, keeping only two decimals
+						  {y: altC, p: (100*altC/(refC+altC)).toFixed(2)}
+						 ] 
+				}] // End of series
+		    	}); // End of Highcharts
+		} // End of click function
+	}); // End of template.snptable.events
 	
-
 	function builtLobstr(collection) {
 	//	samples=Str.find({},{ sort:{_id:1}}).map(function (doc){return doc['sample']});
 	//	samples=_.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file});
@@ -644,16 +741,21 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			// try console.log the JSON data
 			console.log('sample('+p(sampleType)+'): '+p(sample)); 
 			// save the seriesArray data in a new variable called copy?
-			var copy = JSON.stringify(sample.seriesArray);
-			console.log(copy);
+			//var copy = JSON.stringify(sample.seriesArray);
+			//console.log(copy);
 		if(sampleType!='undefined') { // If sampleType is NOT undefined, do the for loop
-			for(x = 0; x < 8; x++) {  
-				if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
+			// Look up panels 
+			pnl = panels[layout];
+			console.log(JSON.stringify(panels));
+			console.log(JSON.stringify(pnl["r"+3]["loci"]));
+			for(x = 0; x < 5; x++) {  // maximum 5 containers
+				if(typeof sample.categoriesArray[x]=='undefined' || x >= pnl.length) { // sample.categoriesArray[x].length<1
 					$('#containerChart'+x).hide(); // hides the element with id="containerChart"	
-					
-				}else {
+				} else if (pnl["r"+x]["loci"].length == 0){
+					$('#containerChart'+x).hide();
+				} else {
 					$('#containerChart'+x).show();
-				}
+                                }
 				// Delete the following...No effect, give the same result
 				//var graphSeries = eval("GraphSeries");
 				//graphSeries.data = [];
@@ -677,12 +779,12 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 				Session.set('viz','lobstr'); // now lobstr is the new value for viz, given that viz has been set before
 				new Highcharts.Chart(graphOptions); // The graphOptions object is created below and added to the chart here by passing it to the chart constructor
 			}
-		}else {
+		} else {
 			sample=Str.findOne({_id:sampleName}); // Pull one entry out of a MongoDB using findOne
 			if(sample!=null) {
 				Session.set('snps',sample.snpsArray);
 				Session.set('viz','snptable');
-				console.log(JSON.stringify(sample.snpsArray));
+				// console.log(JSON.stringify(sample.snpsArray));
 			}
 		}
 	}
@@ -690,14 +792,14 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 	// Use a JavaScript object structure provided by Highcharts to define the options of a chart
 	var GraphOptions = {
 		chart: { type: 'column', plotBorderColor: '#000000', plotBorderWidth: 1}, // 8. Delete renderTo. Add plotBorderColor and plotBorderWidth
-		title:{ text:null },
+		title: { text:null },
 		subtitle: { text:null },
 		credits: { enabled: false },
 	    	legend: { enabled: false },
 	   	exporting: {enabled: false},
 		tooltip: { formatter: function () { 
 			// Shared tooltip (new)
-				console.log(this.x + this.l + this.y);
+				console.log(this.x);
 					var s = '<strong>' + this.x + '</strong><br>';
 					
 						$.each(this.points, function () {
@@ -707,14 +809,12 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 										allele='<b>'+allele+' (Ref)</b>';
 									} else {
 										allele;
-								}
+									}
 								reads = '<b>' + this.y + '</b> read' + ((this.y==1)?'':'s');
 
 								s += 'Allele <b>' + allele + '</b>: '  +
 									reads +
 									' <i>(' + this.point.p + '%)</i><br>';
-
-
 							} // end of if
 						}); // end of each function
 					return s ;
@@ -725,20 +825,6 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			crosshairs: true
 			}, // end of tooltip
 
-			//for(var i = 0; i < allele.length; i++){  // For any allele i
- 			//var r1 = this.y[i]; //R1 = number of reads for allele i
-			//	if(i+1)// If there is another allele one repeat length later (i+1)
- //                             R2 = number of reads for allele i+1
- //                             If  R1 < 0.15*R2
-  //                                           Allele i is “stutter”
-   //                           Else
-    //                                         Allele i is not stutter
-      //                        End if
-        //       End if
-// Next allele
-			//if(this.series.point.y <  this.series.point[i+1].y*0.15){
-				//Stutter="Allele " + this.l + " is a stutter."
-				//}
 //				AnalyticThresh="Analytic T: " + this.point.at+"%";
 //				StochasticThresh="Stochastic T: " + this.point.st+"%";
 //				StutterThresh="Stutter T: " + this.point.tt+"%";
@@ -789,7 +875,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 					events: {
 						click: function(e) {
 							// Open IGV for STR browser
-							var region=coord[this.category]; //this.category = the STR locus
+							var region=coordSTR[this.category]; //this.category = the STR locus
 							console.log("Clicked on "+p(this.category)+'. Opening '+region); // region= chr_:_-_
 							var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
 							var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
@@ -814,22 +900,19 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			minorGridLineDashStyle: 'longdash', // 8. Make the dash of the minor grid lines
 			minorTickInterval: 'auto', // 8. auto = Set the minor tick interval as a fifth of the tickInterval 
 			minorTickWidth: 0, // 8. = the pixel width pf the minor tick mark
-			title:{text:'Read Counts', 
+			title: {text:'Read Counts', 
 				style:{fontSize: '10pt', color:'black'} // 8. Set font size and color
 			}, 
 			lineColor: '#000000', // 8. Set y axis long colour
 			lineWidth: 1, // 8. Set y axis line width
 			labels: {
 				overflow:'justify', //  If "justify", labels will not render outside the legend area.
-				 style: { color: 'black', fontSize: '10pt'} //8. Make y axis label black in colour. Set font size to 12px
+				style: { color: 'black', fontSize: '10pt'} //8. Make y axis label black in colour. Set font size to 12px
 				},
-		}, 
-										
-				
-		xAxis: { categories:[], // Empty array for categories and series so push values to them later
+		}, 	
+		xAxis: { categories: [], // Empty array for categories and series so push values to them later
 			 lineColor: '#000000', // 8. Make axis black in colour
-			 labels: {style: { color: [], fontSize: '12pt'}, // 8. Make X axis label black in colour. Set font size to 12px.
-				 }
+			 labels: {style: { color: [], fontSize: '12pt'}} // 8. Make X axis label black in colour. Set font size to 12px.
 		},
 		series: []
 		};
@@ -857,6 +940,51 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		builtLobstr();
 	});
 
+// Stutter calculator
+Template.stuttercalculator.helpers({
+    result: function(){
+      return Session.get('result');
+    }
+});
+
+Template.stuttercalculator.events({
+    'submit .calculator': function(event, template){
+	event.preventDefault();
+        var num1 = event.target.readsforN.value;
+        var num2 = event.target.readsforNminus1.value;
+	var t = radioForm.stutter_threshold.value;
+	console.log("N Reads: " + num1+ " & N-1 Reads: " +num2);
+
+	if(document.getElementById('stutter_threshold_other').checked){
+	   var inputT = radioForm.stutter_threshold_input.value;
+	     console.log("Other option selected. Threshold input: "+ inputT + "%");
+			if (num2 < num1*(inputT/100)){
+	        		console.log("stutter.(threshold was set as) "+ inputT + " threshold: " + num1*(inputT/100));
+				 Session.set('result',' Allele n-1 is a stutter artefact for allele n.');
+			} else {
+				console.log("NOT stutter.(threshold was set as) "+ inputT + " threshold: " + num1*(inputT/100));
+				Session.set('result',' Allele n-1 is NOT a stutter artefact for allele n.');
+    			}
+
+	} else {
+			if (num2 < num1*t){
+	        		console.log("stutter.(threshold was set as) "+ t);
+				 Session.set('result',' Allele n-1 is a stutter artefact for allele n.');
+			} else {
+				console.log("NOT stutter.(threshold was set as) "+ t);
+				Session.set('result',' Allele n-1 is NOT a stutter artefact for allele n.');
+    			}
+	}
+   },
+   'reset. calculator':function(event, template){
+     document.getElementById("calculator_form").reset();
+     document.getElementById("radioForm.stutter_threshold_input").reset();
+   }
+});
+
+
+// End of stutter calculator
+
 }
 
 if (Meteor.isServer) {
@@ -866,9 +994,9 @@ if (Meteor.isServer) {
 	Meteor.publish('samples',function() { // Publish a record set samples
 		return Threshold.find({});
 	});
-	Meteor.publish('notes',function() { // Publish a record set notes
-		return Notes.find({});
-	});
+	//Meteor.publish('notes',function() { // Publish a record set notes
+	//	return Notes.find({});
+	//});
 	Meteor.methods({ // Defines functions that can be invoked over the network by clients.
 		getResultsDir: function() {
 			var path=Npm.require('path');
@@ -876,11 +1004,15 @@ if (Meteor.isServer) {
 		}
 	});
 
+
+
+
 }
 
-Router.route('/', {
-    template: 'home'
-});
+//Router.route('/', function() {
+ //   this.render('home');
+//});
+
 
 //Router.route('/', function () {
 //  this.render('Home', {

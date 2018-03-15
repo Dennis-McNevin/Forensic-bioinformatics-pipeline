@@ -1,46 +1,85 @@
 <head>
-	<title>MPS Forensics Browser</title>
+  <title>MPS Forensics Browser</title>
 </head>
 
 <body>
-	{{>menu}}
-	<div class ="SNP_STR_viewer"> <!-- 5. Put a block-level element <div> inside the body to take up the full width available-->
-			      <!-- Stretch the SNP snd STR result out to the either side as far as it can  -->
-		{{> Template.dynamic template=currentViz}}
-	</div>
+  {{>menu}}
+    <div class ="SNP_STR_viewer"> <!-- 5. Put a block-level element <div> inside the body to take up the full width available-->
+    <!-- Stretch the SNP snd STR result out to the either side as far as it can  -->
+	{{> Template.dynamic template=currentViz}}
+    </div>
 </body>
 
 <template name="menu">
-<!-- 2. navbar sits on top of the page as we scroll down -->
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation"> <!-- a navigation bar to the top of the page -->
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation"> <!-- 2. navbar sits on top of the page as we scroll down -->
     <div class="navbar-header">
 	<a class="navbar-brand" href="#">MPS Forensics</a> <!-- Adding images by the class navbar-brand, see .css -->
     </div>
+
     <div class="row" id="filter">
 	{{#autoForm id="currentViewForm" collection="CurrentView" schema=Schemas.CurrentView}}
-	<form>
+	  <form>
 		<div class="form-group col-md-6 col-sm-6 col-xs-3">
 			{{> afQuickField id="sampleSelect" name="sample" template="bootstrap3-horizontal" type="selectize" label-class="sr-only"}}
 		</div>
+
 		<div class="form-group col-md-3 col-sm-3 col-xs-3">
 			{{> afQuickField id="layoutSelect" name="layout" template="bootstrap3-horizontal" type="selectize" label-class="sr-only"}}
 		</div>
-	</form>
+	  </form>
 	{{/autoForm}}
     </div>
-</nav>
+  </nav>
 </template>
 	
-
+<!-- <template name="home">
+</template> -->
 
 <template name="home">
+ <div class="home_title">
+    <h1>The SNP/STR Viewer</h1>
+    	<div class="description">Graphical user interface (GUI) of the forensics bioinformatics pipeline to visualise SNP and STR genotypes</div>
+ </div>
+ <div class="home_guides" style="margin-left:50px">
+	<h2>SNP Viewer</h2>
+	  <ol>
+	    <li>Choose a SNP file from the result selection drop-down menu.</li>
+	    <li>SNP data is shown in a table format where the SNP locus (rsID) and its genotype are shown in each cell.</li>
+	    <li>To show the SNP allele coverage histogram, double-click on the genotype. Another click can close the chart.</li>
+	    <li>To view the SNP alignment, click the rsID and you will be navigated to the Integrative Genomics Viewer (IGV).</li>
+	  </ol>  
+	
+	<h2>STR Viewer</h2>
+	  <ol>
+	    <li>Choose a STR file from the result selection drop-down menu.</li>
+	    <li>Choose a STR panel from the panel selection drop-down menu.</li>
+	    <li>STR data is shown in a histogram format where the STR loci are configured to mimic a capillary electrophoresis electropherogram output.</li>
+	    <li>Hover over the plot area of each STR locus to show information for each allele including the coverage (number of reads) and proportion of reads.</li>
+	    <li>To view the STR alignment, double-click on the allele designation at any STR locus and you will be navigated to the Integrative Genomics Viewer (IGV).</li>
+	  </ol><br>
+    	<div>{{>diagram}}</div>
+ </div> 
 </template>
 
-<template name="notes">
+<template name="diagram">
+ <div class="diagram_container">
+ 	<div style="float:left;margin-right:100px;">
+	  <h3>Architecture of the forensic bioinformatics pipeline</h3>
+	    <img src="pipeline.png" alt="Architecture of the forensic bioinformatics pipeline" height="500" width="600">
+	</div>
+
+	<div style="float:left;margin-right:5px;">
+	  <h3>Architecture of the SNP/STR viewer</h3>
+	    <img src="Meteor_achitecture_v3.jpg" alt="Architecture of the SNP/STR viewer" height="500" width="600">
+	</div>
+ </div>
+</template>
+
+<!--<template name="notes">
 	{{#autoForm id="notesForm" collection="Notes"}}
 		{{> afQuickField name="notes"}}
 	{{/autoForm}}
-</template>
+</template>-->
 
 <template name="lobstr">
 	<div id="containerChart0" class="STRchart"></div> <!-- 7. working on STR charts, style="min-width: 300px; height: 250px;" (original) -->
@@ -48,37 +87,77 @@
 	<div id="containerChart2" class="STRchart"></div> 
 	<div id="containerChart3" class="STRchart"></div>
 	<div id="containerChart4" class="STRchart"></div>
-	<div id="containerChart5" class="STRchart"></div>
-	<div id="containerChart6" class="STRchart"></div>
-	<div id="containerChart7" class="STRchart"></div>
-	<div> {{>notes}} </div>
+	<div id="calculator"> {{>stuttercalculator}} </div>
+	<!--<div> {{>notes}} </div> -->
 </template>
 
 <template name="snptable">
-	<div class="inner" style="width:100%">
-	<table class="table table-bordered" id="SNPtable" align="center"> <!-- 6. Add border on all sides of SNP table cells -->
+  <div class="inner" style="width:100%">
+    <table class="table table-bordered" id="SNPtable" align="center"> <!-- 6. Add border on all sides of SNP table cells -->
 	<tbody>
-	<tr> <!--<tr> tag defines a row in an HTML table -->
-	{{#each snps}}
+	  <tr> <!--<tr> tag defines a row in an HTML table -->
+	    {{#each snps}}
 		<td>
-			<!-- rsID -->
-			<!--<a target="_blank" href="http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs={{rsid}}">{{rsid}}</a><br/> -->
-			<a href="#" class="linkage-to-igv">{{rsid}}</a><br/> <!-- 4. Add the linkage of SNP to IGV -->
-			<!-- SNP genotypes -->
-			<strong style="font-size:35px;">
-				<!-- 1. Add reference and alternative allele info above the graph.-->
-				<!-- 1. Set a data-placement attribute as "auto" to let the browser decide the position of the popover -->
-				<a id="{{rsid}}" href="#" data-toggle="popover" data-placement="auto" data-content="<div>Reference allele: {{ref}}<br/>Alternative allele: {{alt}}</div><br/><div id='{{rsid}}con' style='min-width:300px; height:300px'></div>" title="{{rsid}}" ref="{{ref}}" refC="{{refCount}}" alt="{{alt}}" altC="{{altCount}}">{{geno1}} {{geno2}}</a>
-			</strong>
+		  <!-- rsID -->
+		  <!--<a target="_blank" href="http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs={{rsid}}">{{rsid}}</a><br/> -->
+		  <a href="#" class="linkage-to-igv">{{rsid}}</a><br/> <!-- 4. Add the linkage of SNP to IGV -->
+		    <!-- SNP genotypes -->
+		    <strong style="font-size:35px">
+			<!-- 1. Add reference and alternative allele info above the graph.-->
+			<!-- 1. Set a data-placement attribute as "auto" to let the browser decide the position of the popover -->
+			<a id="{{rsid}}" href="#" data-toggle="popover" data-placement="auto" data-content="<div>Reference allele: {{ref}}<br/>Alternative allele: {{alt}}</div><br/><div id='{{rsid}}con' style='min-width:300px; height:300px'></div>" title="{{rsid}}" ref="{{ref}}" refC="{{refCount}}" alt="{{alt}}" altC="{{altCount}}">{{geno1}} {{geno2}}</a>
+		    </strong>
 		</td>
-	{{/each}}
-	</tr>
+	    {{/each}}
+	  </tr>
 	</tbody>
-	</table>
-	</div>
-	<div>
+    </table>
+  </div> 
+	<!--<div>
 		{{>notes}}
-	</div>
+	</div> -->
+</template>
+
+<!-- New feature: check stutter -->
+<template name="stuttercalculator">
+  <div>
+    <form class="calculator" id="calculator_form">
+      <fieldset>
+       <legend>Stutter Calculator</legend>
+	<p>
+	   <label for="n"><strong style>Reads for allele n : </strong></label>
+	   <input type="text" name="readsforN" placeholder="Enter number of reads" />
+	</p>
+	<p>
+	   <label for="n-1"><strong style>Reads for allele n-1 : </strong></label>
+	   <input type="text" name="readsforNminus1" placeholder="Enter number of reads" />
+	</p>
+
+	<div class="select_threshold">
+	  <label for="threshold"><strong style>Stutter threshold : </strong></label>  
+  	    <form class="form-inline" role="form" id="radioForm"> 
+		<label class="radio-inline">
+			<input type="radio" id="stutter_threshold_5" name="stutter_threshold" value="0.05">5%
+    		</label>
+		<label class="radio-inline">
+		        <input type="radio" id="stutter_threshold_10" name="stutter_threshold" value="0.1">10%
+   		</label>
+    		<label class="radio-inline">
+			<input type="radio" id="stutter_threshold_15" name="stutter_threshold" value="0.15" checked>15%
+   		</label>
+		<label class="radio-inline">
+		   	<input type="radio" name="stutter_threshold" id="stutter_threshold_other" value="">Other<input type="text" name="stutter_threshold_input" placeholder="Enter a number (0-20)" id="t_input" />%
+		</label>
+	    </form>
+	</div><br>
+		<p>
+	   	   <button type="submit" class="btn btn-info">Check stutter</button>
+		   <button type="reset" value="Reset form" id="resetButton">Reset</button>
+		</p><br>
+		<p><strong style ="font-size:15px;">Results:{{result}}</strong></p>
+      </fieldset>
+    </form>
+  </div>
 </template>
 
 <!-- not used in .JS -->
