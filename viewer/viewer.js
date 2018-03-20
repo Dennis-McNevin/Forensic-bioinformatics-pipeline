@@ -145,8 +145,8 @@ Schemas.CurrentView=new SimpleSchema({
 						{
 						 optgroup: "piSNP panels",
 						    options:[ 
-							{label:"IrexPlex", value:"IrexPlex"},
-							{label:"HRis Plex", value:"HRis Plex"}								
+							{label:"IrixPlex", value:"IrixPlex"},
+							{label:"HIrisPlex", value:"HIrisPlex"}								
 							    ]
 						},
 						{
@@ -156,9 +156,9 @@ Schemas.CurrentView=new SimpleSchema({
 							{label:"Eurasiaplex", value:"Eurasiaplex"},
 							{label:"Pacifiplex", value:"Pacifiplex"},
 							{label:"Kidd lab ancestry", value:"Kidd lab ancestry"},
-							{label:"Seldin ancestry", value:"Seldin ancestry"},
+							{label:"Seldin's", value:"Seldin's"},
 							{label:"Precision ID ancestry", value:"Precision ID ancestry"},	
-							{label:"ForenSeq Sig Prep kit", value:"ForenSeq Sig Prep kit"},
+							{label:"ForenSeq Sig Prep kit (Illumina)", value:"ForenSeq Sig Prep kit aiSNP"},
 							{label:"Asia Pacific", value:"Asia Pacific"}					
 							    ]
 						},
@@ -867,7 +867,8 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 			},
 			series: {
 				// maxPointWidth: 20, // The maximum allowed pixel width for a column
-				pointWidth: 3, // 7. Set a fixed width for each column 
+				pointWidth: 6, // 7. Set a fixed width for each column 
+				borderColor: '#000000',
 				//pointPadding: 0.1, // 7. Padding betweeen each column in x axis units
 				//groupPadding: 0.2 (default), // 7. Padding between each value groups in x axis units
 				groupPadding: 0,
