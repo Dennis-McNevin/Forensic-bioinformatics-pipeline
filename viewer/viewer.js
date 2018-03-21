@@ -155,20 +155,20 @@ Schemas.CurrentView=new SimpleSchema({
 							{label:"SNPforID 34plex", value:"SNPforID 34plex"},
 							{label:"Eurasiaplex", value:"Eurasiaplex"},
 							{label:"Pacifiplex", value:"Pacifiplex"},
-							{label:"Kidd lab ancestry", value:"Kidd lab ancestry"},
+							{label:"Kidd Lab Ancestry", value:"Kidd Lab Ancestry"},
 							{label:"Seldin's", value:"Seldin's"},
-							{label:"Precision ID ancestry", value:"Precision ID ancestry"},	
+							{label:"Precision ID Ancestry (TFS)", value:"Precision ID Ancestry"},	
 							{label:"ForenSeq Sig Prep kit (Illumina)", value:"ForenSeq Sig Prep kit aiSNP"},
-							{label:"Asia Pacific", value:"Asia Pacific"}					
+							//{label:"Asia Pacific", value:"Asia Pacific"}					
 							    ]
 						},
 						{
 						 optgroup: "iiSNP panels",
 						    options:[ 
 							{label:"SNPforID 52plex", value:"SNPforID 52plex"},
-							{label:"Kidd lab identity", value:"Kidd lab identity"},
-							{label:"HID-Ion AmpliSeq", value:"HID-Ion AmpliSeq"},
-							{label:"DNAseq", value:"DNAseq"}
+							{label:"Kidd Lab Identity", value:"Kidd Lab Identity"},
+							{label:"HID-Ion AmpliSeq Identity (TFS)", value:"HID-Ion AmpliSeq Identity"},
+							{label:"Individual Identity SNP (Qiagen)", value:"Individual Identity SNP"}
 							    ]
 						}
 					     ]; // end of return
