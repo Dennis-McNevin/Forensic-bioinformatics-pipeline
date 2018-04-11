@@ -357,24 +357,25 @@ Schemas.CurrentView=new SimpleSchema({
 						{
 						 optgroup: "Autosomal STR panels",
 						    options:[
-							 {label:"GlobalFiler",value:"GlobalFiler"},
-							 {label:"PowerPlex Fusion",value:"PowerPlex Fusion"},
-							 {label:"PowerPlex 21",value:"PowerPlex 21"},
-							 {label:"Promega CS7",value:"Promega CS7"},
-							 {label:"Qiagen HDplex",value:"Qiagen HDplex"}
+							 {label:"GlobalFiler (TFS)",value:"GlobalFiler"},
+							 {label:"PowerPlex Fusion (Promega)",value:"PowerPlex Fusion"},
+							 {label:"PowerPlex 21 (Promega)",value:"PowerPlex 21"},
+							 {label:"Promega CS7 (Promega)",value:"Promega CS7"},
+							 {label:"HDplex (Qiagen)",value:"Qiagen HDplex"}
 							   ]
 						},
 						{
 						optgroup: "X STR panels",
 						    options:[
-							 {label:"Qiagen Argus X12",value:"Qiagen Argus X12"}
+							 {label:"Argus X12 (Qiagen)",value:"Qiagen Argus X12"}
 							    ]
 						},
 						{
 						 optgroup:  "Y STR panels",
 						    options:[
-							 {label:"Y-Filer Plus",value:"Y-Filer Plus"},
-							 {label:"PowerPlex Y-23",value:"PowerPlex Y-23"}
+							 {label:"Y-Filer Plus (TFS)",value:"Y-Filer Plus"},
+							 {label:"AmpFLSTR Filer (TFS)",value:"Y-Filer 17"},
+							 {label:"PowerPlex Y-23 (Promega)",value:"PowerPlex Y-23"}
 							   ]
 						},
 						{
@@ -393,7 +394,7 @@ Schemas.CurrentView=new SimpleSchema({
 							{label:"Kidd Lab Ancestry", value:"Kidd Lab Ancestry"},
 							{label:"Seldin's", value:"Seldin's"},
 							{label:"Precision ID Ancestry (TFS)", value:"Precision ID Ancestry"},	
-							{label:"ForenSeq Sig Prep kit (Illumina)", value:"ForenSeq Sig Prep kit aiSNP"},
+							{label:"ForenSeq DNA Sig Prep (Illumina)", value:"ForenSeq Sig Prep kit aiSNP"},
 							//{label:"Asia Pacific", value:"Asia Pacific"}					
 							    ]
 						},
@@ -401,9 +402,9 @@ Schemas.CurrentView=new SimpleSchema({
 						 optgroup: "iiSNP panels",
 						    options:[ 
 							{label:"SNPforID 52plex", value:"SNPforID 52plex"},
-							{label:"Kidd Lab Identity", value:"Kidd Lab Identity"},
-							{label:"HID-Ion AmpliSeq Identity (TFS)", value:"HID-Ion AmpliSeq Identity"},
-							{label:"Individual Identity SNP (Qiagen)", value:"Individual Identity SNP"}
+							{label:"Kidd Lab ID", value:"Kidd Lab Identity"},
+							{label:"HID-Ion AmpliSeq ID (TFS)", value:"HID-Ion AmpliSeq Identity"},
+							{label:"Individual ID SNP (Qiagen)", value:"Individual Identity SNP"}
 							    ]
 						}
 					     ]; // end of return
@@ -1200,7 +1201,7 @@ if (Meteor.isClient) {  // code here will be running on the web browser only
 		}, 	
 		xAxis: { categories: [], // Empty array for categories and series so push values to them later
 			 lineColor: '#000000', // 8. Make axis black in colour
-			 lineWidth: 1,
+			 //lineWidth: 1,
 			 labels: {style: { color: 'black', fontSize: '12pt'}} // 8. Make X axis label black in colour. Set font size to 12px.
 		},
 		series: []
