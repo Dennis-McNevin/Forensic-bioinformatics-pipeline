@@ -381,7 +381,7 @@ Schemas.CurrentView=new SimpleSchema({
 						{
 						 optgroup: "piSNP panels",
 						    options:[ 
-							{label:"IrixPlex", value:"IrixPlex"},
+							{label:"IrisPlex", value:"IrisPlex"},
 							{label:"HIrisPlex", value:"HIrisPlex"}								
 							    ]
 						},
