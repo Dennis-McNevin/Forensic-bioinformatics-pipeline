@@ -1,8 +1,86 @@
 /* CSS declarations go here */
 #SNPtable  {display: block; }
-#SNPtable  td {display: inline-block; background:#FFFAF8; width:90px}
+#SNPtable  td {display: inline-block; background:#FFFAF8; width:90px} /* beige colour (#FFFAF8) for each SNP table cell (td) */
+
 .navbar-brand{
 	background-image: url("/welcome_image_sm.gif"); /* assuming img folder is one step back from css*/
 	background-size: 152px 60px;
-	color: #ffffff;
 }
+
+.navbar-default { /* navbar's height */
+	padding-top: 5px;
+	height: 60px;
+}
+
+.navbar-default .navbar-brand { /* 10. Fixing navbar logo text */
+	color: #ffffff;
+	text-shadow: 1px 1px 2px #000000;
+}
+
+.home_title { /* headline's area */
+	background-color:#191970;
+	color: white;
+	height: 150px;
+	width: 100%;
+}
+
+/* headline: the SNP/STR viewer */
+h1 { text-align:center;
+     padding-top: 30px; }
+
+.description { /* sub-headline: GUI... */
+	text-align: center;
+	font-size: 20px;
+	padding-top: 10px
+}
+
+.row { /* two drop-down menus */
+	padding-top: 5px;
+}
+
+.popover { /* 1. Adjust the size of the pop-up box to put the SNP allele coverage graph inside the pop-up box. */
+	max-height: 450px;
+	max-width: 400px;
+}
+
+.popover-title { /* A center-aligned header text of the popover */
+	text-align:center;
+}
+
+.SNP_STR_viewer { /*5. Use the block-level element <div> inside the body to shove both SNP and STR result down a little bit */
+	padding-top: 60px;
+}
+
+/* 6. Adjust the alignment and height of the data cells of the SNP table  */
+td { text-align: center;
+     height:80px; }
+
+.STRchart { /* 7. Styling STR container is moved to here by adding a class in html */
+	height: 250px;
+	width:100%;
+}
+
+
+.calculator { /* stutter calculator */
+	margin-top: 5px;
+	margin-bottom: 20px;
+	margin-left: 75px;
+	background-color: #F8F8FF;
+	padding-top: 5px;
+	padding-left: 10px;
+	padding-right: 15px;
+	padding-bottom: 5px;
+}
+
+form  { display: table;      }
+p     { display: table-row;  }
+label { display: table-cell; }
+input { display: table-cell; }
+
+
+#resetButton{
+	height: 35px;
+	margin-left: 10px;
+}
+
+

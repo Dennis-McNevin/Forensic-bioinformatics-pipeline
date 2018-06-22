@@ -1,50 +1,403 @@
-Str=new Meteor.Collection('str');
-Samples=new Meteor.Collection('samples');
-Threshold=new Meteor.Collection('threshold');
-Notes=new Meteor.Collection('notes');
-CurrentView=new Meteor.Collection('currentview');
+// Create new MongoDB collections (str, samples, threshold and currentView)
+Str = new Meteor.Collection('str'); 
+Samples = new Meteor.Collection('samples'); 
+Threshold = new Meteor.Collection('threshold'); 
+// Notes=new Meteor.Collection('notes'); 
+CurrentView = new Meteor.Collection('currentview');
 var sampleName;
 var sampleFile;
 var sample;
 var samples;
 var snps;
-var layout='GlobalFiler';
-var Schemas={};
+var layout = undefined; // Force to select panels
+var Schemas = {}; 
+var panels = {"GlobalFiler":{ 
+			"r0":{"dye":"blue", "loci":["D3S1358","VWA","D16S539","CSF1PO","TPOX"]},
+			"r1":{"dye":"green", "loci":["Y Indel","Amelogenin","D8S1179","D21S11","D18S51","DYS391"]},
+			"r2":{"dye":"red", "loci":["D22S1045","D5S818","D13S317","D7S820","SE33"]},
+			"r3":{"dye":"yellow", "loci":["D2S441","D19S433","TH01","FGA"]},
+			"r4":{"dye":"purple", "loci":["D10S1248","D1S1656","D12S391","D2S1338"]}
+			},
+		"PowerPlex Fusion":{ 
+			"r0":{"dye":"blue", "loci":["Amelogenin","D3S1358","D1S1656","D2S441","D19S1248","D13S317"]},
+			"r1":{"dye":"green", "loci":["D16S539","D18S51","D2S1338","CSF1PO","PentaD"]},
+			"r2":{"dye":"red", "loci":["D8S1179","D12S391","D19S433","FGA","D22S1045"]},
+			"r3":{"dye":"yellow", "loci":["TH01","VWA","D21S11","D7S820","D5S818","TPOX","DYS391"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"PowerPlex 21":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","D3S1358","D1S1656","D6S1043","D13S317","PentaE"]},
+			"r1":{"dye":"green", "loci":["D16S539","D18S51","D2S1338","CSF1PO","PentaD"]},
+			"r2":{"dye":"red", "loci":["D8S1179","D12S391","D19S433","FGA"]},
+			"r3":{"dye":"yellow", "loci":["TH01","VWA","D21S11","D7S820","D5S818","TPOX"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Qiagen HDplex":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","D7S1517","D3S1744","D12S391","D2S1360","D6S474","D4S2366"]},
+			"r1":{"dye":"green", "loci":["D8S1132","D5S2500","D18S51","D21S2055"]},
+			"r2":{"dye":"", "loci":[]},
+			"r3":{"dye":"yellow", "loci":["D10S2325","SE33"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Promega CS7":{
+			"r0":{"dye":"blue", "loci":["LPL","F13B","FES/FPS","F13A01","PentaD"]},
+			"r1":{"dye":"green", "loci":["PentaC"]},
+			"r2":{"dye":"", "loci":[]},
+			"r3":{"dye":"yellow", "loci":["PentaE"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Qiagen Argus X12":{
+			"r0":{"dye":"blue", "loci":["Amelogenin","DXS10103","DXS8378","DXS7132","DXS10134"]},
+			"r1":{"dye":"green", "loci":["DXS10074","DXS10101","DXS10135"]},
+			"r2":{"dye":"yellow", "loci":["DXS7423","DXS10146","DXS10079"]},
+			"r3":{"dye":"red", "loci":["HPRTB","DXS10148"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Y-Filer 17":{
+			"r0":{"dye":"blue", "loci":["DYS456","DYS389I","DYS390","DYS389B.1"]},
+			"r1":{"dye":"green", "loci":["DYS458","DYS19","DYS385a/b"]},
+			"r2":{"dye":"yellow", "loci":["DYS393","DYS391","DYS439","DYS635","DYS392"]},
+			"r3":{"dye":"red", "loci":["GATA-H4","DYS437","DYS438","DYS448.1","DYS448.2"]},
+			"r4":{"dye":"", "loci":[]}
+			},
+		"Y-Filer Plus":{
+			"r0":{"dye":"blue", "loci":["DYS627","DYS389B.1","DYS635","DYS389I","DYS576"]},
+			"r1":{"dye":"green", "loci":["DYS391","DYS448.1","DYS448.2","GATA-H4","DYS19","DYS458","DYS460"]},
+			"r2":{"dye":"yellow", "loci":["DYS518","DYS392","DYS438","DYS390","DYS456"]},
+			"r3":{"dye":"red", "loci":["DYS449","DYS385a/b","DYS437","DYS570"]},
+			"r4":{"dye":"purple", "loci":["DYS533","DYS387S1-ab","DYS481","DYS439","DYS393"]}
+			},
+		"PowerPlex Y-23":{
+			"r0":{"dye":"blue", "loci":["DYS576","DYS389I","DYS448.1","DYS448.2","DYS389B.1","DYS19"]},
+			"r1":{"dye":"green", "loci":["DYS391","DYS481","DYS549","DYS533","DYS438","DYS437"]},
+			"r2":{"dye":"yellow", "loci":["DYS570","DYS635","DYS390","DYS439","DYS392","DYS643"]},
+			"r3":{"dye":"red", "loci":["DYS393","DYS458","DYS385a/b","DYS456","GATA-H4"]},
+			"r4":{"dye":"", "loci":[]}
+			}
+};
 
+var SNP_panels ={
+	"IrisPlex":{
+		"loci":["rs1291383", "rs180040", "rs12896399", "rs1689198", "rs139335", 
+			"rs1220359"]
+	},
+	"HIrisPlex":{
+		"loci":["N29insA", "rs11547464","rs885479","rs1805008","rs1805005",
+			"rs1805006","rs1805007","rs1805009","Y152OCH","rs2228479",
+		 	"rs1110400","rs28777","rs16891982","rs12821256","rs4959270",
+			"rs12203592","rs1042602","rs1800407","rs2402130","rs12913832",
+			"rs2378249","rs12896399","rs1393350","rs683"]
+	},
+	"SNPforID 34plex":{
+		"loci":["rs1426654","rs2814778","rs16891982","rs182549","rs4540055",	
+			"rs881929","rs239031","rs2065982","rs12913832","rs3785181",	
+			"rs5997008","rs2572307","rs1978806","rs730570",	"rs1321333",	
+			"rs2026721","rs2303798","rs773658","rs1024116","rs2065160",	
+			"rs1335873","rs896788","rs2040411","rs722098","rs1573020",
+			"rs1886510","rs7897550","rs727811","rs5030240","rs10141763",
+			"rs2304925","rs10843344","rs917118","rs1498444"]
+	},
+	"Eurasiaplex":{
+		"loci":["rs10008492","rs10131666","rs10962599","rs11779571","rs1363345",
+			"rs1519654","rs1544656","rs17625895","rs1785864","rs1941411",
+			"rs2156208","rs2196051","rs2227203","rs2472304","rs2835133", 
+			"rs39897","rs6026972", "rs734482","rs7354930","rs756913",
+			"rs9487258","rs9522149","rs984038",]
+	},
+	"Pacifiplex":{
+		"loci":["rs11156577","rs10455681","rs798949","rs4683510","rs10183022",
+			"rs10970986","rs3827760","rs9809818","rs6886019","rs2184030",
+			"rs4704322","rs7623065","rs3784651","rs12405776","rs2139931",
+			"rs2069945","rs4892491","rs3751050","rs6494411","rs12434466",
+			"rs2409722","rs2274636","rs10811102","rs1509524","rs16946159",
+			"rs6054465","rs721367","rs7832008","rs9908046"]
+	},
+	"Kidd Lab Ancestry":{
+		"loci":["rs3737576","rs7554936","rs2814778","rs798443","rs1876482",
+			"rs1834619","rs3827760","rs260690","rs6754311","rs10497191",
+			"rs12498138","rs4833103","rs1229984","rs3811801","rs7657799",
+			"rs16891982","rs7722456","rs870347","rs3823159","rs192655",
+			"rs917115","rs1462906","rs6990312","rs2196051","rs1871534",
+			"rs3814134","rs4918664","rs174570","rs1079597","rs2238151",
+			"rs671","rs7997709","rs1572018","rs2166624","rs7326934",
+			"rs9522149","rs200354","rs1800414","rs12913832","rs12439433",
+			"rs735480","rs1426654","rs459920","rs4411548","rs2593595",
+			"rs17642714","rs4471745","rs11652805","rs2042762","rs7226659",
+			"rs3916235","rs4891825","rs7251928","rs310644","rs2024566"]
+	},
+	"Seldin's":{
+		"loci":["rs1369093","rs37369","rs4908343","rs4666200","rs9522149",
+			"rs10513300","rs4951629","rs1296819","rs3784230","rs4880436",
+			"rs1040045","rs3793791","rs4781011","rs2835370","rs12657828",
+			"rs10510228","rs6422347","rs10108270","rs13400937","rs2070586",
+			"rs10496971","rs3943253","rs260690","rs4717865","rs7803075",
+			"rs3793451","rs9809104","rs948028","rs2073821","rs4918842",
+			"rs10236187","rs1325502","rs1407434","rs1879488","rs11227699",
+			"rs1471939","rs10007810","rs7745461","rs10511828","rs6104567",
+			"rs2966849","rs818386","rs2416791","rs1513181","rs192655",
+			"rs12439433","rs6464211","rs9845457","rs12629908","rs10839880",
+			"rs4458655","rs1760921","rs32314","rs2397060","rs316873",
+			"rs2986742","rs2532060","rs6548616","rs4891825","rs3737576",
+			"rs772262","rs731257","rs7554936","rs1950993","rs9291090",
+			"rs2306040","rs2269793","rs9530435","rs1040404","rs2627037",
+			"rs2899826","rs2125345","rs12130799","rs4746136","rs4463276",
+			"rs4984913","rs8113143","rs3745099","rs10512572","rs10954737",
+			"rs11652805","rs12544346","rs1408801","rs1500127","rs1503767",
+			"rs1513056","rs1569175","rs1837606","rs1871428","rs2001907",
+			"rs200354","rs2030763","rs2033111","rs214678","rs2330442",
+			"rs2357442","rs2504853","rs2702414","rs2946788","rs3118378",
+			"rs316598","rs385194","rs3907047","rs4798812","rs4800105",
+			"rs4821004","rs4955316","rs5768007","rs6451722","rs647325",
+			"rs6541030","rs6556352","rs705308","rs7238445","rs734873",
+			"rs7421394","rs7657799","rs7844723","rs798443","rs7997709",
+			"rs8021730","rs8035124","rs870347","rs874299","rs881728",
+			"rs9319336","rs946918","rs4670767"]
+	},
+	"Precision ID Ancestry":{ 
+		"loci":["rs2986742","rs6541030","rs647325","rs4908343","rs1325502",
+			"rs12130799","rs3118378","rs3737576","rs7554936","rs2814778",
+			"rs1040404","rs1407434","rs4951629","rs316873","rs798443",
+			"rs7421394","rs1876482","rs1834619","rs4666200","rs4670767",
+			"rs13400937","rs3827760","rs260690","rs6754311","rs10496971",
+			"rs10497191","rs2627037","rs1569175","rs4955316","rs9809104",
+			"rs6548616","rs12629908","rs12498138","rs9845457","rs734873",
+			"rs2030763","rs1513181","rs9291090","rs4833103","rs10007810",
+			"rs1369093","rs385194","rs1229984","rs3811801","rs7657799",
+			"rs2702414","rs316598","rs870347","rs16891982","rs37369",
+			"rs6451722","rs12657828","rs6556352","rs1500127","rs7722456",
+			"rs6422347","rs1040045","rs2504853","rs7745461","rs192655",
+			"rs3823159","rs4463276","rs4458655","rs1871428","rs731257",
+			"rs917115","rs32314","rs2330442","rs4717865","rs10954737",
+			"rs705308","rs7803075","rs10236187","rs6464211","rs10108270",
+			"rs3943253","rs1471939","rs1462906","rs12544346","rs6990312",
+			"rs2196051","rs7844723","rs2001907","rs1871534","rs10511828",
+			"rs3793451","rs2306040","rs10513300","rs3814134","rs2073821",
+			"rs3793791","rs4746136","rs4918664","rs4918842","rs4880436",
+			"rs10839880","rs1837606","rs2946788","rs174570","rs11227699",
+			"rs1079597","rs948028","rs2416791","rs1513056","rs214678",
+			"rs772262","rs2070586","rs2238151","rs671","rs1503767",
+			"rs9319336","rs7997709","rs1572018","rs2166624","rs7326934",
+			"rs9530435","rs9522149","rs1760921","rs2357442","rs1950993",
+			"rs8021730","rs946918","rs200354","rs3784230","rs1800414",
+			"rs12913832","rs12439433","rs735480","rs1426654","rs2899826",
+			"rs8035124","rs4984913","rs4781011","rs818386","rs2966849",
+			"rs459920","rs1879488","rs4411548","rs2593595","rs17642714",
+			"rs4471745","rs2033111","rs11652805","rs10512572","rs2125345",
+			"rs4798812","rs2042762","rs7226659","rs7238445","rs881728",
+			"rs3916235","rs4891825","rs874299","rs7251928","rs8113143",
+			"rs3745099","rs2532060","rs6104567","rs3907047","rs310644",
+			"rs2835370","rs1296819","rs4821004","rs2024566","rs5768007"]	
+	},
+	"ForenSeq Sig Prep kit aiSNP":{
+		"loci":["rs2814778","rs3737576","rs7554936","rs10497191","rs1834619",
+			"rs1876482","rs260690","rs3827760","rs6754311","rs798443",
+			"rs12498138","rs1919550","rs1229984","rs3811801","rs4833103",
+			"rs7657799","rs7722456","rs870347","rs16891982","rs192655",
+			"rs3823159","rs917115","rs1462906","rs1871534","rs2196051",
+			"s6990312","rs3814134","rs4918664","rs1079597","rs174570",
+			"rs2238151","rs671","rs1572018","rs2166624","rs7326934",
+			"rs7997709","rs9522149","rs200354","rs12439433","rs1426654",
+			"rs1800414","rs735480","rs12913832","rs459920","rs11652805",
+			"rs17642714","rs2593595","rs4411548","rs4471745","rs2042762",
+			"rs3916235","rs4891825","rs7226659","rs7251928","rs310644",
+			"rs2024566"]
+	},
+	"SNPforID 52plex":{
+		"loci":["rs891700", "rs2056277", "rs719366","rs740910","rs938283",
+			"rs2107612","rs1005533","rs1015250","rs1024116","rs1028528",
+			"rs1029047","rs1031825","rs10495407","rs1335873","rs1355366",
+			"rs1357617","rs1360288","rs1382387","rs1413212","rs1454361",
+			"rs1463729","rs1490413","rs1493232","rs1528460","rs1886510",
+			"rs1979255","rs2016276","rs2040411","rs2046361","rs2076848",
+			"rs2111980","rs251934","rs2830795","rs2831700","rs354439",
+			"rs717302","rs722098","rs727811","rs729172","rs733164",
+			"rs735155","rs737681","rs763869","rs8037429","rs826472",
+			"rs873196","rs876724","rs901398","rs907100","rs914165",
+			"rs917118","rs964681"]
+	},
+	"Kidd Lab Identity":{
+		"loci":["rs338882","rs6444724","rs4606077","rs10488710","rs2255301",
+			"rs12997453","rs891700","rs3780962","rs1736442","rs8078417",
+			"rs2291395","rs2270529","rs10092491","rs279844","rs13218440",
+			"rs2269355","rs7041158","rs315791","rs10776839","rs590162",
+			"rs2920816","rs2073383","rs985492","rs159606","rs560681",
+			"rs445251","rs521861","rs8070085","rs10500617","rs6811238",
+			"rs7520386","rs321198","rs1872575","rs9951171","rs9905977",
+			"rs7205345","rs13134862","rs740598","rs2503107","rs2272998",
+			"rs6955448","rs1027895","rs9546538","rs1410059","rs13182883",
+			"rs2567608","rs722290","rs214955","rs3744163","rs1358856",
+			"rs1498553","rs7704770","rs5746846","rs1058083","rs430046",
+			"rs7229946","rs1004357","rs1019029","rs10773760","rs1109037",
+			"rs12480506","rs1294331","rs1336071","rs1478829","rs1490413",
+			"rs1523537","rs1554472","rs1821380","rs2046361","rs221956",
+			"rs2342747","rs2399332","rs2811231","rs2833736","rs4288409",
+			"rs4364205","rs4530059","rs464663","rs4796362","rs4847034",
+			"rs576261","rs6591147","rs901398","rs9866013","rs987640",
+			"rs993934"]
+	},
+	"HID-Ion AmpliSeq Identity":{
+		"loci":["rs1490413","rs7520386","rs4847034","rs560681","rs10495407",
+			"rs891700","rs1413212","rs876724","rs1109037","rs993934",
+			"rs12997453","rs907100","rs1357617","rs4364205","rs1872575",
+			"rs1355366","rs6444724","rs2046361","rs6811238","rs1979255",
+			"rs717302","rs159606","rs7704770","rs251934","rs338882",
+			"rs13218440","rs214955","rs727811","rs6955448","rs917118",
+			"rs321198","rs737681","rs10092491","rs4288409","rs2056277",
+			"rs1015250","rs7041158","rs1463729","rs1360288","rs10776839",
+			"rs826472","rs735155","rs3780962","rs740598","rs964681",
+			"rs1498553","rs901398","rs10488710","rs2076848","rs2269355",
+			"rs2111980","rs10773760","rs1335873","rs1886510","rs1058083",
+			"rs354439","rs1454361","rs722290","rs873196","rs4530059",
+			"rs2016276","rs1821380","rs1528460","rs729172","rs2342747",
+			"rs430046","rs1382387","rs9905977","rs740910","rs938283",
+			"rs2292972","rs1493232","rs9951171","rs1736442","rs1024116",
+			"rs719366","rs576261","rs1031825","rs445251","rs1005533",
+			"rs1523537","rs722098","rs2830795","rs2831700","rs914165",
+			"rs221956","rs733164","rs987640","rs2040411","rs1028528",
+			"rs2534636","rs35284970","rs9786184","rs9786139","rs16981290",
+			"rs17250845","L298","P256","P202","rs17306671",
+			"rs4141886","rs2032595","rs2032599","rs20320","rs2032602",
+			"rs8179021","rs2032624","rs2032636","rs9341278","rs2032658",
+			"rs2319818","rs17269816","rs17222573","M479","rs3848982",
+			"rs3900","rs3911","rs2032631","rs2032673","rs2032652",
+			"rs16980426","rs13447443","rs17842518","rs2033003"]
+	},
+	"ForenSeq Sig Prep kit iiSNP":{
+		"loci":["rs10495407","rs1294331","rs1413212","rs1490413","rs560681",
+			"rs891700","rs1109037","rs12997453","rs876724","rs907100",
+			"rs993934","rs1355366","rs1357617","rs2399332","rs4364205",
+			"rs6444724","rs1979255","rs2046361","rs279844","rs6811238",
+			"rs13182883","rs159606","rs251934","rs338882","rs717302",
+			"rs13218440","rs1336071","rs214955","rs727811","rs321198",
+			"rs6955448","rs737681","rs917118","rs10092491","rs2056277",
+			"rs4606077","rs4606077","rs763869","rs1015250","rs10776839",
+			"rs1360288","rs1463729","rs7041158","rs3780962","rs735155",
+			"rs740598","rs826472","rs964681","rs10488710","rs1498553",
+			"rs2076848","rs901398","rs10773760","rs2107612","rs2111980",
+			"rs2269355","rs2920816","rs1058083","rs1335873","rs1886510",
+			"rs354439","rs1454361","rs4530059","rs722290","s72229",
+			"rs1528460","rs1821380","rs8037429","rs1382387","rs2342747",
+			"rs430046","rs729172","rs740910","rs8078417","rs938283",
+			"rs9905977","rs1024116","rs1493232","rs1736442","rs9951171",
+			"rs576261","rs719366","rs1005533","rs1031825","rs1523537",
+			"rs445251","rs221956","rs2830795","rs2831700","rs722098",
+			"rs914165","rs1028528","rs2040411","rs733164","rs987640"]
+	},
+	"Individual Identity SNP panel (Qiagen)":{ 
+		"loci":["rs10488710","rs2920816"," rs6955448","rs1058083","rs221956",
+			"rs13182883","rs279844","rs6811238","rs430046","rs576261",
+			"rs2833736","rs10092491","rs560681","rs590162","rs2342747",
+			"rs4364205","rs445251","rs7041158","rs9546538","rs1294331",
+			"rs159606","rs740598","rs464663","rs1821380","rs1336071",
+			"rs1019029","rs9951171","rs8078417","rs1358856","rs6444724",
+			"rs13218440","rs2270529","rs1498553","rs7520386","rs1523537",
+			"rs1736442","rs1478829"," rs3780962","rs7229946","rs9866013",
+			"rs2567608","rs2399332","rs987640","rs4847034","rs2073383",
+			"rs3744163","rs10500617","rs993934"," rs2291395","rs10773760",
+			"rs12480506","rs4789798","rs4530059","rs8070085","rs12997453",
+			"rs4606077","rs689512","rs214955","rs2272998"," rs5746846",
+			"rs4288409","rs2269355","rs1027895","rs321198","rs2175957",
+			"rs2292972","rs9606186","rs338882","rs10776839","rs964681",
+			"rs521861","rs1109037"," rs4796362","rs315791","rs917118",
+			"rs1004357","rs7205345","rs6591147","rs2503107","rs1410059",
+			"rs1872575","rs1554472","rs9905977"," rs7704770","rs2255301",
+			"rs13134862","rs2811231","rs985492","rs10768550","rs722290",
+			"rs891700", "rs2056277", "rs719366","rs740910","rs938283",
+			"rs2107612","rs1005533","rs1015250","rs1024116","rs1028528",
+			"rs1029047","rs1031825","rs10495407","rs1335873","rs1355366",
+			"rs1357617","rs1360288","rs1382387","rs1413212","rs1454361",
+			"rs1463729","rs1490413","rs1493232","rs1528460","rs1886510",
+			"rs1979255","rs2016276","rs2040411","rs2046361","rs2076848",
+			"rs2111980","rs251934","rs2830795","rs2831700","rs354439",
+			"rs717302","rs722098","rs727811","rs729172","rs733164",
+			"rs735155","rs737681","rs763869","rs8037429","rs826472",
+			"rs873196","rs876724","rs901398","rs907100","rs914165"]
+	}
+};
+
+// Create some code to run on the server if there is no data yet only when the application starts up
 Meteor.startup(function () {
    fs = Npm.require('fs');
 });
 
+// Using a simple-schema package to attach a schema to the "CurrentView" collection
 Schemas.CurrentView=new SimpleSchema({
+        // To provide a single custom input type using comerc:autofrom-selectize which is an add-on package for aldeed:autoform 
 	sample: {
 		type: String,
-		max:300,
+		max:300, 
 		autoform: {
-			type: "selectize",
-			firstOption: false,
+			type: "selectize", 
+			firstOption: "(Select a result file)", // false to true
+			options: true,
 			options: function() {
-				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}});
+				return _.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file}).map(function (c) { return {label:c.file,value:c.file+';'+c.orig}}); 
 			}
 		}
 	},
 	layout: {
 		type: String,
-		max: 50,
+		max: 100, 
 		autoform: {
 			type: "selectize",
-			firstOption: false,
-			options: function() {
-				return _.map(["GlobalFiler","PowerPlex Fusion","PowerPlex 21","Promega CS7","Qiagen HDplex","Qiagen Argus X12","Y-Filer Plus","Y-Filer 17","PowerPlex Y-23"],function(c) {return {label:c,value:c};});
-			}
+			firstOption:"(Select a panel)",  // false to true
+			options: true,
+			options: function () {
+          				return [
+						{
+						 optgroup: "Autosomal STR panels",
+						    options:[{label:"GlobalFiler (Applied Biosystems)",value:"GlobalFiler"},
+							     {label:"PowerPlex Fusion (Promega)",value:"PowerPlex Fusion"},
+							     {label:"PowerPlex 21 (Promega)",value:"PowerPlex 21"},
+							     {label:"Promega CS7 (Promega)",value:"Promega CS7"},
+							     {label:"HDplex (QIAGEN)",value:"Qiagen HDplex"}]
+						},
+						{
+						optgroup: "X STR panels",
+						    options:[{label:"Argus X12 (QIAGEN)",value:"Qiagen Argus X12"}]
+						},
+						{
+						 optgroup:  "Y STR panels",
+						    options:[{label:"Y-Filer Plus (Applied Biosystems)",value:"Y-Filer Plus"},
+							     {label:"AmpFLSTR Y-Filer (Applied Biosystems)",value:"Y-Filer 17"},
+							     {label:"PowerPlex Y-23 (Promega)",value:"PowerPlex Y-23"}]
+						},
+						{
+						 optgroup: "piSNP panels",
+						    options:[{label:"IrisPlex", value:"IrisPlex"},
+							     {label:"HIrisPlex", value:"HIrisPlex"}]
+						},
+						{
+						 optgroup: "aiSNP panels",
+						    options:[{label:"SNPforID 34plex", value:"SNPforID 34plex"},
+							     {label:"Eurasiaplex", value:"Eurasiaplex"},
+							     {label:"Pacifiplex", value:"Pacifiplex"},
+							     {label:"Kidd Lab Ancestry", value:"Kidd Lab Ancestry"},
+							     {label:"Seldin's", value:"Seldin's"},
+							     {label:"Precision ID Ancestry (Applied Biosystems)", value:"Precision ID Ancestry"},	
+							     {label:"ForenSeq DNA Sig Prep (Illumina)", value:"ForenSeq Sig Prep kit aiSNP"}]
+						},
+						{
+						 optgroup: "iiSNP panels",
+						    options:[{label:"SNPforID 52plex", value:"SNPforID 52plex"},
+							     {label:"Kidd Lab ID", value:"Kidd Lab Identity"},
+							     {label:"HID-Ion AmpliSeq ID (Applied Biosystems)", value:"HID-Ion AmpliSeq Identity"},
+							     {label:"GeneRead DNAseq 140SNP (QIAGEN)", value:"Individual Identity SNP"}]
+						}
+					     ]; // end of return
+			} // end of options function
 		}
 	}
 });
-CurrentView.attachSchema(Schemas.CurrentView);
 
-Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
-Notes.attachSchema(Schemas.Notes);
+// Once the simpleSchema is defined, attach it to the collection
+CurrentView.attachSchema(Schemas.CurrentView); 
 
-var coord={'D1S1656': 'chr1:230905363-230905429',
+//Schemas.Notes=new SimpleSchema({notes: {type: String,autoform:{rows:2}}});
+//Notes.attachSchema(Schemas.Notes);
+
+// An object contains loci and corresponding chromosome coordinates
+var coordSTR={'D1S1656': 'chr1:230905363-230905429',
 	'TH01': 'chr11:2192319-2192345',
 	'VWA': 'chr12:6903103-6093254',
 	'D12S391': 'chr12:12449948-12450000',
@@ -152,248 +505,729 @@ var coord={'D1S1656': 'chr1:230905363-230905429',
 	'DYS487': 'chrY:8914175-8914212',
 	'DYS19/DYS394': 'chrY:9521990-9522052'};
 
-if (Meteor.isClient) {
+// Generate another variable to open a region for a SNP in the IGV
+var coordSNP={'rs798443': 'chr2:7968224-7968324',
+		'rs11652805': 'chr17:62987100-62987200',
+		'rs10497191': 'chr2:158667166-158667266',
+		'rs16891982': 'chr5:33951642-33951742',
+		'rs12439433': 'chr15:36219984-36220084',
+		'rs2986742': 'chr1:6550325-6550425',
+		'rs6541030': 'chr1:12608127-12608227',
+		'rs647325': 'chr1:18170835-18170935',
+		'rs4908343': 'chr1:27931647-27931747',	
+		'rs1325502': 'chr1:42360219-42360319',
+		'rs12130799': 'chr1:55663321-55663421',	
+		'rs3118378': 'chr1:68849636-68849736',
+		'rs3737576': 'chr1:101709512-101709612',	
+		'rs7554936': 'chr1:151122438-151122538',
+		'rs2814778': 'chr1:159174632-159174732',	
+		'rs1040404': 'chr1:168159839-168159939',
+		'rs1407434': 'chr1:186148981-186149081',	
+		'rs4951629': 'chr1:212786832-212786932',
+		'rs316873': 'chr1:242342453-242342553',	
+		'rs798443': 'chr2:7968224-7968324', 
+		'rs7421394': 'chr2:14756298-14756398',
+		'rs1876482': 'chr2:17362517-17362617',
+		'rs1834619': 'chr2:17901434-17901534',
+		'rs4666200': 'chr2:29538360-29538460',
+		'rs4670767': 'chr2:37941345-37941445',
+		'rs13400937': 'chr2:79864872-79864972',
+		'rs3827760': 'chr2:109513550-109513650', 
+		'rs260690': 'chr2:109579687-109579787',
+		'rs6754311': 'chr2:136707931-136708031',
+		'rs10496971': 'chr2:145769892-145769992',
+		'rs2627037': 'chr2:179606487-179606587',
+		'rs1569175': 'chr2:201021903-201022003',
+ 		'rs4955316': 'chr3:30415561-30415661',
+ 		'rs9809104': 'chr3:39146378-39146478',
+ 		'rs6548616': 'chr3:79399524-79399624',
+ 		'rs12629908': 'chr3:120522665-120522765',
+ 		'rs12498138': 'chr3:121459538-121459638',
+ 		'rs9845457': 'chr3:135914425-135914525',
+ 		'rs734873': 'chr3:147750304-147750404',
+ 		'rs2030763': 'chr3:179964676-179964776',
+ 		'rs1513181': 'chr3:188574945-188575045',
+ 		'rs9291090': 'chr4:5390586-5390686',
+ 		'rs4833103': 'chr4:38815451-38815551',
+ 		'rs10007810': 'chr4:41554313-41554413',
+ 		'rs1369093': 'chr4:73245140-73245240',
+ 		'rs385194': 'chr4:85309027-85309127',
+ 		'rs1229984': 'chr4:100239268-100239368',
+ 		'rs3811801': 'chr4:100244268-100244368',
+ 		'rs7657799': 'chr4:105375372-105375472',
+ 		'rs2702414': 'chr4:179399472-179399572',
+ 		'rs316598': 'chr5:2364575-2364675',
+ 		'rs870347': 'chr5:6844984-6845084',
+ 		'rs16891982': 'chr5:33951642-33951742',
+ 		'rs37369': 'chr5:35037064-35037164',
+ 		'rs6451722': 'chr5:43711327-43711427',
+ 		'rs12657828': 'chr5:79085675-79085775',
+ 		'rs6556352': 'chr5:155471663-155471763',
+ 		'rs1500127': 'chr5:165739931-165740031',
+ 		'rs7722456': 'chr5:170202933-170203033',
+ 		'rs6422347': 'chr5:177863032-177863132',
+ 		'rs1040045': 'chr6:4747108-4747208',
+		'rs2504853': 'chr6:12535060-12535160',
+		'rs7745461': 'chr6:21911565-21911665',
+		'rs192655': 'chr6:90518227-90518327', 
+		'rs3823159': 'chr6:136482676-136482776',
+		'rs4463276': 'chr6:145055280-145055380',
+		'rs4458655': 'chr6:163221741-163221841',
+		'rs1871428': 'chr6:168665709-168665809',
+		'rs731257': 'chr7:12669200-12669300',
+		'rs917115': 'chr7:28172535-28172635',
+		'rs32314': 'chr7:32179073-32179173',
+		'rs2330442': 'chr7:42380020-42380120',
+		'rs4717865': 'chr7:73454148-73454248',
+		'rs10954737': 'chr7:83532996-83533096',
+		'rs705308': 'chr7:97695312-97695412',
+		'rs7803075': 'chr7:130742015-130742115',
+		'rs10236187': 'chr7:139447326-139447426',
+		'rs6464211': 'chr7:151873802-151873902',
+ 		'rs10108270': 'chr8:4190742-4190842',
+ 		'rs3943253': 'chr8:13359449-13359549',
+ 		'rs1471939': 'chr8:28941254-28941354',
+ 		'rs1462906': 'chr8:31896541-31896641',
+ 		'rs12544346': 'chr8:86424565-86424665',
+ 		'rs6990312': 'chr8:110602266-110602366',
+ 		'rs2196051': 'chr8:122124251-122124351',
+ 		'rs7844723': 'chr8:122908452-122908552',
+ 		'rs2001907': 'chr8:140241130-140241230',
+ 		'rs1871534': 'chr8:145639630-145639730',
+ 		'rs10511828': 'chr9:28628449-28628549',
+ 		'rs3793451': 'chr9:71659229-71659329',
+ 		'rs2306040': 'chr9:93641148-93641248',
+ 		'rs10513300': 'chr9:120130155-120130255',
+ 		'rs3814134': 'chr9:127267638-127267738',
+ 		'rs2073821': 'chr9:135933071-135933171',
+ 		'rs3793791': 'chr10:50841653-50841753',
+ 		'rs4746136': 'chr10:75300943-75301043',
+ 		'rs4918664': 'chr10:94921014-94921114',
+ 		'rs4918842': 'chr10:115316761-115316861',
+ 		'rs4880436': 'chr10:134650052-134650152',
+ 		'rs10839880': 'chr11:7850265-7850365',
+ 		'rs1837606': 'chr11:15838086-15838186',
+ 		'rs2946788': 'chr11:24010479-24010579',
+ 		'rs174570': 'chr11:61597161-61597261',
+ 		'rs11227699': 'chr11:66898441-66898541',
+ 		'rs1079597': 'chr11:113296235-113296335',
+ 		'rs948028': 'chr11:120644396-120644496',
+ 		'rs2416791': 'chr12:11701437-11701537',
+ 		'rs1513056': 'chr12:17407741-17407841',
+ 		'rs214678': 'chr12:47676899-47676999',
+ 		'rs772262': 'chr12:56163683-56163783',
+ 		'rs2070586': 'chr12:109277669-109277769',
+ 		'rs2238151': 'chr12:112211782-112211882',
+ 		'rs671': 'chr12:112241715-112241815',
+ 		'rs1503767': 'chr12:118889437-118889537',
+ 		'rs9319336': 'chr13:27624305-27624405',
+ 		'rs7997709': 'chr13:34847686-34847786',
+ 		'rs1572018': 'chr13:41715231-41715331',
+ 		'rs2166624': 'chr13:42579934-42580034',
+ 		'rs7326934': 'chr13:49070461-49070561',
+ 		'rs9530435': 'chr13:75993836-75993936',
+ 		'rs9522149': 'chr13:111827116-111827216',
+ 		'rs1760921': 'chr14:20818080-20818180',
+ 		'rs2357442': 'chr14:52607916-52608016',
+ 		'rs1950993': 'chr14:58238636-58238736',
+ 		'rs8021730': 'chr14:67886730-67886830',
+ 		'rs946918': 'chr14:83472817-83472917',
+ 		'rs200354': 'chr14:99375270-99375370',
+ 		'rs3784230': 'chr14:105679004-105679104',
+ 		'rs1800414': 'chr15:28196986-28197086',
+ 		'rs12913832': 'chr15:28365567-28365667',
+ 		'rs12439433': 'chr15:36219984-36220084',
+ 		'rs735480': 'chr15:45152320-45152420',
+ 		'rs1426654': 'chr15:48426433-48426533',
+ 		'rs2899826': 'chr15:74734449-74734549',
+ 		'rs8035124': 'chr15:92105657-92105757',
+ 		'rs4984913': 'chr16:740415-740515',
+ 		'rs4781011': 'chr16:10975260-10975360',
+ 		'rs818386': 'chr16:65406657-65406757',
+ 		'rs2966849': 'chr16:85183631-85183731',
+ 		'rs459920': 'chr16:89730776-89730876',
+ 		'rs1879488': 'chr17:1401562-1401662',
+ 		'rs4411548': 'chr17:40658482-40658582',
+ 		'rs2593595': 'chr17:41056194-41056294',
+ 		'rs17642714': 'chr17:48726081-48726181',
+ 		'rs4471745': 'chr17:53568833-53568933',
+ 		'rs2033111': 'chr17:53788229-53788329',
+ 		'rs11652805': 'chr17:62987100-62987200', 
+ 		'rs10512572': 'chr17:69512048-69512148',
+ 		'rs2125345': 'chr17:73782140-73782240',
+ 		'rs4798812': 'chr18:9420453-9420553',
+ 		'rs2042762': 'chr18:35277571-35277671',
+ 		'rs7226659': 'chr18:40488228-40488328',
+ 		'rs7238445': 'chr18:49781493-49781593',
+ 		'rs881728': 'chr18:59333057-59333157',
+ 		'rs3916235': 'chr18:67578880-67578980',
+ 		'rs4891825': 'chr18:67867612-67867712',
+ 		'rs874299': 'chr18:75056233-75056333',
+ 		'rs7251928': 'chr19:4077045-4077145',
+ 		'rs8113143': 'chr19:33652196-33652296',
+ 		'rs3745099': 'chr19:52901854-52901954',
+ 		'rs2532060': 'chr19:55614872-55614972',
+ 		'rs6104567': 'chr20:10195382-10195482',
+ 		'rs3907047': 'chr20:54000863-54000963',
+ 		'rs310644': 'chr20:62159453-62159553',
+ 		'rs2835370': 'chr21:37885574-37885674',
+ 		'rs1296819': 'chr22:18076495-18076595',
+ 		'rs4821004': 'chr22:32366308-32366408',
+ 		'rs2024566': 'chr22:41697287-41697387',
+ 		'rs5768007': 'chr22:48207821-48207921', // end of aiSNP
+ 		'rs1490413': 'chr1:4367272-4367372', // start of iiSNP
+ 		'rs7520386': 'chr1:14155351-14155451',
+ 		'rs4847034': 'chr1:105717580-105717680',
+ 		'rs560681': 'chr1:160786619-160786719',
+ 		'rs10495407': 'chr1:238439257-238439357',
+ 		'rs891700': 'chr1:239881875-239881975',
+ 		'rs1413212': 'chr1:242806746-242806846',
+ 		'rs876724': 'chr2:114923-115023',
+ 		'rs1109037': 'chr2:10085671-10085771',
+ 		'rs993934': 'chr2:124109162-124109262',
+ 		'rs12997453': 'chr2:182413208-182413308',
+ 		'rs907100': 'chr2:239563528-239563628',
+ 		'rs1357617': 'chr3:961731-961831',
+ 		'rs4364205': 'chr3:32417593-32417693',
+ 		'rs1872575': 'chr3:113804928-113805028',
+ 		'rs1355366': 'chr3:190806057-190806157',
+ 		'rs6444724': 'chr3:193207329-193207429',
+ 		'rs2046361': 'chr4:10969008-10969108',
+ 		'rs6811238': 'chr4:169663564-169663664',
+ 		'rs1979255': 'chr4:190318029-190318129',
+ 		'rs717302': 'chr5:2879344-2879444	',
+ 		'rs159606': 'chr5:17374847-17374947',
+ 		'rs7704770': 'chr5:159487902-159488002',
+ 		'rs251934': 'chr5:174778627-174778727',
+ 		'rs338882': 'chr5:178690674-178690774',
+ 		'rs13218440': 'chr6:12059903-12060003',
+ 		'rs214955': 'chr6:152697655-152697755',
+ 		'rs727811': 'chr6:165045283-165045383',
+ 		'rs6955448': 'chr7:4310314-4310414',
+ 		'rs917118': 'chr7:4456952-4457052',
+ 		'rs321198': 'chr7:137029787-137029887',
+ 		'rs737681': 'chr7:155990762-155990862',
+ 		'rs10092491': 'chr8:28411021-28411121',
+ 		'rs4288409': 'chr8:136839178-136839278',
+ 		'rs2056277': 'chr8:139399065-139399165',
+ 		'rs1015250': 'chr9:1823723-1823823',
+ 		'rs7041158': 'chr9:27985887-27985987',
+ 		'rs1463729': 'chr9:126881397-126881497',
+ 		'rs1360288': 'chr9:128968012-128968112',
+ 		'rs10776839': 'chr9:137417257-137417357',
+ 		'rs826472': 'chr10:2406580-2406680',
+ 		'rs735155': 'chr10:3374127-3374227',
+ 		'rs3780962': 'chr10:171932295-17193395',
+ 		'rs740598': 'chr10:118506848-118506948',
+ 		'rs964681': 'chr10:132698368-132698468',
+ 		'rs1498553': 'chr11:5708977-5709077',
+ 		'rs901398': 'chr11:11096170-11096270',
+ 		'rs10488710': 'chr11:115207125-115207225',
+ 		'rs2076848': 'chr11:134667495-134667595',
+ 		'rs2269355': 'chr12:6945863-6945963',
+ 		'rs2111980': 'chr12:106328203-106328303',
+ 		'rs10773760': 'chr12:130761645-130761745',
+ 		'rs1335873': 'chr13:20901673-20901773',
+ 		'rs1886510': 'chr13:22374649-22374749',
+ 		'rs1058083': 'chr13:100038182-100038282',
+ 		'rs354439': 'chr13:106938360-106938460',
+ 		'rs1454361': 'chr1425850781-25850871',
+ 		'rs722290': 'chr14:53216672-53216772',
+ 		'rs873196': 'chr14:98845480-98845580',
+ 		'rs4530059': 'chr14:104769098-104769198',
+ 		'rs2016276': 'chr15:24571745-24571845',
+ 		'rs1821380': 'chr15:39313351-39313451',
+ 		'rs1528460': 'chr15:55210654-55210754',
+ 		'rs729172': 'chr16:5606146-5606246',
+ 		'rs2342747': 'chr16:5868649-5868749',
+ 		'rs430046': 'chr16:78017000-78017100',
+ 		'rs1382387': 'chr16:80106310-80106410',
+ 		'rs9905977': 'chr17:2919342-2919442',
+ 		'rs740910': 'chr17:5706572-5706672',
+ 		'rs938283': 'chr17:77468447-77468547',
+ 		'rs2292972': 'chr17:80765737-80765837',
+ 		'rs1493232': 'chr18:1127935-1128035',
+ 		'rs9951171': 'chr18:9749828-9749928',
+ 		'rs1736442': 'chr18:55225726-55225826',
+ 		'rs1024116': 'chr18:75432335-75432435',
+ 		'rs719366': 'chr19:28463286-28463386',
+ 		'rs576261': 'chr19:39559756-39559856',
+ 		'rs1031825': 'chr20:4447432-4447532',
+ 		'rs445251': 'chr20:15124882-15124982',
+ 		'rs1005533': 'chr20:39487059-39487159',
+ 		'rs1523537': 'chr20:51296111-51296211',
+ 		'rs722098': 'chr21:16685547-16685647',
+ 		'rs2830795': 'chr21:28608112-28608212',
+ 		'rs2831700': 'chr21:29679636-29679736',
+ 		'rs914165': 'chr21:42415878-42415978',
+ 		'rs221956': 'chr21:43606946-43607046',
+ 		'rs733164': 'chr22:27816733-27816833',
+ 		'rs987640': 'chr22:33559457-33559557',
+ 		'rs2040411': 'chr22:47836361-47836461',
+ 		'rs1028528': 'chr22:48362239-48362339',
+ 		'rs2534636': 'chrY:2657125-2657225',
+ 		'rs35284970': 'chrY:2734803-2734903',
+ 		'rs9786184': 'chrY:2887773-2887873',
+ 		'rs9786139': 'chrY:6753468-6753568',
+ 		'rs16981290': 'chrY:7568517-7568617',
+ 		'rs17250845': 'chrY:8418876-8418976',
+ 		'rs372687543': 'chrY:8467239-8467339',
+ 		'rs369616152': 'chrY:14000973-14001073',
+ 		'rs17306671': 'chrY:14031283-14031383',
+ 		'rs4141886': 'chrY:14197816-14197916',
+ 		'rs2032595': 'chrY:14813940-14814040',
+ 		'rs2032599': 'chrY:14851503-14851603',
+ 		'rs20320': 'chrY:14898112-14898212',
+ 		'rs2032602': 'chrY:14954229-14954329',
+ 		'rs8179021': 'chrY:15018531-15018631',
+ 		'rs2032624': 'chrY:15026373-15026473',
+ 		'rs2032636': 'chrY:15027478-15027578',
+ 		'rs9341278': 'chrY:15469673-15469773',
+ 		'rs2032658': 'chrY:15581932-15582032',
+ 		'rs2319818': 'chrY:16354657-16354757',
+ 		'rs17269816': 'chrY:17053720-17053820',
+ 		'rs17222573': 'chrY:17891190-17891290',
+ 		'rs372157627': 'chrY:20834616-20834716',
+ 		'rs3848982': 'chrY:21717157-21717257',
+ 		'rs3900': 'chrY:21730206-21730306',
+ 		'rs3911': 'chrY:21733403-21733503',
+ 		'rs2032631': 'chrY:21867736-21867836',
+ 		'rs2032673': 'chrY:21894007-21894107',
+ 		'rs2032652': 'chrY:21917262-21917362',
+ 		'rs16980426': 'chrY:22214170-22214270',
+ 		'rs13447443': 'chrY:22739250-22739350',
+ 		'rs17842518': 'chrY:23443920-23444020',
+ 		'rs2033003': 'chrY:23550873-23550973'}; // end of iiSNP (missing one SNP from the BED file due to wrong information)
 
-	Meteor.subscribe("str");
-	Template.registerHelper("Schemas",Schemas);
+// code here will be running on the web browser only
+if (Meteor.isClient) {  
+
+	Meteor.subscribe("str"); 
+
+	// Add all SimpleSchema instances to a Schemas object and register that object as a helper
+	Template.registerHelper("Schemas",Schemas); 
+
+	// Add materialize templates for autoform
 	AutoForm.setDefaultTemplate('materialize');
-	
-	Template._loginButtonsLoggedInDropdown.events({
-	  'click #login-buttons-edit-profile': function(event) {
-	    Router.go('profileEdit');
-	  }
-	});
-	
+
+	// Set viz in the session if viz is hasn't been set before
+	Session.setDefault('viz','home'); 
+
 	Template.menu.events({
 		'change #sampleSelect': function(e){
 			console.log('Selected sample '+e.target.value);
-			var values=e.target.value.split(';');
+			var values=e.target.value.split(';'); 
 			sampleName=values[0];
-			sampleFile=values[1];
-			builtLobstr();
+			sampleFile=values[1]; // = .snp.txt / _lobstr.ystr.txt / _lobstr.codis.txt / _straitrazor.ystr.txt / _straitrazor.codis.txt
+			if (sampleFile.includes(".snp.txt")){
+				buildSNP();
+			}else{
+				buildSTR();
+			}
 		},
 		'change #layoutSelect': function(e){
 			console.log('Selected layout '+e.target.value);
 			layout=e.target.value;
-			builtLobstr();
+			window.snp_layout=e.target.value;
+			buildSTR();
+			buildSNP();
+		},
+		'click .navbar-brand': function(){
+			// Clicking the logo will return to the homepage
+			return Session.set('viz','home'); 
 		}
 	});
-	
-	Session.setDefault('viz','home');
-	
-	Template.body.helpers({
+
+	// Template helpers send functions to the "body" template
+	Template.body.helpers({ 
 		currentViz: function(){
 			return Session.get('viz');
 		}
-	})
-	
+	});
+		
 	Template.snptable.onCreated(function(){
-		Session.set('snps',[]);
+		Session.set('snps',sample.snpsArray); // Session.set('snps',[]); deleted
+		Session.set('viz','snptable');       
 	});
 	
-	Template.snptable.helpers({
+	Template.snptable.helpers({ 
 		snps: function() {
-			return Session.get('snps');
+			  console.log("SNP helper function");
+			layout = window.snp_layout;
+			var panelnames = new Set(Object.keys(SNP_panels));
+			if (typeof layout == "undefined"){
+				return Session.get('snps');
+			}else if (panelnames.has(layout) == false){
+				return Session.get('snps');
+			}
+			var snp_data = Session.get('snps');
+			  console.log('layout test',layout);
+			// if(SNP_panels = layout
+			var pnl = SNP_panels[layout];
+			var loci = new Set(pnl["loci"]);
+			var output = [];
+			for (i=0; i< snp_data.length; i++){
+				var rsid = snp_data[i]["rsid"];
+				if (loci.has(rsid)){
+					output.push(snp_data[i]);
+				}
+			}
+		    return output;
 		}
 	});
 	
 	Template.snptable.events({
-//		'mouseover [data-toggle="popover"]': function(e){
-		'click': function(e){
-			var p = $(e.currentTarget).popover({
-				html:true
+		// Allow linkage of SNP viewer to IGV
+		'click .linkage-to-igv':function(e){
+			var region=coordSNP[this.rsid];
+			  console.log("Clicked on "+p(this.rsid)+'. Opening '+region);
+			var vcf=sampleFile.replace(".txt","").replace(".snp","")+".vcf"; 
+			var bam=vcf.replace(".vcf","_final.bam");
+			Meteor.call("getResultsDir", function(err, res) {
+				var resultsDir=res;
+				  console.log('resultsDir='+resultsDir);
+				window.open('http://localhost:60151/load?genome=hg19&merge=false&locus=' + region + '&file=file://' + resultsDir+'/' + vcf + 
+',file://' + resultsDir + '/'+bam + ',file://' + resultsDir + '/../lobSTR_hg19.gff3');
 			});
-			var cTarget=e.currentTarget;
-			$(cTarget.id+'con').show();
-			var refC=parseInt(cTarget.getAttribute("refC"));
-			var altC=parseInt(cTarget.getAttribute("altC"));
+		},
+		'click': function(e){
+			var p = $(e.currentTarget).popover({ 
+				html:true // Use HTML to render the labels
+			});
+			var cTarget = e.currentTarget;
+				$(cTarget.id+'con').show();
+			var refC = parseInt(cTarget.getAttribute("refC")); //refC = refCount
+			var altC = parseInt(cTarget.getAttribute("altC")); // altC = altCount
 			new Highcharts.Chart({
-				chart: {
-					renderTo: cTarget.id+'con',
-					type: 'column'
-				},
-				exporting:{enabled: true},
-				tooltip: { formatter: function () {
-					return '<b>'+this.x+'</b>: '+this.y+' read'+((this.y==1)?'':'s')+'<br/><i>('+this.point.p+"%)</i>";
-				} },
-		        plotOptions: {
-		            column: {
-		                dataLabels: { enabled: true }
-		            }
-		        },
-		        title:{text:null},
-		        legend:{enabled:false},
-		        credits:{enabled:false},
-		        xAxis: {
-		        	categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")]	
-		        },
-		        yAxis: {
-		            title: {
-		                text: 'reads',
-		                useHTML: true,
-		                style: {
-		                    "-webkit-transform": "rotate(90deg)",
-		                    "-moz-transform": "rotate(90deg)", 
-		                    "-o-transform": "rotate(90deg)"
-		                }
-		            }
-		        },
-		        series: [{ name:'reads', data: [{y:refC,p:(100*refC/(refC+altC)).toFixed(2)},{y:altC,p:(100*altC/(refC+altC)).toFixed(2)}] }]
-		    });
-		}
-	});
+				chart: {renderTo: cTarget.id+'con', 
+					type: 'column'},
+				exporting: {enabled: true},
+				// tooltip shows extra information when user moves the mouse pointer over an element
+				tooltip: { formatter: function () { 
+					return '<b>' + this.x + '</b>: '+ this.y +' read'+((this.y==1)?'':'s') + '<br/><i>('+this.point.p+"%)</i>";
+							// this.x = allele, this.y = read for that allele
+					} },
+		        	plotOptions: {
+			    		series: { pointWidth: 50, // Adjust the width for each column 
+						  animation: false}, // Remove animation 
+		            		column: {
+						// display data labels outside the plot area
+		                		dataLabels: { enabled: true, crop: false, overflow: 'none'} 
+		            		}
+		        	},
+		        	title:{text:null},
+		        	legend:{enabled:false},
+		       		credits:{enabled:false},
+		        	xAxis: {
+		       			categories: [cTarget.getAttribute("ref"),cTarget.getAttribute("alt")]
+		        	},
+		        	yAxis: {
+					minorGridLineDashStyle: 'longdash', // Make the dash of the minor grid lines
+					minorTickInterval: 'auto', // Set the minor tick interval as a fifth of the tickInterval (auto)
+					minorTickWidth: 0, // The pixel width pf the minor tick mark
+		            		title: {
+		                		text: 'Reads',
+		                		useHTML: true,
+		                		style: { 
+						    // Rotates an element clockwise
+						    "-webkit-transform": "rotate(90deg)", 
+						    "-moz-transform": "rotate(90deg)", 
+						    "-o-transform": "rotate(90deg)"
+		                		}
+		            		}
+		        	},
+				// A series is a set of data. All data plotted on a chart comes from the series object.
+		        	series: [{ name:'Reads', 
+					   data: [
+						  {y: refC, p: (100*refC/(refC+altC)).toFixed(2)},
+						  {y: altC, p: (100*altC/(refC+altC)).toFixed(2)}
+						 ] 
+				}] // End of series
+		    	}); // End of Highcharts
+		} // End of click function
+	}); // End of template.snptable.events
 	
-	Accounts.ui.config({
-		passwordSignupFields: 'USERNAME_AND_EMAIL'
-	});
-	
-	function builtLobstr(collection) {
+	function buildSTR(collection) {
 	//	samples=Str.find({},{ sort:{_id:1}}).map(function (doc){return doc['sample']});
 	//	samples=_.uniq(Str.find({},{sort:{_id:1}}).fetch(),true,function(d) {return d.file});
 	//	console.log('samples: '+p(samples)); fields:{_id:1,type:1},
 	//	console.log('sampleName: '+p(sampleName));
-		sample=Str.findOne({_id:sampleName+'|'+layout});
-		sampleType=typeof sample;
-	//	console.log('sample('+p(sampleType)+'): '+p(sample));
+	//	sample=Str.findOne({_id:sampleName});
+		sample=Str.findOne({_id:sampleName+'|'+layout}); 
+		 sampleType=typeof sample; //typeof operator can return either string, number, boolean and undefined
 		if(sampleType!='undefined') {
-			for(x = 0; x < 8; x++) {
-				if(typeof sample.categoriesArray[x]=='undefined' || sample.categoriesArray[x].length<1) {
+			console.log("buildSTR");
+			// Look up panels 
+			pnl = panels[layout];
+			for(x = 0; x < 5; x++) {  // maximum 5 containers
+				if(typeof sample.categoriesArray[x]=='undefined' || x >= pnl.length) { 
 					$('#containerChart'+x).hide();
-				}else {
+				} else if (pnl["r"+x]["loci"].length == 0){
+					$('#containerChart'+x).hide();
+				} else {
 					$('#containerChart'+x).show();
-				}
-				var graphSeries = eval("GraphSeries");
-				graphSeries.data = [];
-				graphSeries.name = "GraphSeries" + x;
-				graphSeries.point.events.click = function() {
-					Meteor.call('runCode', function (err, response) {
-						console.log('cmd: '+response);
-						alert ('Category: '+ this.category +'<br/>'+response);
-					});
-				}
+                                }
+				// Delete the following due to no effect
+				//var graphSeries = eval("GraphSeries");
+				//graphSeries.data = [];
+				//graphSeries.name = "GraphSeries" + x;
+				//graphSeries.point.events.click = function() {
+					//Meteor.call('runCode', function (err, response) {
+						//console.log('cmd: '+response);
+						//alert ('Category: '+ this.category +'<br/>'+response);
+					//});
+				//}
+
 				var graphOptions = eval("GraphOptions");
-				graphOptions.series = sample.seriesArray[x];
-				graphOptions.xAxis.categories = sample.categoriesArray[x];
+				graphOptions.series = sample.seriesArray[x]; // seriesArray = name, colour, data
+				graphOptions.xAxis.categories = sample.categoriesArray[x]; // categoriesArray = name of locus
 				graphOptions.chart.renderTo = 'containerChart'+x;
+				console.log("renderTo", graphOptions.chart.renderTo);
 	//			if(x==0) {
 	//				graphOptions.title.text = sample.title;
 	//			}else {
 	//				graphOptions.title.text = null;
 	//			}
-				Session.set('viz','lobstr');
-				new Highcharts.Chart(graphOptions);
-			}
-		}else {
-			sample=Str.findOne({_id:sampleName});
+				// now lobstr is the new value for viz, given that viz has been set before
+				Session.set('viz','lobstr'); 
+				// The graphOptions object is created below and added to the chart here by passing it to the chart constructor
+				new Highcharts.Chart(graphOptions); 
+			} // end for
+		} // end if
+	}
+		
+	function buildSNP(collection) {
+			sample=Str.findOne({_id:sampleName}); 
+			  console.log('sample',JSON.stringify(sample));
 			if(sample!=null) {
-				Session.set('snps',sample.snpsArray);
-				Session.set('viz','snptable');
-	//			console.log(JSON.stringify(sample.snpsArray));
+				var output = [];
+				  console.log("buildSNP");
+				layout = window.snp_layout;
+				var panelnames = new Set(Object.keys(SNP_panels));
+				if (typeof layout == "undefined"){
+					output = sample.snpsArray;
+				}else if (panelnames.has(layout) == false){
+					output = sample.snpsArray;
+				}else{
+					var snp_data = sample.snpsArray;
+				 	   console.log('layout test',layout);
+					var pnl = SNP_panels[layout];
+					var loci = new Set(pnl["loci"]);
+					for (i=0; i< snp_data.length; i++){
+						var rsid = snp_data[i]["rsid"];
+						if (loci.has(rsid)){
+							output.push(snp_data[i]);
+						}
+					}
+				}
+			Session.set('snps',output);
+			Session.set('viz','snptable');
+			  console.log("buildSNP"); 
 			}
-		}
 	}
 	
-	
+	// Use a JavaScript object structure provided by Highcharts to define the options of a chart
 	var GraphOptions = {
-	    chart: { type: 'column', renderTo: 'containerChart0' },
-		title:{ text:null },
-		subtitle:{ text:null },
+		// Delete renderTo. Add borders to the chart. 
+		chart: { type: 'column', plotBorderColor: '#000000', plotBorderWidth: 1}, 
+		title: { text:null },
+		subtitle: { text:null },
 		credits: { enabled: false },
-	    legend: { enabled: false },
-	    exporting:{enabled: false},
-		tooltip: { formatter: function () {
-			if(this.y>0) {
-				AnalyticThresh="Analytic T: "+this.point.at+"%";
-				StochasticThresh="Stochastic T: "+this.point.st+"%";
-				StutterThresh="Stutter T: "+this.point.tt+"%";
-				if(this.point.p<this.point.at) {
-					AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
-				}
-				if(this.point.p<this.point.st) {
-					StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
-				}
-				if(this.point.p<this.point.tt) {
-					StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
-				}
-				return '<b>'+this.x+'</b> allele <b>'+this.series.name+'</b><br/>'+this.y+' read'+((this.y==1)?'':'s')+' <i>('+this.point.p+"%)</i><br/>Ref allele: "+this.point.r+"<br/>"+AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
-			}
-		} },
+	    	legend: { enabled: false },
+	   	exporting: {enabled: false},
+		tooltip: { formatter: function () { 
+			// Shared tooltip (new)
+				console.log(this.x);
+					var s = '<strong>' + this.x + '</strong><br>';
+					
+						$.each(this.points, function () {
+							if(this.y>0){
+								allele = this.series.name;
+									// show which one is ref allele
+									if(this.point.l==this.point.r){ 
+										allele='<b>'+allele+' (Ref)</b>';
+									} else {
+										allele;
+									}
+								reads = '<b>' + this.y + '</b> read' + ((this.y==1)?'':'s');
+								s += 'Allele <b>' + allele + '</b>: '  +
+									reads +
+									' <i>(' + this.point.p + '%)</i><br>';
+							} // end of if
+						}); // end of each function
+					return s ;
+					
+			}, // end of formatter function
+			shared: true,
+			followPointer: true, // The tooltip should follow the mouse as it moves across column
+			crosshairs: true
+			}, // end of tooltip
+
+//				AnalyticThresh="Analytic T: " + this.point.at+"%";
+//				StochasticThresh="Stochastic T: " + this.point.st+"%";
+//				StutterThresh="Stutter T: " + this.point.tt+"%";
+//					// If allele read coverage % is smaller than the threshold %, threshold% is shown in bold
+//					if(this.point.p < this.point.at) {
+//						AnalyticThresh='<font color="#0000ff"><b>'+AnalyticThresh+'</b></font>';
+//					}
+//					if(this.point.p < this.point.st) {
+//						StochasticThresh='<font color="#ff0000"><b>'+StochasticThresh+'</b></font>';
+//					}
+//					if(this.point.p < this.point.tt) {
+//						StutterThresh='<font color="#ff0000"><b>'+StutterThresh+'</b></font>';
+//					}
+//				return '<b>'+this.x+'</b> allele <b>'+this.series.name + '</b><br/>'+ 
+//					// this.x = locus
+//					// this.series.name = allele
+//					this.y+' read'+((this.y==1)?'':'s') +
+//					// this.y = no. of reads
+//					' <i>('+this.point.p+"%)</i><br/>Ref allele: " + 
+//						// this.point.p = percentage reads
+//					this.point.r; 
+//					// AnalyticThresh+"<br/>"+StochasticThresh+"<br/>"+StutterThresh;
+//					// this.point.r = reference allele
+//					}
+//		} },
 		plotOptions: {
 			column: {
 				dataLabels: {
 					enabled: true,
-					formatter: function(){ return this.point.l; },
-					style:{ fontSize:'8pt', color:'#101010', },
-					x:0,
-					y:0,
-					align:'center'
+					formatter: function() {return  this.point.l; }, 
+					// change very dark grey #101010 to black
+					style: { fontSize:'8pt', color:'black', fontWeight: 'bold', crop: false, overflow: 'none'}, 
+					x:0, 
+					y:0, 
+					align:'center', 
+					allowOverlap: true 
 				},
 			},
-			series: { 
-				maxPointWidth: 30,
+			series: {
+				pointWidth: 6, // Set a fixed width for each column 
+				borderColor: '#000000', // Add border
+				groupPadding: 0,// Padding between each value groups, in x axis units
 				point: {
 					events: {
 						click: function(e) {
-							var region=coord[this.category];
-							console.log("Clicked on "+p(this.category)+'. Opening '+region);
+							// Open IGV for STR browser
+							var region=coordSTR[this.category]; //this.category = the STR locus
+							console.log("Clicked on "+p(this.category)+'. Opening '+region); // region= chr_:_-_
 							var vcf=sampleFile.replace(".txt","").replace(".codis","").replace(".ystr","").replace(".snp","")+".vcf";
 							var bam=vcf.replace("_lobstr.vcf","_sorted.bam");
 							Meteor.call("getResultsDir", function(err, res) {
 								var resultsDir=res;
 								console.log('resultsDir='+resultsDir);
-								window.open('http://localhost:60151/load?genome=hg19&merge=false&locus='+region+'&file=file://'+resultsDir+'/'+vcf+',file://'+resultsDir+'/'+bam+',file://'+resultsDir+'/../lobSTR_hg19.gff3');
+								window.open('http://localhost:60151/load?genome=hg19&merge=false&locus=' + 
+									    region + // region= chr_:_-_
+									    '&file=file://' + resultsDir + '/' + vcf + 
+									    ',file://' + resultsDir + '/' + bam + 
+									    ',file://' + resultsDir + '/../lobSTR_hg19.gff3');
 							});
-//							Session.set("viz","strchart"); #new method not plugged in yet
 						}
 					}
 				}
 			}
 		},
-		yAxis: { min:0, title:{text:'Read Counts'}, labels:{overflow:'justify'} },
-		xAxis: { categories: [] },
-		series: []	
-	};
-	
-	var GraphSeries = { name:"", data:[], point:{events:{click: null}} };
-	
-	$(function () {
-		var chart;
-		$(document).ready(function() {
-			samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
-			builtLobstr();
-		});
+		yAxis: { // min:0, 
+			minorGridLineDashStyle: 'longdash', // Make the dash of the minor grid lines
+			minorTickInterval: 'auto', // auto = Set the minor tick interval as a fifth of the tickInterval 
+			minorTickWidth: 0, // the pixel width pf the minor tick mark
+			title: {text:'Read Counts', 
+				// Set font size and color
+				style:{fontSize: '10pt', color:'black'} 
+			}, 
+			labels: {
+				overflow:'justify', // Labels not render outside the legend area.
+				// Make y axis label black in colour. Set font size to 12px
+				style: { color: 'black', fontSize: '10pt'} 
+				},
+		}, 	
+		xAxis: { categories: [], // Empty array for categories and series so push values to them later
+			 lineColor: '#000000', // Make axis black in colour
+				// Make X axis label black in colour. Set font size to 12px.
+			 labels: {style: { color: 'black', fontSize: '12pt'}} 
+		},
+		series: []
+		};
+
+	//$(function () { // shorthand $() for $(document).ready()
+		//var chart;
+	$(document).ready(function() { // jQuery object
+		// Run the code once the DOM is ready for JS code to execute
+		samples=Str.find({},{fields:{_id:1}, sort:{_id:1}}).map(function (doc){return doc['_id']});
+		buildSTR();
 	});
+
+	//});
 	
 	Template.lobstr.onRendered(function() {
-		builtLobstr();
+		buildSTR();
 	});
 
-}
+// The stutter calculator
+Template.stuttercalculator.helpers({
+    result: function(){
+      return Session.get('result');
+    }
+});
+
+Template.stuttercalculator.events({
+    'submit .calculator': function(event, template){
+	event.preventDefault();
+        var num1 = event.target.readsforN.value;
+        var num2 = event.target.readsforNminus1.value;
+	var t = radioForm.stutter_threshold.value;
+	console.log("N Reads: " + num1+ " & N-1 Reads: " +num2);
+
+	if(document.getElementById('stutter_threshold_other').checked){
+	   var inputT = radioForm.stutter_threshold_input.value;
+	     console.log("Other option selected. Threshold input: "+ inputT + "%");
+			if (num2 < num1*(inputT/100)){
+	        		console.log("stutter.(threshold was set as) "+ inputT + " threshold: " + num1*(inputT/100));
+				 Session.set('result',' Allele n-1 is a stutter artefact for allele n.');
+			} else {
+				console.log("NOT stutter.(threshold was set as) "+ inputT + " threshold: " + num1*(inputT/100));
+				Session.set('result',' Allele n-1 is NOT a stutter artefact for allele n.');
+    			}
+
+	} else {
+			if (num2 < num1*t){
+	        		console.log("stutter.(threshold was set as) "+ t);
+				 Session.set('result',' Allele n-1 is a stutter artefact for allele n.');
+			} else {
+				console.log("NOT stutter.(threshold was set as) "+ t);
+				Session.set('result',' Allele n-1 is NOT a stutter artefact for allele n.');
+    			}
+	}
+   },
+   'reset. calculator':function(event, template){
+     document.getElementById("calculator_form").reset();
+     document.getElementById("radioForm.stutter_threshold_input").reset();
+     Session.set('result','nahhh');
+   }
+}); // End of stutter calculator
+
+} // End of client's code
+
 
 if (Meteor.isServer) {
-	Meteor.publish('str',function() {
+	// Publish record sets 'str' and 'samples'
+	Meteor.publish('str',function() { 
 		return Str.find({});
 	});
-	Meteor.publish('samples',function() {
+	Meteor.publish('samples',function() { 
 		return Threshold.find({});
 	});
-	Meteor.publish('notes',function() {
-		return Notes.find({});
-	});
+	//Meteor.publish('notes',function() {
+	//	return Notes.find({});
+	//});
 	Meteor.methods({
 		getResultsDir: function() {
 			var path=Npm.require('path');
 			return path.resolve('../../../../../../results');
 		}
 	});
-	Meteor.startup(function(){
-		Accounts.config({
-    		sendVerificationEmail: false,
-    		forbidClientAccountCreation: false
-		});
-	});
 }
 
-Router.route('/', {
-    template: 'home'
-});
+//Router.route('/', function() {
+ //   this.render('home');
+//});
