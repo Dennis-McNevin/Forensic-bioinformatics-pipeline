@@ -141,7 +141,7 @@ def tovcf(itrfce, progress=None):
         cmds.append((cmd10, 'bsh'))
         #cmds.append(([loc['samtools'], 'mpileup', '-uf', ref, final_fn, '>', bcf_fn], 'bsh'))
 
-        # Stage 11 convert to VCF
+        # Stage 11 convert to VCF and filter by known loci then correct missing genotypes
         logger.info ('Preparing conversion to VCF')
         vcf_loci_fn = bn + '_loci.vcf'
         cmds.append(([loc['bcftools'], 'view', '-cgl', loc['snp_loci.txt'], bcf_fn, '>', vcf_loci_fn], 'bsh'))
@@ -164,6 +164,8 @@ def tovcf(itrfce, progress=None):
     snp_fn = bn + '.snp.txt'
     cmds.append(([loc["bedtools"], 'intersect', '-b', vcf_fn, '-a', loc["standard.pnl"], #$HOME/mpsforensics/standard.pnl,
             '-wb', '>', snp_fn], 'bsh'))
+    snp_table_fn = bn + '_snps_table.csv'
+    cmds.append((['python', loc['make_snp_csv.py'], snp_fn, snp_table_fn], 'b'))
 
     # Stage 13 upload to DB
     logger.info('Uploading to DB')
